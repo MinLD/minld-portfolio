@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+
 const isloading = ref(false)
 const req = ref('')
 const aws = ref('')
@@ -37,5 +38,6 @@ watch(aws, async (newValue, oldValue) => {
     {{ trl }}
   </p>
 
-  <hello-word msg="Hello Vue 3 + Vite + TypeScript + TailwindCSS" />
+  <!--<HelloWorld msg="Hello Vue 3 + Vite + TypeScript + TailwindCSS" />-->
+  HelloWorld
 </template>
