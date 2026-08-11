@@ -1,19 +1,23 @@
-import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import express from 'express'
-import rateLimit from 'express-rate-limit'
-import helmet from 'helmet'
 import { env } from './config/env.js'
-import { errorMiddleware, notFoundMiddleware } from './middlewares/error.middleware.js'
-import { healthRouter } from './routes/health.routes.js'
+import { errorMiddleware, notFoundMiddleware } from './common/middlewares/error.middleware.js'
+import { requestIdMiddleware } from './common/middleware/request-id.js'
+import { securityMiddleware } from './common/middleware/security.js'
+import { authRouter } from './modules/auth/auth.routes.js'
+import { healthRouter } from './modules/health/health.routes.js'
+import { userRouter } from './modules/users/user.routes.js'
 
 export const app = express()
 
-app.use(helmet())
-app.use(cors({ origin: env.CORS_ORIGIN }))
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }))
-app.use(express.json())
+app.use(requestIdMiddleware)
+app.use(securityMiddleware)
+app.use(express.json({ limit: env.JSON_BODY_LIMIT }))
+app.use(cookieParser())
 
-app.use(healthRouter)
+app.use('/api/v1', healthRouter)
+app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/users', userRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorMiddleware)
