@@ -7,6 +7,7 @@ import { securityMiddleware } from './common/middleware/security.js'
 import { authRouter } from './modules/auth/auth.routes.js'
 import { adminCategoryRouter, publicCategoryRouter } from './modules/categories/category.routes.js'
 import { healthRouter } from './modules/health/health.routes.js'
+import { projectCommentRouter } from './modules/project-comments/project-comment.routes.js'
 import { adminProjectRouter, publicProjectRouter } from './modules/projects/project.routes.js'
 import { adminTechnologyRouter, publicTechnologyRouter } from './modules/technologies/technology.routes.js'
 import { userRouter } from './modules/users/user.routes.js'
@@ -24,6 +25,7 @@ app.use('/api/v1/users', userRouter)
 app.use('/api/v1', publicCategoryRouter)
 app.use('/api/v1', publicTechnologyRouter)
 app.use('/api/v1', publicProjectRouter)
+app.use('/api/v1', projectCommentRouter)
 app.use('/api/v1/admin', adminCategoryRouter)
 app.use('/api/v1/admin', adminTechnologyRouter)
 app.use('/api/v1/admin', adminProjectRouter)

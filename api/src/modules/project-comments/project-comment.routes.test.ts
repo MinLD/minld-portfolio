@@ -1,0 +1,74 @@
+import type { Express } from 'express'
+import request from 'supertest'
+import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { hashPassword } from '../../common/auth/password.js'
+import type { prisma as prismaType } from '../../database/prisma.js'
+
+process.env.NODE_ENV = 'test'
+process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
+process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret'
+process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
+
+const email = 'project-comment.user@example.com'
+const password = 'valid-password'
+let app: Express
+let prisma: typeof prismaType
+let userId: string
+let projectId: string
+
+async function cleanup() {
+  await prisma.projectComment.deleteMany({ where: { project: { slug: { startsWith: 'test-comment-project' } } } })
+  await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-comment-project' } } })
+  await prisma.authSession.deleteMany({ where: { user: { email } } })
+  await prisma.accountToken.deleteMany({ where: { user: { email } } })
+  await prisma.user.deleteMany({ where: { email } })
+}
+
+async function seed() {
+  const user = await prisma.user.create({ data: { email, displayName: 'Comment User', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
+  const project = await prisma.project.create({ data: { title: 'Comment Project', slug: 'test-comment-project', summary: 'Summary', content: 'Content', status: 'PUBLISHED', publishedAt: new Date() } })
+  await prisma.project.create({ data: { title: 'Draft Project', slug: 'test-comment-project-draft', summary: 'Summary', content: 'Content', status: 'DRAFT' } })
+  userId = user.id
+  projectId = project.id
+}
+
+async function accessToken() {
+  const response = await request(app).post('/api/v1/auth/login').send({ email, password })
+  return response.body.data.accessToken as string
+}
+
+beforeAll(async () => {
+  ;({ app } = await import('../../app.js'))
+  ;({ prisma } = await import('../../database/prisma.js'))
+})
+
+beforeEach(async () => {
+  await cleanup()
+  await seed()
+})
+
+afterAll(async () => {
+  await cleanup()
+  await prisma.$disconnect()
+})
+
+test('authenticated active user can create and list visible project comments', async () => {
+  const token = await accessToken()
+
+  const created = await request(app).post('/api/v1/projects/test-comment-project/comments').set('Authorization', `Bearer ${token}`).send({ content: 'Hello project' })
+  expect(created.status).toBe(201)
+  expect(created.body.data.comment.content).toBe('Hello project')
+  expect(created.body.data.comment.user.id).toBe(userId)
+
+  await prisma.projectComment.create({ data: { projectId, userId, content: 'Hidden', status: 'HIDDEN' } })
+  const listed = await request(app).get('/api/v1/projects/test-comment-project/comments')
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.comments.map((comment: { content: string }) => comment.content)).toEqual(['Hello project'])
+})
+
+test('project comment create/list validates auth and published project', async () => {
+  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').send({ content: 'No token' })).status).toBe(401)
+  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: '' })).status).toBe(400)
+  expect((await request(app).get('/api/v1/projects/test-comment-project-draft/comments')).status).toBe(404)
+  expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: 'No draft' })).status).toBe(404)
+})

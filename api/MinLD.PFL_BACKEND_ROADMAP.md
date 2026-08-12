@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_6
-current_task: P6-001
+current_task: P6-002
 current_task_status: TODO
 
-last_completed_task: P5-004
-next_task: P6-001
+last_completed_task: P6-001
+next_task: P6-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1317,7 +1317,7 @@ Keep policies centralized.
 | 5 | P5-002 | Admin Project CRUD | DONE |
 | 5 | P5-003 | Public Project list/detail | DONE |
 | 5 | P5-004 | Search/filter/pagination | DONE |
-| 6 | P6-001 | Project comment create/list | TODO |
+| 6 | P6-001 | Project comment create/list | DONE |
 | 6 | P6-002 | Project comment ownership update/delete | TODO |
 | 6 | P6-003 | Project comment admin moderation | TODO |
 | 7 | P7-001 | Cloudinary/Multer media infrastructure | TODO |
@@ -3392,6 +3392,87 @@ Implemented public Project search/filter/pagination using Prisma DB filters.
 ### Roadmap Update
 last_completed_task: P5-004
 next_task: P6-001
+
+## 2026-08-12 — P6-001 — Project comment create/list
+
+Status: DONE
+
+### Scope
+Implemented ProjectComment schema plus public visible-comment listing and authenticated comment creation.
+
+### Architecture
+- Controller: `project-comment.controller.ts` uses shared response helpers only.
+- Service: validates published project by slug and never accepts `userId` from body; no Prisma import.
+- Repository: `project-comment.repository.ts` owns all Prisma calls.
+- Schema: Zod validates slug params and comment content.
+- DTO: `ProjectCommentDto` exposes safe comment/user fields.
+- Mapper: `toProjectCommentDto` converts DB result to DTO.
+
+### Files Created
+- `api/prisma/migrations/20260812050000_add_project_comment/migration.sql`
+- `api/src/common/rate-limit/project-comment.rate-limit.ts`
+- `api/src/modules/project-comments/project-comment.controller.ts`
+- `api/src/modules/project-comments/project-comment.dto.ts`
+- `api/src/modules/project-comments/project-comment.mapper.ts`
+- `api/src/modules/project-comments/project-comment.repository.ts`
+- `api/src/modules/project-comments/project-comment.routes.test.ts`
+- `api/src/modules/project-comments/project-comment.routes.ts`
+- `api/src/modules/project-comments/project-comment.schema.ts`
+- `api/src/modules/project-comments/project-comment.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+- `api/src/app.ts`
+
+### Database
+- models: `ProjectComment`
+- enum: `ProjectCommentStatus`
+- migration: `20260812050000_add_project_comment`
+
+### Endpoints
+- `GET /api/v1/projects/:slug/comments`
+- `POST /api/v1/projects/:slug/comments`
+
+### Security
+- authentication: create requires access JWT.
+- authorization: create requires active user; only published projects accept comments; hidden comments excluded from list.
+- rate limit: `projectCommentCreateRateLimit` applies to create.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Authenticated active user creates comment.
+- Visible comments list by published project.
+- Hidden comments excluded.
+- Missing token, invalid body, and draft project rejected.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P6-001
+next_task: P6-002
 
 ---
 
