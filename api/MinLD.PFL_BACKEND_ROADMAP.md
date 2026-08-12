@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_8
-current_task: P8-002
+current_task: P8-003
 current_task_status: TODO
 
-last_completed_task: P8-001
-next_task: P8-002
+last_completed_task: P8-002
+next_task: P8-003
 ```
 
 ## Why the roadmap is being rebased
@@ -1324,7 +1324,7 @@ Keep policies centralized.
 | 7 | P7-002 | Project thumbnail lifecycle | DONE |
 | 7 | P7-003 | User avatar lifecycle | DONE |
 | 8 | P8-001 | Moment schema | DONE |
-| 8 | P8-002 | MomentTag CRUD | TODO |
+| 8 | P8-002 | MomentTag CRUD | DONE |
 | 8 | P8-003 | Admin Moment CRUD | TODO |
 | 8 | P8-004 | Multiple Moment image lifecycle | TODO |
 | 8 | P8-005 | Public Moment feed/detail | TODO |
@@ -3888,6 +3888,82 @@ Implemented Moment/Locket database schema foundation for moments, images, tags, 
 ### Roadmap Update
 last_completed_task: P8-001
 next_task: P8-002
+
+## 2026-08-12 — P8-002 — MomentTag CRUD
+
+Status: DONE
+
+### Scope
+Implemented MomentTag CRUD with admin routes and public tag listing.
+
+### Architecture
+- Controller: `moment-tag.controller.ts` uses shared response helpers only.
+- Service: uniqueness/not-found rules live in `moment-tag.service.ts`; no Prisma import.
+- Repository: `moment-tag.repository.ts` owns all Prisma calls.
+- Schema: Zod validates UUID params and create/update body.
+- DTO: `MomentTagDto` provides stable API shape.
+- Mapper: `toMomentTagDto` converts DB model to safe response DTO.
+
+### Files Created
+- `api/src/modules/moment-tags/moment-tag.controller.ts`
+- `api/src/modules/moment-tags/moment-tag.dto.ts`
+- `api/src/modules/moment-tags/moment-tag.mapper.ts`
+- `api/src/modules/moment-tags/moment-tag.repository.ts`
+- `api/src/modules/moment-tags/moment-tag.routes.test.ts`
+- `api/src/modules/moment-tags/moment-tag.routes.ts`
+- `api/src/modules/moment-tags/moment-tag.schema.ts`
+- `api/src/modules/moment-tags/moment-tag.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+
+### Database
+- models: existing `MomentTag`
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/admin/moment-tags`
+- `GET /api/v1/admin/moment-tags`
+- `GET /api/v1/admin/moment-tags/:id`
+- `PATCH /api/v1/admin/moment-tags/:id`
+- `DELETE /api/v1/admin/moment-tags/:id`
+- `GET /api/v1/moment-tags`
+
+### Security
+- authentication: admin routes require access JWT.
+- authorization: admin routes require `ADMIN` role and active user.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Admin create/list/get/update/delete.
+- Public list.
+- Missing token and USER role rejection.
+- Validation and uniqueness conflicts.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P8-002
+next_task: P8-003
 
 ---
 
