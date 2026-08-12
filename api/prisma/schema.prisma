@@ -46,6 +46,7 @@ model User {
   email           String           @unique
   displayName     String
   avatarUrl       String?
+  avatarPublicId  String?
   emailVerifiedAt DateTime?
   role            UserRole         @default(USER)
   status          UserStatus       @default(ACTIVE)

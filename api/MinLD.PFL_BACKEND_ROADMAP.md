@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_7
-current_task: P7-003
+current_phase: PHASE_8
+current_task: P8-001
 current_task_status: TODO
 
-last_completed_task: P7-002
-next_task: P7-003
+last_completed_task: P7-003
+next_task: P8-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1322,7 +1322,7 @@ Keep policies centralized.
 | 6 | P6-003 | Project comment admin moderation | DONE |
 | 7 | P7-001 | Cloudinary/Multer media infrastructure | DONE |
 | 7 | P7-002 | Project thumbnail lifecycle | DONE |
-| 7 | P7-003 | User avatar lifecycle | TODO |
+| 7 | P7-003 | User avatar lifecycle | DONE |
 | 8 | P8-001 | Moment schema | TODO |
 | 8 | P8-002 | MomentTag CRUD | TODO |
 | 8 | P8-003 | Admin Moment CRUD | TODO |
@@ -3750,6 +3750,80 @@ Implemented admin project thumbnail upload/replace/delete with Cloudinary cleanu
 ### Roadmap Update
 last_completed_task: P7-002
 next_task: P7-003
+
+## 2026-08-12 — P7-003 — User avatar lifecycle
+
+Status: DONE
+
+### Scope
+Implemented authenticated user avatar upload/replace/delete with Cloudinary cleanup.
+
+### Architecture
+- Controller: avatar handlers use shared response helpers.
+- Service: upload/replace/delete orchestration and cleanup live in `user.service.ts`; no Prisma import.
+- Repository: avatar DB writes stay in `user.repository.ts`.
+- Middleware: route uses Multer image memory upload and upload rate limit.
+
+### Files Created
+- `api/prisma/migrations/20260812060000_add_user_avatar_public_id/migration.sql`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+- `api/src/common/rate-limit/upload.rate-limit.ts`
+- `api/src/modules/users/user.controller.ts`
+- `api/src/modules/users/user.repository.ts`
+- `api/src/modules/users/user.routes.test.ts`
+- `api/src/modules/users/user.routes.ts`
+- `api/src/modules/users/user.service.ts`
+
+### Database
+- models: `User.avatarPublicId`
+- migration: `20260812060000_add_user_avatar_public_id`
+
+### Endpoints
+- `POST /api/v1/users/me/avatar`
+- `DELETE /api/v1/users/me/avatar`
+
+### Security
+- authentication: access JWT required.
+- authorization: active user required.
+- rate limit: `userUploadRateLimit` on upload.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Active user replaces avatar.
+- Old Cloudinary asset cleaned after replacement.
+- Active user deletes avatar.
+- Missing token, banned user, and invalid image rejected.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P7-003
+next_task: P8-001
 
 ---
 

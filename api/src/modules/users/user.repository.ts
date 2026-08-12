@@ -8,4 +8,8 @@ export const userRepository = {
   updateProfile(userId: string, data: { displayName: string }) {
     return prisma.user.update({ where: { id: userId }, data })
   },
+
+  updateAvatar(userId: string, data: { avatarUrl: string | null; avatarPublicId: string | null }) {
+    return prisma.user.update({ where: { id: userId }, data })
+  },
 }

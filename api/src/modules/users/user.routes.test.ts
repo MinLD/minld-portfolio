@@ -1,8 +1,14 @@
 import type { Express } from 'express'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import type { prisma as prismaType } from '../../database/prisma.js'
 import { hashPassword } from '../../common/auth/password.js'
+
+const mediaMocks = vi.hoisted(() => ({ uploadImage: vi.fn(), deleteImage: vi.fn() }))
+
+vi.mock('../../common/media/media.service.js', () => ({
+  mediaService: { uploadImage: mediaMocks.uploadImage, deleteImage: mediaMocks.deleteImage },
+}))
 
 process.env.NODE_ENV = 'test'
 process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
@@ -44,6 +50,9 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
+  mediaMocks.uploadImage.mockReset()
+  mediaMocks.deleteImage.mockReset()
+  mediaMocks.deleteImage.mockResolvedValue(undefined)
   await cleanup()
   await createUser(email)
   await createUser(bannedEmail, 'BANNED')
@@ -76,4 +85,32 @@ test('BANNED user cannot update profile interaction', async () => {
   const response = await request(app).patch('/api/v1/users/me').set('Authorization', `Bearer ${token}`).send({ displayName: 'Blocked' })
 
   expect(response.status).toBe(403)
+})
+
+test('ACTIVE user can replace and delete own avatar with cleanup', async () => {
+  const user = await prisma.user.update({ where: { email }, data: { avatarUrl: 'https://cdn/old.png', avatarPublicId: 'old-avatar' } })
+  const token = await accessToken()
+  mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/new.png', publicId: 'new-avatar' })
+
+  const replaced = await request(app)
+    .post('/api/v1/users/me/avatar')
+    .set('Authorization', `Bearer ${token}`)
+    .attach('avatar', Buffer.from('fake'), { filename: 'avatar.webp', contentType: 'image/webp' })
+
+  expect(replaced.status).toBe(200)
+  expect(replaced.body.data.user.avatarUrl).toBe('https://cdn/new.png')
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith(user.avatarPublicId)
+
+  expect((await request(app).delete('/api/v1/users/me/avatar').set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('new-avatar')
+  expect((await prisma.user.findUniqueOrThrow({ where: { email } })).avatarPublicId).toBeNull()
+})
+
+test('avatar upload requires active user and valid image', async () => {
+  expect((await request(app).post('/api/v1/users/me/avatar').attach('avatar', Buffer.from('fake'), { filename: 'avatar.png', contentType: 'image/png' })).status).toBe(401)
+  expect((await request(app).post('/api/v1/users/me/avatar').set('Authorization', `Bearer ${await accessToken()}`).attach('avatar', Buffer.from('fake'), { filename: 'avatar.gif', contentType: 'image/gif' })).status).toBe(400)
+
+  const banned = await prisma.user.findUniqueOrThrow({ where: { email: bannedEmail } })
+  const token = (await import('../../common/auth/jwt.js')).signAccessToken({ sub: banned.id, role: banned.role, status: banned.status })
+  expect((await request(app).post('/api/v1/users/me/avatar').set('Authorization', `Bearer ${token}`).attach('avatar', Buffer.from('fake'), { filename: 'avatar.png', contentType: 'image/png' })).status).toBe(403)
 })
