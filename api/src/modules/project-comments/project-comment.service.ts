@@ -35,3 +35,23 @@ export async function deleteOwnProjectComment(id: string, userId: string) {
   await findOwnComment(id, userId)
   await projectCommentRepository.delete(id)
 }
+
+async function findCommentOrThrow(id: string) {
+  const comment = await projectCommentRepository.findById(id)
+  if (!comment) throw new AppError(404, 'COMMENT_NOT_FOUND', 'Comment not found')
+  return comment
+}
+
+export async function listAdminProjectComments() {
+  return { comments: (await projectCommentRepository.findMany()).map(toProjectCommentDto) }
+}
+
+export async function updateProjectCommentStatus(id: string, input: { status: 'VISIBLE' | 'HIDDEN' }) {
+  await findCommentOrThrow(id)
+  return { comment: toProjectCommentDto(await projectCommentRepository.updateStatus(id, input.status)) }
+}
+
+export async function deleteAdminProjectComment(id: string) {
+  await findCommentOrThrow(id)
+  await projectCommentRepository.delete(id)
+}

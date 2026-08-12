@@ -12,3 +12,7 @@ export const updateProjectCommentSchema = z.object({
   params: z.object({ id: z.uuid() }),
   body: z.object({ content: z.string().trim().min(1).max(2000) }),
 })
+export const updateProjectCommentStatusSchema = z.object({
+  params: z.object({ id: z.uuid() }),
+  body: z.object({ status: z.enum(['VISIBLE', 'HIDDEN']) }),
+})

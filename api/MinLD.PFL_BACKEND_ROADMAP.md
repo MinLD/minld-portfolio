@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_6
-current_task: P6-003
+current_phase: PHASE_7
+current_task: P7-001
 current_task_status: TODO
 
-last_completed_task: P6-002
-next_task: P6-003
+last_completed_task: P6-003
+next_task: P7-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1319,7 +1319,7 @@ Keep policies centralized.
 | 5 | P5-004 | Search/filter/pagination | DONE |
 | 6 | P6-001 | Project comment create/list | DONE |
 | 6 | P6-002 | Project comment ownership update/delete | DONE |
-| 6 | P6-003 | Project comment admin moderation | TODO |
+| 6 | P6-003 | Project comment admin moderation | DONE |
 | 7 | P7-001 | Cloudinary/Multer media infrastructure | TODO |
 | 7 | P7-002 | Project thumbnail lifecycle | TODO |
 | 7 | P7-003 | User avatar lifecycle | TODO |
@@ -3541,6 +3541,77 @@ Implemented authenticated owner update/delete for project comments.
 ### Roadmap Update
 last_completed_task: P6-002
 next_task: P6-003
+
+## 2026-08-12 — P6-003 — Project comment admin moderation
+
+Status: DONE
+
+### Scope
+Implemented admin project comment listing, hide/unhide, and deletion.
+
+### Architecture
+- Controller: admin handlers use shared response helpers.
+- Service: moderation uses repository only; no Prisma import.
+- Repository: admin list/status/delete Prisma calls stay in repository.
+- Schema: Zod validates comment UUID params and status enum.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+- `api/src/modules/project-comments/project-comment.controller.ts`
+- `api/src/modules/project-comments/project-comment.repository.ts`
+- `api/src/modules/project-comments/project-comment.routes.test.ts`
+- `api/src/modules/project-comments/project-comment.routes.ts`
+- `api/src/modules/project-comments/project-comment.schema.ts`
+- `api/src/modules/project-comments/project-comment.service.ts`
+
+### Database
+- models: existing `ProjectComment`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/admin/project-comments`
+- `PATCH /api/v1/admin/project-comments/:id/status`
+- `DELETE /api/v1/admin/project-comments/:id`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN lists comments.
+- ADMIN hides comments.
+- ADMIN deletes comments.
+- USER role rejected.
+- Invalid status rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P6-003
+next_task: P7-001
 
 ---
 

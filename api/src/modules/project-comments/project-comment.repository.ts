@@ -14,8 +14,16 @@ export const projectCommentRepository = {
     return prisma.projectComment.findUnique({ where: { id }, include: projectCommentInclude })
   },
 
+  findMany() {
+    return prisma.projectComment.findMany({ orderBy: { createdAt: 'desc' }, include: projectCommentInclude })
+  },
+
   update(id: string, data: { content: string }) {
     return prisma.projectComment.update({ where: { id }, data, include: projectCommentInclude })
+  },
+
+  updateStatus(id: string, status: 'VISIBLE' | 'HIDDEN') {
+    return prisma.projectComment.update({ where: { id }, data: { status }, include: projectCommentInclude })
   },
 
   delete(id: string) {

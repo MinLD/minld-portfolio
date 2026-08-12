@@ -11,6 +11,7 @@ process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
 
 const email = 'project-comment.user@example.com'
 const otherEmail = 'project-comment.other@example.com'
+const adminEmail = 'project-comment.admin@example.com'
 const password = 'valid-password'
 let app: Express
 let prisma: typeof prismaType
@@ -20,14 +21,15 @@ let projectId: string
 async function cleanup() {
   await prisma.projectComment.deleteMany({ where: { project: { slug: { startsWith: 'test-comment-project' } } } })
   await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-comment-project' } } })
-  await prisma.authSession.deleteMany({ where: { user: { email: { in: [email, otherEmail] } } } })
-  await prisma.accountToken.deleteMany({ where: { user: { email: { in: [email, otherEmail] } } } })
-  await prisma.user.deleteMany({ where: { email: { in: [email, otherEmail] } } })
+  await prisma.authSession.deleteMany({ where: { user: { email: { in: [email, otherEmail, adminEmail] } } } })
+  await prisma.accountToken.deleteMany({ where: { user: { email: { in: [email, otherEmail, adminEmail] } } } })
+  await prisma.user.deleteMany({ where: { email: { in: [email, otherEmail, adminEmail] } } })
 }
 
 async function seed() {
   const user = await prisma.user.create({ data: { email, displayName: 'Comment User', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
   await prisma.user.create({ data: { email: otherEmail, displayName: 'Other User', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
+  await prisma.user.create({ data: { email: adminEmail, displayName: 'Admin User', role: 'ADMIN', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
   const project = await prisma.project.create({ data: { title: 'Comment Project', slug: 'test-comment-project', summary: 'Summary', content: 'Content', status: 'PUBLISHED', publishedAt: new Date() } })
   await prisma.project.create({ data: { title: 'Draft Project', slug: 'test-comment-project-draft', summary: 'Summary', content: 'Content', status: 'DRAFT' } })
   userId = user.id
@@ -41,6 +43,11 @@ async function accessToken() {
 
 async function otherAccessToken() {
   const response = await request(app).post('/api/v1/auth/login').send({ email: otherEmail, password })
+  return response.body.data.accessToken as string
+}
+
+async function adminAccessToken() {
+  const response = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password })
   return response.body.data.accessToken as string
 }
 
@@ -96,4 +103,24 @@ test('authenticated user can update and delete own project comment only', async 
   expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
   expect(await prisma.projectComment.findUnique({ where: { id: comment.id } })).toBeNull()
   expect((await request(app).patch('/api/v1/project-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${token}`).send({ content: 'Missing' })).status).toBe(404)
+})
+
+test('ADMIN can list moderate and delete project comments', async () => {
+  const adminToken = await adminAccessToken()
+  const userToken = await accessToken()
+  const comment = await prisma.projectComment.create({ data: { projectId, userId, content: 'Moderate me' } })
+
+  expect((await request(app).get('/api/v1/admin/project-comments').set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
+
+  const listed = await request(app).get('/api/v1/admin/project-comments').set('Authorization', `Bearer ${adminToken}`)
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.comments.some((item: { id: string }) => item.id === comment.id)).toBe(true)
+
+  const hidden = await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'HIDDEN' })
+  expect(hidden.status).toBe(200)
+  expect(hidden.body.data.comment.status).toBe('HIDDEN')
+  expect((await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'BAD' })).status).toBe(400)
+
+  expect((await request(app).delete(`/api/v1/admin/project-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`)).status).toBe(204)
+  expect(await prisma.projectComment.findUnique({ where: { id: comment.id } })).toBeNull()
 })
