@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_5
-current_task: P5-001
+current_task: P5-002
 current_task_status: TODO
 
-last_completed_task: P4-002
-next_task: P5-001
+last_completed_task: P5-001
+next_task: P5-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1313,7 +1313,7 @@ Keep policies centralized.
 | 3 | P3-002 | ADMIN role guard + banned-user interaction guard | DONE |
 | 4 | P4-001 | Category CRUD with repository | DONE |
 | 4 | P4-002 | Technology CRUD with repository | DONE |
-| 5 | P5-001 | Project schema + relations | TODO |
+| 5 | P5-001 | Project schema + relations | DONE |
 | 5 | P5-002 | Admin Project CRUD | TODO |
 | 5 | P5-003 | Public Project list/detail | TODO |
 | 5 | P5-004 | Search/filter/pagination | TODO |
@@ -3108,6 +3108,70 @@ Implemented Technology CRUD with repository boundary, admin-only mutation/read r
 ### Roadmap Update
 last_completed_task: P4-002
 next_task: P5-001
+
+## 2026-08-12 — P5-001 — Project schema + relations
+
+Status: DONE
+
+### Scope
+Implemented Project database schema with status enum and category/technology many-to-many relations.
+
+### Architecture
+- Schema: Prisma model only for this task; no service/controller surface added.
+- Relations: implicit Prisma many-to-many joins connect projects to categories and technologies.
+
+### Files Created
+- `api/prisma/migrations/20260812040000_add_project/migration.sql`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+
+### Database
+- models: `Project`
+- enum: `ProjectStatus`
+- relations: `Project` N:M `Category`, `Project` N:M `Technology`
+- migration: `20260812040000_add_project`
+
+### Endpoints
+- N/A
+
+### Security
+- authentication: N/A
+- authorization: N/A
+- rate limit: N/A
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Existing integration suite remains passing.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P5-001
+next_task: P5-002
 
 ---
 

@@ -30,6 +30,12 @@ enum TechnologyType {
   OTHER
 }
 
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model User {
   id              String          @id @default(uuid()) @db.Uuid
   email           String          @unique
@@ -88,12 +94,13 @@ model AccountToken {
 }
 
 model Category {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @unique
-  slug        String   @unique
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique
+  slug        String    @unique
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
 }
 
 model Technology {
@@ -104,4 +111,30 @@ model Technology {
   description String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  projects    Project[]
+}
+
+model Project {
+  id                String        @id @default(uuid()) @db.Uuid
+  title             String
+  slug              String        @unique
+  summary           String
+  content           String
+  thumbnailUrl      String?
+  thumbnailPublicId String?
+  demoUrl           String?
+  githubUrl         String?
+  sourceUrl         String?
+  status            ProjectStatus @default(DRAFT)
+  featured          Boolean       @default(false)
+  year              Int?
+  publishedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  categories        Category[]
+  technologies      Technology[]
+
+  @@index([status])
+  @@index([featured])
+  @@index([year])
 }
