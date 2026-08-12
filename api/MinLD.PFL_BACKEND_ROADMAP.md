@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_8
-current_task: P8-001
+current_task: P8-002
 current_task_status: TODO
 
-last_completed_task: P7-003
-next_task: P8-001
+last_completed_task: P8-001
+next_task: P8-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1323,7 +1323,7 @@ Keep policies centralized.
 | 7 | P7-001 | Cloudinary/Multer media infrastructure | DONE |
 | 7 | P7-002 | Project thumbnail lifecycle | DONE |
 | 7 | P7-003 | User avatar lifecycle | DONE |
-| 8 | P8-001 | Moment schema | TODO |
+| 8 | P8-001 | Moment schema | DONE |
 | 8 | P8-002 | MomentTag CRUD | TODO |
 | 8 | P8-003 | Admin Moment CRUD | TODO |
 | 8 | P8-004 | Multiple Moment image lifecycle | TODO |
@@ -3824,6 +3824,70 @@ Implemented authenticated user avatar upload/replace/delete with Cloudinary clea
 ### Roadmap Update
 last_completed_task: P7-003
 next_task: P8-001
+
+## 2026-08-12 — P8-001 — Moment schema
+
+Status: DONE
+
+### Scope
+Implemented Moment/Locket database schema foundation for moments, images, tags, likes, and comments.
+
+### Architecture
+- Schema: Prisma models only for this task; no route/service surface added.
+- Relations: Moment has ordered images, tags, likes, and comments.
+- Constraints: MomentLike has unique `momentId + userId`.
+
+### Files Created
+- `api/prisma/migrations/20260812070000_add_moment/migration.sql`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+
+### Database
+- models: `Moment`, `MomentImage`, `MomentTag`, `MomentLike`, `MomentComment`
+- enums: `MomentStatus`, `MomentCommentStatus`
+- migration: `20260812070000_add_moment`
+
+### Endpoints
+- N/A
+
+### Security
+- authentication: N/A
+- authorization: N/A
+- rate limit: N/A
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Existing integration suite remains passing.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P8-001
+next_task: P8-002
 
 ---
 

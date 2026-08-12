@@ -41,6 +41,17 @@ enum ProjectCommentStatus {
   HIDDEN
 }
 
+enum MomentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MomentCommentStatus {
+  VISIBLE
+  HIDDEN
+}
+
 model User {
   id              String           @id @default(uuid()) @db.Uuid
   email           String           @unique
@@ -57,6 +68,8 @@ model User {
   sessions        AuthSession[]
   accountTokens   AccountToken[]
   projectComments ProjectComment[]
+  momentLikes     MomentLike[]
+  momentComments  MomentComment[]
 }
 
 model UserCredential {
@@ -159,5 +172,70 @@ model ProjectComment {
   user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([projectId, status])
+  @@index([userId])
+}
+
+model Moment {
+  id          String          @id @default(uuid()) @db.Uuid
+  content     String
+  status      MomentStatus    @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  images      MomentImage[]
+  tags        MomentTag[]
+  likes       MomentLike[]
+  comments    MomentComment[]
+
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model MomentImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  momentId  String   @db.Uuid
+  url       String
+  publicId  String
+  altText   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  moment    Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  @@index([momentId, sortOrder])
+}
+
+model MomentTag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  moments   Moment[]
+}
+
+model MomentLike {
+  id        String   @id @default(uuid()) @db.Uuid
+  momentId  String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  moment    Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([momentId, userId])
+  @@index([userId])
+}
+
+model MomentComment {
+  id        String              @id @default(uuid()) @db.Uuid
+  momentId  String              @db.Uuid
+  userId    String              @db.Uuid
+  content   String
+  status    MomentCommentStatus @default(VISIBLE)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  moment    Moment              @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([momentId, status])
   @@index([userId])
 }
