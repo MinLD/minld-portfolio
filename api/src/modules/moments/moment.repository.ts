@@ -1,6 +1,7 @@
 import type { MomentStatus, Prisma } from '@prisma/client'
 import { prisma } from '../../database/prisma.js'
 import type { TxClient } from '../../database/transaction.js'
+import { momentCommentInclude } from './moment-comment.mapper.js'
 import { momentInclude } from './moment.mapper.js'
 
 const db = (tx?: TxClient) => tx ?? prisma
@@ -55,6 +56,14 @@ export const momentRepository = {
 
   countLikes(momentId: string) {
     return prisma.momentLike.count({ where: { momentId } })
+  },
+
+  findVisibleComments(momentId: string) {
+    return prisma.momentComment.findMany({ where: { momentId, status: 'VISIBLE' }, orderBy: { createdAt: 'asc' }, include: momentCommentInclude })
+  },
+
+  createComment(data: { momentId: string; userId: string; content: string }) {
+    return prisma.momentComment.create({ data, include: momentCommentInclude })
   },
 
   countTags(ids: string[], tx?: TxClient) {

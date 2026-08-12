@@ -174,3 +174,24 @@ test('authenticated active user can like and unlike published moment', async () 
   expect((await request(app).post(`/api/v1/moments/${published.id}/like`)).status).toBe(401)
   expect((await request(app).post(`/api/v1/moments/${draft.id}/like`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
 })
+
+test('authenticated active user can create and list visible moment comments', async () => {
+  const token = await accessToken(userEmail)
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
+  const published = await prisma.moment.create({ data: { content: 'Test Moment Comments', status: 'PUBLISHED', publishedAt: new Date() } })
+  const draft = await prisma.moment.create({ data: { content: 'Test Moment Comments Draft', status: 'DRAFT' } })
+
+  const created = await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Authorization', `Bearer ${token}`).send({ content: 'Nice moment' })
+  expect(created.status).toBe(201)
+  expect(created.body.data.comment.content).toBe('Nice moment')
+  expect(created.body.data.comment.user.id).toBe(user.id)
+
+  await prisma.momentComment.create({ data: { momentId: published.id, userId: user.id, content: 'Hidden', status: 'HIDDEN' } })
+  const listed = await request(app).get(`/api/v1/moments/${published.id}/comments`)
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.comments.map((comment: { content: string }) => comment.content)).toEqual(['Nice moment'])
+
+  expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).send({ content: 'No token' })).status).toBe(401)
+  expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Authorization', `Bearer ${token}`).send({ content: '' })).status).toBe(400)
+  expect((await request(app).get(`/api/v1/moments/${draft.id}/comments`)).status).toBe(404)
+})

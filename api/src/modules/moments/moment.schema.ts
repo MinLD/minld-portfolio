@@ -30,3 +30,7 @@ export const reorderMomentImagesSchema = z.object({
   params: z.object({ id: z.uuid() }),
   body: z.object({ images: z.array(z.object({ id: z.uuid(), sortOrder: z.int().min(0) })).min(1).max(10) }),
 })
+export const createMomentCommentSchema = z.object({
+  params: z.object({ id: z.uuid() }),
+  body: z.object({ content: z.string().trim().min(1).max(2000) }),
+})

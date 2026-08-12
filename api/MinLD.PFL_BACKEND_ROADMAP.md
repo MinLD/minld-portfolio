@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_9
-current_task: P9-002
+current_task: P9-003
 current_task_status: TODO
 
-last_completed_task: P9-001
-next_task: P9-002
+last_completed_task: P9-002
+next_task: P9-003
 ```
 
 ## Why the roadmap is being rebased
@@ -1329,7 +1329,7 @@ Keep policies centralized.
 | 8 | P8-004 | Multiple Moment image lifecycle | DONE |
 | 8 | P8-005 | Public Moment feed/detail | DONE |
 | 9 | P9-001 | Moment like/unlike | DONE |
-| 9 | P9-002 | Moment comment create/list | TODO |
+| 9 | P9-002 | Moment comment create/list | DONE |
 | 9 | P9-003 | Own Moment comment update/delete | TODO |
 | 9 | P9-004 | Admin Moment comment moderation | TODO |
 | 10 | P10-001 | Admin dashboard | TODO |
@@ -4244,6 +4244,77 @@ Implemented authenticated Moment like/unlike toggle for published moments.
 ### Roadmap Update
 last_completed_task: P9-001
 next_task: P9-002
+
+## 2026-08-12 — P9-002 — Moment comment create/list
+
+Status: DONE
+
+### Scope
+Implemented visible Moment comment listing and authenticated comment creation for published moments.
+
+### Architecture
+- Controller: comment handlers use shared response helpers.
+- Service: published-moment validation and create/list logic live in `moment.service.ts`; no Prisma import.
+- Repository: comment lookup/create Prisma calls stay in `moment.repository.ts`.
+- DTO/Mapper: `MomentCommentDto` exposes safe comment/user fields.
+- Rate limit: `momentCommentCreateRateLimit` applies to comment creation.
+
+### Files Created
+- `api/src/modules/moments/moment-comment.dto.ts`
+- `api/src/modules/moments/moment-comment.mapper.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/common/rate-limit/moment.rate-limit.ts`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.schema.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `MomentComment`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/moments/:id/comments`
+- `POST /api/v1/moments/:id/comments`
+
+### Security
+- authentication: create requires access JWT.
+- authorization: create requires active user; only published moments accept comments; hidden comments excluded from list.
+- rate limit: `momentCommentCreateRateLimit` applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Active user creates comment.
+- Visible comments list by published moment.
+- Hidden comments excluded.
+- Missing token, invalid body, and draft moment rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P9-002
+next_task: P9-003
 
 ---
 

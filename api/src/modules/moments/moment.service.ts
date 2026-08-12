@@ -2,6 +2,7 @@ import type { MomentStatus } from '@prisma/client'
 import { AppError } from '../../common/errors/AppError.js'
 import { mediaService } from '../../common/media/media.service.js'
 import { runTransaction } from '../../database/transaction.js'
+import { toMomentCommentDto } from './moment-comment.mapper.js'
 import { toMomentDto } from './moment.mapper.js'
 import { momentRepository, type MomentWriteInput } from './moment.repository.js'
 
@@ -55,6 +56,18 @@ export async function toggleMomentLike(id: string, userId: string) {
   }
   await momentRepository.createLike(id, userId)
   return { liked: true, likeCount: await momentRepository.countLikes(id) }
+}
+
+export async function listMomentComments(id: string) {
+  const moment = await momentRepository.findPublishedById(id)
+  if (!moment) throw new AppError(404, 'MOMENT_NOT_FOUND', 'Moment not found')
+  return { comments: (await momentRepository.findVisibleComments(id)).map(toMomentCommentDto) }
+}
+
+export async function createMomentComment(id: string, userId: string, input: { content: string }) {
+  const moment = await momentRepository.findPublishedById(id)
+  if (!moment) throw new AppError(404, 'MOMENT_NOT_FOUND', 'Moment not found')
+  return { comment: toMomentCommentDto(await momentRepository.createComment({ momentId: id, userId, content: input.content })) }
 }
 
 export async function updateMoment(id: string, input: UpdateMomentInput) {
