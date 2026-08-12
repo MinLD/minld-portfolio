@@ -3,15 +3,17 @@ import { requireAuth } from '../../common/middleware/authenticate.js'
 import { requireRole } from '../../common/middleware/authorize.js'
 import { requireActiveUser } from '../../common/middleware/require-active-user.js'
 import { imageUpload } from '../../common/media/upload.middleware.js'
+import { momentLikeRateLimit } from '../../common/rate-limit/moment.rate-limit.js'
 import { adminUploadRateLimit } from '../../common/rate-limit/upload.rate-limit.js'
 import { validateRequest } from '../../common/validation/validate-request.js'
-import { addMomentImagesController, createMomentController, deleteMomentController, deleteMomentImageController, getMomentController, getPublishedMomentController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, updateMomentController } from './moment.controller.js'
+import { addMomentImagesController, createMomentController, deleteMomentController, deleteMomentImageController, getMomentController, getPublishedMomentController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, toggleMomentLikeController, updateMomentController } from './moment.controller.js'
 import { createMomentSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentSchema } from './moment.schema.js'
 
 export const adminMomentRouter = Router()
 export const publicMomentRouter = Router()
 
 publicMomentRouter.get('/moments', listPublishedMomentsController)
+publicMomentRouter.post('/moments/:id/like', momentLikeRateLimit, requireAuth, requireActiveUser, validateRequest(momentIdSchema), toggleMomentLikeController)
 publicMomentRouter.get('/moments/:id', validateRequest(momentIdSchema), getPublishedMomentController)
 
 adminMomentRouter.use(requireAuth, requireActiveUser, requireRole('ADMIN'))

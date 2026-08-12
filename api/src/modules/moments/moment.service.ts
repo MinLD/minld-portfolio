@@ -45,6 +45,18 @@ export async function getPublishedMoment(id: string) {
   return { moment: toMomentDto(moment) }
 }
 
+export async function toggleMomentLike(id: string, userId: string) {
+  const moment = await momentRepository.findPublishedById(id)
+  if (!moment) throw new AppError(404, 'MOMENT_NOT_FOUND', 'Moment not found')
+  const existing = await momentRepository.findLike(id, userId)
+  if (existing) {
+    await momentRepository.deleteLike(id, userId)
+    return { liked: false, likeCount: await momentRepository.countLikes(id) }
+  }
+  await momentRepository.createLike(id, userId)
+  return { liked: true, likeCount: await momentRepository.countLikes(id) }
+}
+
 export async function updateMoment(id: string, input: UpdateMomentInput) {
   await findMomentOrThrow(id)
   await ensureTags(input.tagIds)

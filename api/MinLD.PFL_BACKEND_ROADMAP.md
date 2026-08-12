@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_9
-current_task: P9-001
+current_task: P9-002
 current_task_status: TODO
 
-last_completed_task: P8-005
-next_task: P9-001
+last_completed_task: P9-001
+next_task: P9-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1328,7 +1328,7 @@ Keep policies centralized.
 | 8 | P8-003 | Admin Moment CRUD | DONE |
 | 8 | P8-004 | Multiple Moment image lifecycle | DONE |
 | 8 | P8-005 | Public Moment feed/detail | DONE |
-| 9 | P9-001 | Moment like/unlike | TODO |
+| 9 | P9-001 | Moment like/unlike | DONE |
 | 9 | P9-002 | Moment comment create/list | TODO |
 | 9 | P9-003 | Own Moment comment update/delete | TODO |
 | 9 | P9-004 | Admin Moment comment moderation | TODO |
@@ -4178,6 +4178,72 @@ Implemented public Moment feed and detail routes exposing only published moments
 ### Roadmap Update
 last_completed_task: P8-005
 next_task: P9-001
+
+## 2026-08-12 — P9-001 — Moment like/unlike
+
+Status: DONE
+
+### Scope
+Implemented authenticated Moment like/unlike toggle for published moments.
+
+### Architecture
+- Controller: like handler uses shared response helper.
+- Service: published-moment validation and toggle logic live in `moment.service.ts`; no Prisma import.
+- Repository: like lookup/create/delete/count Prisma calls stay in `moment.repository.ts`.
+- Rate limit: `momentLikeRateLimit` applies to like toggles.
+
+### Files Created
+- `api/src/common/rate-limit/moment.rate-limit.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `MomentLike`
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/moments/:id/like`
+
+### Security
+- authentication: access JWT required.
+- authorization: active user required; only published moments can be liked.
+- rate limit: `momentLikeRateLimit` applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Active user likes published moment.
+- Active user unlikes published moment.
+- Missing token rejected.
+- Draft moment rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P9-001
+next_task: P9-002
 
 ---
 

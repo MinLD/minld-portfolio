@@ -41,6 +41,22 @@ export const momentRepository = {
     return prisma.moment.findFirst({ where: { id, status: 'PUBLISHED' }, include: momentInclude })
   },
 
+  findLike(momentId: string, userId: string) {
+    return prisma.momentLike.findUnique({ where: { momentId_userId: { momentId, userId } } })
+  },
+
+  createLike(momentId: string, userId: string) {
+    return prisma.momentLike.create({ data: { momentId, userId } })
+  },
+
+  deleteLike(momentId: string, userId: string) {
+    return prisma.momentLike.delete({ where: { momentId_userId: { momentId, userId } } })
+  },
+
+  countLikes(momentId: string) {
+    return prisma.momentLike.count({ where: { momentId } })
+  },
+
   countTags(ids: string[], tx?: TxClient) {
     return ids.length ? db(tx).momentTag.count({ where: { id: { in: ids } } }) : 0
   },

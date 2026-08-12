@@ -157,3 +157,20 @@ test('public moment routes expose only published moments', async () => {
   expect((await request(app).get(`/api/v1/moments/${draft.id}`)).status).toBe(404)
   expect((await request(app).get('/api/v1/moments/not-a-uuid')).status).toBe(400)
 })
+
+test('authenticated active user can like and unlike published moment', async () => {
+  const token = await accessToken(userEmail)
+  const published = await prisma.moment.create({ data: { content: 'Test Moment Like', status: 'PUBLISHED', publishedAt: new Date() } })
+  const draft = await prisma.moment.create({ data: { content: 'Test Moment Like Draft', status: 'DRAFT' } })
+
+  const liked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Authorization', `Bearer ${token}`)
+  expect(liked.status).toBe(200)
+  expect(liked.body.data).toEqual({ liked: true, likeCount: 1 })
+
+  const unliked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Authorization', `Bearer ${token}`)
+  expect(unliked.status).toBe(200)
+  expect(unliked.body.data).toEqual({ liked: false, likeCount: 0 })
+
+  expect((await request(app).post(`/api/v1/moments/${published.id}/like`)).status).toBe(401)
+  expect((await request(app).post(`/api/v1/moments/${draft.id}/like`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+})
