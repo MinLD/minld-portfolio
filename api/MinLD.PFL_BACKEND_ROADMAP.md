@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_7
-current_task: P7-001
+current_task: P7-002
 current_task_status: TODO
 
-last_completed_task: P6-003
-next_task: P7-001
+last_completed_task: P7-001
+next_task: P7-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1320,7 +1320,7 @@ Keep policies centralized.
 | 6 | P6-001 | Project comment create/list | DONE |
 | 6 | P6-002 | Project comment ownership update/delete | DONE |
 | 6 | P6-003 | Project comment admin moderation | DONE |
-| 7 | P7-001 | Cloudinary/Multer media infrastructure | TODO |
+| 7 | P7-001 | Cloudinary/Multer media infrastructure | DONE |
 | 7 | P7-002 | Project thumbnail lifecycle | TODO |
 | 7 | P7-003 | User avatar lifecycle | TODO |
 | 8 | P8-001 | Moment schema | TODO |
@@ -3612,6 +3612,77 @@ Implemented admin project comment listing, hide/unhide, and deletion.
 ### Roadmap Update
 last_completed_task: P6-003
 next_task: P7-001
+
+## 2026-08-12 — P7-001 — Cloudinary/Multer media infrastructure
+
+Status: DONE
+
+### Scope
+Implemented shared Cloudinary adapter, Multer memory image upload middleware, media service, and admin upload rate limit.
+
+### Architecture
+- Adapter: `cloudinary.adapter.ts` owns Cloudinary SDK calls and safe output mapping.
+- Middleware: `upload.middleware.ts` uses Multer memory storage with jpeg/png/webp allow-list and 5 MB default limit.
+- Service: `media.service.ts` exposes upload/delete operations for feature modules.
+- Rate limit: `adminUploadRateLimit` centralizes admin upload policy.
+- Error handling: media validation and Multer file-size errors use standard error envelope.
+
+### Files Created
+- `api/src/common/media/cloudinary.adapter.ts`
+- `api/src/common/media/media.errors.ts`
+- `api/src/common/media/media.service.ts`
+- `api/src/common/media/upload.middleware.test.ts`
+- `api/src/common/media/upload.middleware.ts`
+- `api/src/common/rate-limit/upload.rate-limit.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/.env.example`
+- `api/package.json`
+- `api/package-lock.json`
+- `api/src/common/middleware/error-handler.ts`
+- `api/src/config/env.ts`
+
+### Database
+- migration: N/A
+
+### Endpoints
+- N/A
+
+### Security
+- authentication: N/A
+- authorization: N/A
+- rate limit: `adminUploadRateLimit` available for upload routes.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Image upload middleware accepts png in memory.
+- Unsupported media type rejected.
+- Missing Cloudinary config rejected safely.
+
+### Commands
+- `npm install cloudinary multer @types/multer`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P7-001
+next_task: P7-002
 
 ---
 
