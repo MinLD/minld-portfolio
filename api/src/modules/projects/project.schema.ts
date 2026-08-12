@@ -1,4 +1,4 @@
-import { ProjectStatus } from '@prisma/client'
+import { ProjectStatus, TechnologyType } from '@prisma/client'
 import { z } from 'zod'
 
 const slugSchema = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
@@ -50,3 +50,15 @@ export const updateProjectSchema = z.object({
 
 export const projectIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
 export const projectSlugSchema = z.object({ params: z.object({ slug: slugSchema }) })
+export const listPublishedProjectsSchema = z.object({
+  query: z.object({
+    search: z.string().trim().min(1).optional(),
+    category: slugSchema.optional(),
+    technology: slugSchema.optional(),
+    technologyType: z.enum(TechnologyType).optional(),
+    featured: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
+    year: z.coerce.number().int().min(1900).max(3000).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  }),
+})

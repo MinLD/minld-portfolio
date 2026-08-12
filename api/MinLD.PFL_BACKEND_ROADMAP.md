@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_5
-current_task: P5-004
+current_phase: PHASE_6
+current_task: P6-001
 current_task_status: TODO
 
-last_completed_task: P5-003
-next_task: P5-004
+last_completed_task: P5-004
+next_task: P6-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1316,7 +1316,7 @@ Keep policies centralized.
 | 5 | P5-001 | Project schema + relations | DONE |
 | 5 | P5-002 | Admin Project CRUD | DONE |
 | 5 | P5-003 | Public Project list/detail | DONE |
-| 5 | P5-004 | Search/filter/pagination | TODO |
+| 5 | P5-004 | Search/filter/pagination | DONE |
 | 6 | P6-001 | Project comment create/list | TODO |
 | 6 | P6-002 | Project comment ownership update/delete | TODO |
 | 6 | P6-003 | Project comment admin moderation | TODO |
@@ -3322,6 +3322,76 @@ Implemented public Project list/detail routes that expose only published project
 ### Roadmap Update
 last_completed_task: P5-003
 next_task: P5-004
+
+## 2026-08-12 — P5-004 — Search/filter/pagination
+
+Status: DONE
+
+### Scope
+Implemented public Project search/filter/pagination using Prisma DB filters.
+
+### Architecture
+- Controller: uses `sendPaginated` for public list responses.
+- Service: passes validated filters to repository; no Prisma import.
+- Repository: applies DB-side filters for search, category, technology, technology type, featured, year, page, and limit.
+- Schema: validates and coerces query params with Zod.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/projects/project.controller.ts`
+- `api/src/modules/projects/project.repository.ts`
+- `api/src/modules/projects/project.routes.test.ts`
+- `api/src/modules/projects/project.routes.ts`
+- `api/src/modules/projects/project.schema.ts`
+- `api/src/modules/projects/project.service.ts`
+
+### Database
+- models: existing `Project`, `Category`, `Technology`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/projects?search=&category=&technology=&technologyType=&featured=&year=&page=&limit=`
+
+### Security
+- authentication: N/A
+- authorization: only `PUBLISHED` projects are returned.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Search filter.
+- Category slug filter.
+- Technology slug filter.
+- Technology type filter.
+- Featured/year filters.
+- Page/limit metadata.
+- Invalid enum rejection.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P5-004
+next_task: P6-001
 
 ---
 

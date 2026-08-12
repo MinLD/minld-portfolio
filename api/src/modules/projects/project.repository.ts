@@ -1,4 +1,4 @@
-import type { Prisma, ProjectStatus } from '@prisma/client'
+import type { Prisma, ProjectStatus, TechnologyType } from '@prisma/client'
 import { prisma } from '../../database/prisma.js'
 import type { TxClient } from '../../database/transaction.js'
 import { projectInclude } from './project.mapper.js'
@@ -21,7 +21,29 @@ export type ProjectWriteInput = {
   publishedAt?: Date | null
 }
 
+export type PublishedProjectFilter = {
+  search?: string
+  category?: string
+  technology?: string
+  technologyType?: TechnologyType
+  featured?: boolean
+  year?: number
+  page: number
+  limit: number
+}
+
 const connect = (ids: string[]) => ids.map((id) => ({ id }))
+
+function publishedWhere(filter: PublishedProjectFilter): Prisma.ProjectWhereInput {
+  return {
+    status: 'PUBLISHED',
+    featured: filter.featured,
+    year: filter.year,
+    OR: filter.search ? [{ title: { contains: filter.search, mode: 'insensitive' } }, { summary: { contains: filter.search, mode: 'insensitive' } }, { content: { contains: filter.search, mode: 'insensitive' } }] : undefined,
+    categories: filter.category ? { some: { slug: filter.category } } : undefined,
+    technologies: filter.technology || filter.technologyType ? { some: { slug: filter.technology, type: filter.technologyType } } : undefined,
+  }
+}
 
 export const projectRepository = {
   create(data: ProjectWriteInput & { title: string; slug: string; summary: string; content: string; categoryIds: string[]; technologyIds: string[] }, tx?: TxClient) {
@@ -41,8 +63,13 @@ export const projectRepository = {
     return prisma.project.findMany({ orderBy: { createdAt: 'desc' }, include: projectInclude })
   },
 
-  findPublished() {
-    return prisma.project.findMany({ where: { status: 'PUBLISHED' }, orderBy: { publishedAt: 'desc' }, include: projectInclude })
+  async findPublished(filter: PublishedProjectFilter) {
+    const where = publishedWhere(filter)
+    const [projects, total] = await prisma.$transaction([
+      prisma.project.findMany({ where, orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }], skip: (filter.page - 1) * filter.limit, take: filter.limit, include: projectInclude }),
+      prisma.project.count({ where }),
+    ])
+    return { projects, total }
   },
 
   findById(id: string, tx?: TxClient) {

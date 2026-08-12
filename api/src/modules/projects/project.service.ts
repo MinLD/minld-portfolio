@@ -2,7 +2,7 @@ import type { ProjectStatus } from '@prisma/client'
 import { AppError } from '../../common/errors/AppError.js'
 import { runTransaction } from '../../database/transaction.js'
 import { toProjectDto } from './project.mapper.js'
-import { projectRepository, type ProjectWriteInput } from './project.repository.js'
+import { projectRepository, type ProjectWriteInput, type PublishedProjectFilter } from './project.repository.js'
 
 type CreateProjectInput = ProjectWriteInput & { title: string; slug: string; summary: string; content: string; publishedAt?: string; categoryIds: string[]; technologyIds: string[]; status?: ProjectStatus }
 type UpdateProjectInput = ProjectWriteInput & { publishedAt?: string | null; categoryIds?: string[]; technologyIds?: string[]; status?: ProjectStatus }
@@ -40,8 +40,9 @@ export async function getProject(id: string) {
   return { project: toProjectDto(await findProjectOrThrow(id)) }
 }
 
-export async function listPublishedProjects() {
-  return { projects: (await projectRepository.findPublished()).map(toProjectDto) }
+export async function listPublishedProjects(filter: PublishedProjectFilter) {
+  const { projects, total } = await projectRepository.findPublished(filter)
+  return { projects: projects.map(toProjectDto), meta: { page: filter.page, limit: filter.limit, total, totalPages: Math.ceil(total / filter.limit) } }
 }
 
 export async function getPublishedProject(slug: string) {

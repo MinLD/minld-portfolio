@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express'
-import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
+import { sendCreated, sendNoContent, sendPaginated, sendSuccess } from '../../common/responses/api-response.js'
+import type { PublishedProjectFilter } from './project.repository.js'
 import { createProject, deleteProject, getProject, getPublishedProject, listProjects, listPublishedProjects, updateProject } from './project.service.js'
 
 export const createProjectController: RequestHandler = async (req, res, next) => {
@@ -26,9 +27,10 @@ export const getProjectController: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const listPublishedProjectsController: RequestHandler = async (_req, res, next) => {
+export const listPublishedProjectsController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await listPublishedProjects())
+    const { projects, meta } = await listPublishedProjects(req.query as unknown as PublishedProjectFilter)
+    sendPaginated(res, { projects }, meta)
   } catch (error) {
     next(error)
   }

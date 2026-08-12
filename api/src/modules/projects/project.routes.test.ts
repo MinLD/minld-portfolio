@@ -145,3 +145,28 @@ test('public project routes expose only published projects', async () => {
   expect((await request(app).get('/api/v1/projects/test-project-draft')).status).toBe(404)
   expect((await request(app).get('/api/v1/projects/bad slug')).status).toBe(400)
 })
+
+test('public project filters and paginates in database', async () => {
+  await prisma.project.create({
+    data: {
+      title: 'React Portfolio',
+      slug: 'test-project-react-filter',
+      summary: 'Frontend portfolio',
+      content: 'React content',
+      status: 'PUBLISHED',
+      featured: true,
+      year: 2026,
+      publishedAt: new Date('2026-08-12T00:00:00.000Z'),
+      categories: { connect: [{ id: categoryId }] },
+      technologies: { connect: [{ id: technologyId }] },
+    },
+  })
+  await prisma.project.create({ data: { title: 'API Draft', slug: 'test-project-api-filter', summary: 'Backend', content: 'Node', status: 'PUBLISHED', featured: false, year: 2025, publishedAt: new Date('2025-01-01T00:00:00.000Z') } })
+
+  const filtered = await request(app).get('/api/v1/projects?search=react&category=test-project-category&technology=test-project-technology&technologyType=FRAMEWORK&featured=true&year=2026&page=1&limit=1')
+  expect(filtered.status).toBe(200)
+  expect(filtered.body.data.projects).toHaveLength(1)
+  expect(filtered.body.data.projects[0].slug).toBe('test-project-react-filter')
+  expect(filtered.body.meta).toEqual({ page: 1, limit: 1, total: 1, totalPages: 1 })
+  expect((await request(app).get('/api/v1/projects?technologyType=BAD')).status).toBe(400)
+})
