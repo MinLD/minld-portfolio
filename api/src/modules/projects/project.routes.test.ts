@@ -1,8 +1,14 @@
 import type { Express } from 'express'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { hashPassword } from '../../common/auth/password.js'
 import type { prisma as prismaType } from '../../database/prisma.js'
+
+const mediaMocks = vi.hoisted(() => ({ uploadImage: vi.fn(), deleteImage: vi.fn() }))
+
+vi.mock('../../common/media/media.service.js', () => ({
+  mediaService: { uploadImage: mediaMocks.uploadImage, deleteImage: mediaMocks.deleteImage },
+}))
 
 process.env.NODE_ENV = 'test'
 process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
@@ -74,6 +80,9 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
+  mediaMocks.uploadImage.mockReset()
+  mediaMocks.deleteImage.mockReset()
+  mediaMocks.deleteImage.mockResolvedValue(undefined)
   await cleanup()
   await createUser(adminEmail, 'ADMIN')
   await createUser(userEmail, 'USER')
@@ -169,4 +178,24 @@ test('public project filters and paginates in database', async () => {
   expect(filtered.body.data.projects[0].slug).toBe('test-project-react-filter')
   expect(filtered.body.meta).toEqual({ page: 1, limit: 1, total: 1, totalPages: 1 })
   expect((await request(app).get('/api/v1/projects?technologyType=BAD')).status).toBe(400)
+})
+
+test('ADMIN can replace and delete project thumbnail with cleanup', async () => {
+  const token = await accessToken(adminEmail)
+  const project = await prisma.project.create({ data: { title: 'Thumb Project', slug: 'test-project-thumbnail', summary: 'Summary', content: 'Content', thumbnailUrl: 'https://cdn/old.png', thumbnailPublicId: 'old-id' } })
+  mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/new.png', publicId: 'new-id' })
+
+  const replaced = await request(app)
+    .post(`/api/v1/admin/projects/${project.id}/thumbnail`)
+    .set('Authorization', `Bearer ${token}`)
+    .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+
+  expect(replaced.status).toBe(200)
+  expect(replaced.body.data.project.thumbnailUrl).toBe('https://cdn/new.png')
+  expect(replaced.body.data.project.thumbnailPublicId).toBe('new-id')
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('old-id')
+
+  expect((await request(app).delete(`/api/v1/admin/projects/${project.id}/thumbnail`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('new-id')
+  expect((await prisma.project.findUniqueOrThrow({ where: { id: project.id } })).thumbnailPublicId).toBeNull()
 })

@@ -1,5 +1,6 @@
 import type { ProjectStatus } from '@prisma/client'
 import { AppError } from '../../common/errors/AppError.js'
+import { mediaService } from '../../common/media/media.service.js'
 import { runTransaction } from '../../database/transaction.js'
 import { toProjectDto } from './project.mapper.js'
 import { projectRepository, type ProjectWriteInput, type PublishedProjectFilter } from './project.repository.js'
@@ -61,4 +62,24 @@ export async function updateProject(id: string, input: UpdateProjectInput) {
 export async function deleteProject(id: string) {
   await findProjectOrThrow(id)
   await projectRepository.delete(id)
+}
+
+export async function replaceProjectThumbnail(id: string, file: Express.Multer.File | undefined) {
+  if (!file) throw new AppError(400, 'MEDIA_REQUIRED', 'Thumbnail file is required')
+  const project = await findProjectOrThrow(id)
+  const uploaded = await mediaService.uploadImage(file, 'projects/thumbnails')
+  try {
+    const updated = await projectRepository.updateThumbnail(id, { thumbnailUrl: uploaded.url, thumbnailPublicId: uploaded.publicId })
+    if (project.thumbnailPublicId) await mediaService.deleteImage(project.thumbnailPublicId)
+    return { project: toProjectDto(updated) }
+  } catch (error) {
+    await mediaService.deleteImage(uploaded.publicId).catch(() => undefined)
+    throw error
+  }
+}
+
+export async function deleteProjectThumbnail(id: string) {
+  const project = await findProjectOrThrow(id)
+  await projectRepository.updateThumbnail(id, { thumbnailUrl: null, thumbnailPublicId: null })
+  if (project.thumbnailPublicId) await mediaService.deleteImage(project.thumbnailPublicId)
 }

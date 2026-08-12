@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express'
 import { sendCreated, sendNoContent, sendPaginated, sendSuccess } from '../../common/responses/api-response.js'
 import type { PublishedProjectFilter } from './project.repository.js'
-import { createProject, deleteProject, getProject, getPublishedProject, listProjects, listPublishedProjects, updateProject } from './project.service.js'
+import { createProject, deleteProject, deleteProjectThumbnail, getProject, getPublishedProject, listProjects, listPublishedProjects, replaceProjectThumbnail, updateProject } from './project.service.js'
 
 export const createProjectController: RequestHandler = async (req, res, next) => {
   try {
@@ -55,6 +55,23 @@ export const updateProjectController: RequestHandler = async (req, res, next) =>
 export const deleteProjectController: RequestHandler = async (req, res, next) => {
   try {
     await deleteProject(String(req.params.id))
+    sendNoContent(res)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const replaceProjectThumbnailController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await replaceProjectThumbnail(String(req.params.id), req.file))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteProjectThumbnailController: RequestHandler = async (req, res, next) => {
+  try {
+    await deleteProjectThumbnail(String(req.params.id))
     sendNoContent(res)
   } catch (error) {
     next(error)

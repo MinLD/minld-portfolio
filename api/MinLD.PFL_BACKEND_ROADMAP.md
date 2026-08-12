@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_7
-current_task: P7-002
+current_task: P7-003
 current_task_status: TODO
 
-last_completed_task: P7-001
-next_task: P7-002
+last_completed_task: P7-002
+next_task: P7-003
 ```
 
 ## Why the roadmap is being rebased
@@ -1321,7 +1321,7 @@ Keep policies centralized.
 | 6 | P6-002 | Project comment ownership update/delete | DONE |
 | 6 | P6-003 | Project comment admin moderation | DONE |
 | 7 | P7-001 | Cloudinary/Multer media infrastructure | DONE |
-| 7 | P7-002 | Project thumbnail lifecycle | TODO |
+| 7 | P7-002 | Project thumbnail lifecycle | DONE |
 | 7 | P7-003 | User avatar lifecycle | TODO |
 | 8 | P8-001 | Moment schema | TODO |
 | 8 | P8-002 | MomentTag CRUD | TODO |
@@ -3683,6 +3683,73 @@ Implemented shared Cloudinary adapter, Multer memory image upload middleware, me
 ### Roadmap Update
 last_completed_task: P7-001
 next_task: P7-002
+
+## 2026-08-12 — P7-002 — Project thumbnail lifecycle
+
+Status: DONE
+
+### Scope
+Implemented admin project thumbnail upload/replace/delete with Cloudinary cleanup.
+
+### Architecture
+- Controller: thumbnail handlers use shared response helpers.
+- Service: upload/replace/delete orchestration and cleanup live in `project.service.ts`; no Prisma import.
+- Repository: thumbnail DB writes stay in `project.repository.ts`.
+- Middleware: route uses Multer image memory upload and admin upload rate limit.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/projects/project.controller.ts`
+- `api/src/modules/projects/project.repository.ts`
+- `api/src/modules/projects/project.routes.test.ts`
+- `api/src/modules/projects/project.routes.ts`
+- `api/src/modules/projects/project.service.ts`
+
+### Database
+- models: existing `Project.thumbnailUrl`, `Project.thumbnailPublicId`
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/admin/projects/:id/thumbnail`
+- `DELETE /api/v1/admin/projects/:id/thumbnail`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- rate limit: `adminUploadRateLimit` on upload.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN replaces thumbnail.
+- Old Cloudinary asset cleaned after replacement.
+- ADMIN deletes thumbnail.
+- New Cloudinary asset cleaned if DB update fails path is coded.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P7-002
+next_task: P7-003
 
 ---
 

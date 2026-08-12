@@ -113,6 +113,10 @@ export const projectRepository = {
     return db(tx).project.update({ where: { id }, data: updateData, include: projectInclude })
   },
 
+  updateThumbnail(id: string, data: { thumbnailUrl: string | null; thumbnailPublicId: string | null }) {
+    return prisma.project.update({ where: { id }, data, include: projectInclude })
+  },
+
   delete(id: string) {
     return prisma.project.delete({ where: { id } })
   },
