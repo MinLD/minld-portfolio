@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_10
-current_task: P10-002
+current_phase: PHASE_11
+current_task: P11-001
 current_task_status: TODO
 
-last_completed_task: P10-001
-next_task: P10-002
+last_completed_task: P10-002
+next_task: P11-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1333,7 +1333,7 @@ Keep policies centralized.
 | 9 | P9-003 | Own Moment comment update/delete | DONE |
 | 9 | P9-004 | Admin Moment comment moderation | DONE |
 | 10 | P10-001 | Admin dashboard | DONE |
-| 10 | P10-002 | Admin user list + ban/unban | TODO |
+| 10 | P10-002 | Admin user list + ban/unban | DONE |
 | 11 | P11-001 | Full integration test pass | TODO |
 | 11 | P11-002 | Security/performance audit | TODO |
 
@@ -4518,6 +4518,76 @@ Implemented admin dashboard counts endpoint.
 ### Roadmap Update
 last_completed_task: P10-001
 next_task: P10-002
+
+## 2026-08-12 — P10-002 — Admin user list + ban/unban
+
+Status: DONE
+
+### Scope
+Implemented admin user listing/search/filter/pagination plus ban/unban status updates.
+
+### Architecture
+- Controller: user admin handlers use shared response helpers and pagination envelope.
+- Service: user status business rules live in `admin.service.ts`; no Prisma import.
+- Repository: user list/count/status Prisma calls stay in `admin.repository.ts`.
+- Schema: Zod validates query filters, pagination, UUID params, and status enum.
+- DTO: user responses reuse safe user mapper; no password/internal fields leak.
+
+### Files Created
+- `api/src/modules/admin/admin.schema.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/admin/admin.controller.ts`
+- `api/src/modules/admin/admin.repository.ts`
+- `api/src/modules/admin/admin.routes.test.ts`
+- `api/src/modules/admin/admin.routes.ts`
+- `api/src/modules/admin/admin.service.ts`
+
+### Database
+- models: existing `User`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/admin/users?search=&role=&status=&page=&limit=`
+- `PATCH /api/v1/admin/users/:id/status`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- self-protection: current authenticated admin cannot ban self.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN lists users with search/filter/pagination.
+- Safe DTO excludes password hash.
+- ADMIN bans/unbans user.
+- Current admin self-ban rejected.
+- Invalid filters/status and missing user rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P10-002
+next_task: P11-001
 
 ---
 

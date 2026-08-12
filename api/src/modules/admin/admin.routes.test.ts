@@ -69,3 +69,32 @@ test('dashboard requires ADMIN', async () => {
   expect((await request(app).get('/api/v1/admin/dashboard')).status).toBe(401)
   expect((await request(app).get('/api/v1/admin/dashboard').set('Authorization', `Bearer ${await accessToken(userEmail)}`)).status).toBe(403)
 })
+
+test('ADMIN can list search filter and paginate users', async () => {
+  const response = await request(app).get('/api/v1/admin/users?search=dashboard.user&role=USER&status=ACTIVE&page=1&limit=1').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)
+
+  expect(response.status).toBe(200)
+  expect(response.body.data.users).toHaveLength(1)
+  expect(response.body.data.users[0].email).toBe(userEmail)
+  expect(response.body.data.users[0].passwordHash).toBeUndefined()
+  expect(response.body.meta.total).toBeGreaterThanOrEqual(1)
+  expect((await request(app).get('/api/v1/admin/users?role=BAD').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)).status).toBe(400)
+})
+
+test('ADMIN can ban and unban users but not current admin', async () => {
+  const token = await accessToken(adminEmail)
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
+  const admin = await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } })
+
+  const banned = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BANNED' })
+  expect(banned.status).toBe(200)
+  expect(banned.body.data.user.status).toBe('BANNED')
+
+  const active = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'ACTIVE' })
+  expect(active.status).toBe(200)
+  expect(active.body.data.user.status).toBe('ACTIVE')
+
+  expect((await request(app).patch(`/api/v1/admin/users/${admin.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BANNED' })).status).toBe(400)
+  expect((await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BAD' })).status).toBe(400)
+  expect((await request(app).patch('/api/v1/admin/users/00000000-0000-0000-0000-000000000000/status').set('Authorization', `Bearer ${token}`).send({ status: 'ACTIVE' })).status).toBe(404)
+})
