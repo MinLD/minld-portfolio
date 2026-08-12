@@ -9,7 +9,6 @@ function toMomentImageDto(image: MomentImage): MomentImageDto {
   return {
     id: image.id,
     url: image.url,
-    publicId: image.publicId,
     altText: image.altText,
     sortOrder: image.sortOrder,
     createdAt: image.createdAt.toISOString(),

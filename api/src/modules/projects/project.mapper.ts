@@ -15,7 +15,6 @@ export function toProjectDto(project: ProjectWithRelations): ProjectDto {
     summary: project.summary,
     content: project.content,
     thumbnailUrl: project.thumbnailUrl,
-    thumbnailPublicId: project.thumbnailPublicId,
     demoUrl: project.demoUrl,
     githubUrl: project.githubUrl,
     sourceUrl: project.sourceUrl,

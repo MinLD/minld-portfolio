@@ -15,7 +15,7 @@
 project: MinLD.PFL
 backend: MinLD.PFL API
 
-status: IN_PROGRESS
+status: DONE
 
 architecture: CLEAN_MODULAR_MONOLITH
 data_access_policy: REPOSITORY_ONLY
@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_11
-current_task: P11-002
-current_task_status: TODO
+current_phase: COMPLETE
+current_task: NONE
+current_task_status: DONE
 
-last_completed_task: P11-001
-next_task: P11-002
+last_completed_task: P11-002
+next_task: NONE
 ```
 
 ## Why the roadmap is being rebased
@@ -1335,7 +1335,7 @@ Keep policies centralized.
 | 10 | P10-001 | Admin dashboard | DONE |
 | 10 | P10-002 | Admin user list + ban/unban | DONE |
 | 11 | P11-001 | Full integration test pass | DONE |
-| 11 | P11-002 | Security/performance audit | TODO |
+| 11 | P11-002 | Security/performance audit | DONE |
 
 ---
 
@@ -4647,6 +4647,76 @@ Ran full backend verification suite across Prisma, TypeScript, tests, build, and
 ### Roadmap Update
 last_completed_task: P11-001
 next_task: P11-002
+
+## 2026-08-12 — P11-002 — Security/performance audit
+
+Status: DONE
+
+### Scope
+Ran final security/performance audit and fixed safe DTO leakage for Cloudinary internal public IDs.
+
+### Architecture
+- Repository boundary: service files do not import Prisma directly.
+- DTO boundary: response DTOs no longer expose `thumbnailPublicId`, `avatarPublicId`, media `publicId`, password/token hashes, or Cloudinary secrets.
+- Response policy: module controllers do not construct response envelopes manually.
+- Admin routes: route modules use auth, active-user, and role guards where required.
+- Performance: Prisma filtering/pagination used for project search and admin user listing; key relation/filter indexes are present in schema.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/moments/moment.dto.ts`
+- `api/src/modules/moments/moment.mapper.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/projects/project.dto.ts`
+- `api/src/modules/projects/project.mapper.ts`
+- `api/src/modules/projects/project.routes.test.ts`
+
+### Database
+- migrations: up to date
+
+### Endpoints
+- N/A
+
+### Security
+- authentication: tested.
+- authorization: tested, including admin-only routes, owner checks, active-user checks, and current-admin self-ban guard.
+- rate limit: global, auth, upload, comment, and like limiters wired where endpoints exist.
+- cookie: refresh token cookie flow tested.
+- trusted origin: refresh/logout/session mutation protection tested.
+- dependency audit: PASS, 0 high vulnerabilities.
+
+### Tests
+- 15 test files passed.
+- 61 tests passed.
+
+### Commands
+- DTO leak audit with `rg`
+- service Prisma import audit with `rg`
+- `npm audit --audit-level=high`
+- `npm run prisma:validate`
+- `npx prisma migrate status`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P11-002
+next_task: NONE
 
 ---
 

@@ -4,7 +4,6 @@ import type { MomentTagDto } from '../moment-tags/moment-tag.dto.js'
 export type MomentImageDto = {
   id: string
   url: string
-  publicId: string
   altText: string | null
   sortOrder: number
   createdAt: string

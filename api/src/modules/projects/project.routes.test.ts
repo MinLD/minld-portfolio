@@ -192,7 +192,8 @@ test('ADMIN can replace and delete project thumbnail with cleanup', async () => 
 
   expect(replaced.status).toBe(200)
   expect(replaced.body.data.project.thumbnailUrl).toBe('https://cdn/new.png')
-  expect(replaced.body.data.project.thumbnailPublicId).toBe('new-id')
+  expect(replaced.body.data.project.thumbnailPublicId).toBeUndefined()
+  expect((await prisma.project.findUniqueOrThrow({ where: { id: project.id } })).thumbnailPublicId).toBe('new-id')
   expect(mediaMocks.deleteImage).toHaveBeenCalledWith('old-id')
 
   expect((await request(app).delete(`/api/v1/admin/projects/${project.id}/thumbnail`).set('Authorization', `Bearer ${token}`)).status).toBe(204)

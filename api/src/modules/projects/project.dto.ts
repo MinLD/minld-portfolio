@@ -9,7 +9,6 @@ export type ProjectDto = {
   summary: string
   content: string
   thumbnailUrl: string | null
-  thumbnailPublicId: string | null
   demoUrl: string | null
   githubUrl: string | null
   sourceUrl: string | null

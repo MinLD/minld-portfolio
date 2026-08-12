@@ -121,12 +121,13 @@ test('ADMIN can upload reorder and delete moment images', async () => {
     .attach('images', Buffer.from('two'), { filename: 'two.webp', contentType: 'image/webp' })
 
   expect(uploaded.status).toBe(200)
-  expect(uploaded.body.data.moment.images.map((image: { publicId: string }) => image.publicId)).toEqual(['one-id', 'two-id'])
+  expect(uploaded.body.data.moment.images.map((image: { url: string; publicId?: string }) => image.url)).toEqual(['https://cdn/one.png', 'https://cdn/two.png'])
+  expect(uploaded.body.data.moment.images[0].publicId).toBeUndefined()
 
   const [first, second] = uploaded.body.data.moment.images as { id: string }[]
   const reordered = await request(app).patch(`/api/v1/admin/moments/${moment.id}/images/reorder`).set('Authorization', `Bearer ${token}`).send({ images: [{ id: first.id, sortOrder: 1 }, { id: second.id, sortOrder: 0 }] })
   expect(reordered.status).toBe(200)
-  expect(reordered.body.data.moment.images.map((image: { publicId: string }) => image.publicId)).toEqual(['two-id', 'one-id'])
+  expect(reordered.body.data.moment.images.map((image: { url: string }) => image.url)).toEqual(['https://cdn/two.png', 'https://cdn/one.png'])
 
   expect((await request(app).delete(`/api/v1/admin/moment-images/${first.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
   expect(mediaMocks.deleteImage).toHaveBeenCalledWith('one-id')
