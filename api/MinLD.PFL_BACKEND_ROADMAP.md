@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_5
-current_task: P5-002
+current_task: P5-003
 current_task_status: TODO
 
-last_completed_task: P5-001
-next_task: P5-002
+last_completed_task: P5-002
+next_task: P5-003
 ```
 
 ## Why the roadmap is being rebased
@@ -1314,7 +1314,7 @@ Keep policies centralized.
 | 4 | P4-001 | Category CRUD with repository | DONE |
 | 4 | P4-002 | Technology CRUD with repository | DONE |
 | 5 | P5-001 | Project schema + relations | DONE |
-| 5 | P5-002 | Admin Project CRUD | TODO |
+| 5 | P5-002 | Admin Project CRUD | DONE |
 | 5 | P5-003 | Public Project list/detail | TODO |
 | 5 | P5-004 | Search/filter/pagination | TODO |
 | 6 | P6-001 | Project comment create/list | TODO |
@@ -3172,6 +3172,86 @@ Implemented Project database schema with status enum and category/technology man
 ### Roadmap Update
 last_completed_task: P5-001
 next_task: P5-002
+
+## 2026-08-12 — P5-002 — Admin Project CRUD
+
+Status: DONE
+
+### Scope
+Implemented admin Project CRUD with repository boundary and transactional relation updates.
+
+### Architecture
+- Controller: `project.controller.ts` uses shared response helpers only.
+- Service: `project.service.ts` handles uniqueness, not-found, relation validation, and transactions; no Prisma import.
+- Repository: `project.repository.ts` owns all Prisma calls and relation connect/set writes.
+- Schema: `project.schema.ts` validates UUID params, create/update body, URLs, enum, dates, and relation IDs.
+- DTO: `ProjectDto` provides stable API shape with category and technology DTOs.
+- Mapper: `toProjectDto` converts database model to safe response DTO.
+
+### Files Created
+- `api/src/modules/projects/project.controller.ts`
+- `api/src/modules/projects/project.dto.ts`
+- `api/src/modules/projects/project.mapper.ts`
+- `api/src/modules/projects/project.repository.ts`
+- `api/src/modules/projects/project.routes.test.ts`
+- `api/src/modules/projects/project.routes.ts`
+- `api/src/modules/projects/project.schema.ts`
+- `api/src/modules/projects/project.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+
+### Database
+- models: existing `Project`, `Category`, `Technology`
+- relations: create/update uses transaction for project relation writes.
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/admin/projects`
+- `GET /api/v1/admin/projects`
+- `GET /api/v1/admin/projects/:id`
+- `PATCH /api/v1/admin/projects/:id`
+- `DELETE /api/v1/admin/projects/:id`
+
+### Security
+- authentication: admin routes require access JWT.
+- authorization: admin routes require `ADMIN` role and active user.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Admin create/list/get/update/delete.
+- Category and technology relation create/update.
+- Missing token and USER role rejection.
+- Validation, duplicate slug, and missing relation checks.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate status`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P5-002
+next_task: P5-003
 
 ---
 

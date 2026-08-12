@@ -1,0 +1,131 @@
+import type { Express } from 'express'
+import request from 'supertest'
+import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { hashPassword } from '../../common/auth/password.js'
+import type { prisma as prismaType } from '../../database/prisma.js'
+
+process.env.NODE_ENV = 'test'
+process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
+process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret'
+process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
+
+const adminEmail = 'project.admin@example.com'
+const userEmail = 'project.user@example.com'
+const password = 'valid-password'
+let app: Express
+let prisma: typeof prismaType
+let categoryId: string
+let technologyId: string
+
+async function cleanup() {
+  await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-project' } } })
+  await prisma.category.deleteMany({ where: { slug: { startsWith: 'test-project-category' } } })
+  await prisma.technology.deleteMany({ where: { slug: { startsWith: 'test-project-technology' } } })
+  await prisma.authSession.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
+  await prisma.accountToken.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
+  await prisma.user.deleteMany({ where: { email: { in: [adminEmail, userEmail] } } })
+}
+
+async function createUser(email: string, role: 'USER' | 'ADMIN') {
+  await prisma.user.create({
+    data: {
+      email,
+      displayName: email,
+      role,
+      emailVerifiedAt: new Date(),
+      credential: { create: { passwordHash: await hashPassword(password) } },
+    },
+  })
+}
+
+async function accessToken(email: string) {
+  const response = await request(app).post('/api/v1/auth/login').send({ email, password })
+  return response.body.data.accessToken as string
+}
+
+async function seedRelations() {
+  const category = await prisma.category.create({ data: { name: 'Test Project Category', slug: 'test-project-category' } })
+  const technology = await prisma.technology.create({ data: { name: 'Test Project Technology', slug: 'test-project-technology', type: 'FRAMEWORK' } })
+  categoryId = category.id
+  technologyId = technology.id
+}
+
+function projectBody(slug = 'test-project-one') {
+  return {
+    title: 'Test Project One',
+    slug,
+    summary: 'Summary',
+    content: 'Content',
+    demoUrl: 'https://example.com/demo',
+    githubUrl: 'https://example.com/repo',
+    sourceUrl: 'https://example.com/source',
+    status: 'PUBLISHED',
+    featured: true,
+    year: 2026,
+    publishedAt: '2026-08-12T00:00:00.000Z',
+    categoryIds: [categoryId],
+    technologyIds: [technologyId],
+  }
+}
+
+beforeAll(async () => {
+  ;({ app } = await import('../../app.js'))
+  ;({ prisma } = await import('../../database/prisma.js'))
+})
+
+beforeEach(async () => {
+  await cleanup()
+  await createUser(adminEmail, 'ADMIN')
+  await createUser(userEmail, 'USER')
+  await seedRelations()
+})
+
+afterAll(async () => {
+  await cleanup()
+  await prisma.$disconnect()
+})
+
+test('ADMIN can create list get update delete project', async () => {
+  const token = await accessToken(adminEmail)
+
+  const created = await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody())
+  expect(created.status).toBe(201)
+  expect(created.body.data.project.slug).toBe('test-project-one')
+  expect(created.body.data.project.categories).toHaveLength(1)
+  expect(created.body.data.project.technologies).toHaveLength(1)
+
+  const listed = await request(app).get('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`)
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.projects.some((project: { slug: string }) => project.slug === 'test-project-one')).toBe(true)
+
+  const id = created.body.data.project.id as string
+  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(200)
+
+  const updated = await request(app).patch(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`).send({ title: 'Test Project Updated', status: 'ARCHIVED', featured: false, categoryIds: [], technologyIds: [] })
+  expect(updated.status).toBe(200)
+  expect(updated.body.data.project.title).toBe('Test Project Updated')
+  expect(updated.body.data.project.status).toBe('ARCHIVED')
+  expect(updated.body.data.project.categories).toHaveLength(0)
+  expect(updated.body.data.project.technologies).toHaveLength(0)
+
+  expect((await request(app).delete(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+})
+
+test('project admin routes require ADMIN', async () => {
+  const userToken = await accessToken(userEmail)
+  const noToken = await request(app).post('/api/v1/admin/projects').send(projectBody('test-project-no-token'))
+  const user = await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${userToken}`).send(projectBody('test-project-user'))
+
+  expect(noToken.status).toBe(401)
+  expect(user.status).toBe(403)
+})
+
+test('project validation uniqueness and relation checks work', async () => {
+  const token = await accessToken(adminEmail)
+
+  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send({ ...projectBody('bad slug'), title: '' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send({ ...projectBody('test-project-missing-category'), categoryIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(201)
+  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(409)
+})
