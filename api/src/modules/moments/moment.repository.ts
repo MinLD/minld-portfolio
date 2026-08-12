@@ -29,8 +29,16 @@ export const momentRepository = {
     return prisma.moment.findMany({ orderBy: { createdAt: 'desc' }, include: momentInclude })
   },
 
+  findPublished() {
+    return prisma.moment.findMany({ where: { status: 'PUBLISHED' }, orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }], include: momentInclude })
+  },
+
   findById(id: string, tx?: TxClient) {
     return db(tx).moment.findUnique({ where: { id }, include: momentInclude })
+  },
+
+  findPublishedById(id: string) {
+    return prisma.moment.findFirst({ where: { id, status: 'PUBLISHED' }, include: momentInclude })
   },
 
   countTags(ids: string[], tx?: TxClient) {

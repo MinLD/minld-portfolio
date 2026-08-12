@@ -140,3 +140,20 @@ test('moment image upload validates auth type and image limit', async () => {
   expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('bad'), { filename: 'bad.gif', contentType: 'image/gif' })).status).toBe(400)
   expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(400)
 })
+
+test('public moment routes expose only published moments', async () => {
+  const published = await prisma.moment.create({ data: { content: 'Test Moment Public', status: 'PUBLISHED', publishedAt: new Date(), tags: { connect: [{ id: tagId }] }, images: { create: { url: 'https://cdn/image.png', publicId: 'public-id', sortOrder: 0 } } } })
+  const draft = await prisma.moment.create({ data: { content: 'Test Moment Draft', status: 'DRAFT' } })
+
+  const listed = await request(app).get('/api/v1/moments')
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.moments.some((moment: { id: string }) => moment.id === published.id)).toBe(true)
+  expect(listed.body.data.moments.some((moment: { id: string }) => moment.id === draft.id)).toBe(false)
+
+  const detail = await request(app).get(`/api/v1/moments/${published.id}`)
+  expect(detail.status).toBe(200)
+  expect(detail.body.data.moment.images).toHaveLength(1)
+  expect(detail.body.data.moment.tags).toHaveLength(1)
+  expect((await request(app).get(`/api/v1/moments/${draft.id}`)).status).toBe(404)
+  expect((await request(app).get('/api/v1/moments/not-a-uuid')).status).toBe(400)
+})

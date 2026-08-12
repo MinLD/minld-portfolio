@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express'
 import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
-import { addMomentImages, createMoment, deleteMoment, deleteMomentImage, getMoment, listMoments, reorderMomentImages, updateMoment } from './moment.service.js'
+import { addMomentImages, createMoment, deleteMoment, deleteMomentImage, getMoment, getPublishedMoment, listMoments, listPublishedMoments, reorderMomentImages, updateMoment } from './moment.service.js'
 
 export const createMomentController: RequestHandler = async (req, res, next) => {
   try {
@@ -21,6 +21,22 @@ export const listMomentsController: RequestHandler = async (_req, res, next) => 
 export const getMomentController: RequestHandler = async (req, res, next) => {
   try {
     sendSuccess(res, await getMoment(String(req.params.id)))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const listPublishedMomentsController: RequestHandler = async (_req, res, next) => {
+  try {
+    sendSuccess(res, await listPublishedMoments())
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getPublishedMomentController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await getPublishedMoment(String(req.params.id)))
   } catch (error) {
     next(error)
   }

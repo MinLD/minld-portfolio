@@ -5,10 +5,14 @@ import { requireActiveUser } from '../../common/middleware/require-active-user.j
 import { imageUpload } from '../../common/media/upload.middleware.js'
 import { adminUploadRateLimit } from '../../common/rate-limit/upload.rate-limit.js'
 import { validateRequest } from '../../common/validation/validate-request.js'
-import { addMomentImagesController, createMomentController, deleteMomentController, deleteMomentImageController, getMomentController, listMomentsController, reorderMomentImagesController, updateMomentController } from './moment.controller.js'
+import { addMomentImagesController, createMomentController, deleteMomentController, deleteMomentImageController, getMomentController, getPublishedMomentController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, updateMomentController } from './moment.controller.js'
 import { createMomentSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentSchema } from './moment.schema.js'
 
 export const adminMomentRouter = Router()
+export const publicMomentRouter = Router()
+
+publicMomentRouter.get('/moments', listPublishedMomentsController)
+publicMomentRouter.get('/moments/:id', validateRequest(momentIdSchema), getPublishedMomentController)
 
 adminMomentRouter.use(requireAuth, requireActiveUser, requireRole('ADMIN'))
 adminMomentRouter.post('/moments', validateRequest(createMomentSchema), createMomentController)

@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_8
-current_task: P8-005
+current_phase: PHASE_9
+current_task: P9-001
 current_task_status: TODO
 
-last_completed_task: P8-004
-next_task: P8-005
+last_completed_task: P8-005
+next_task: P9-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1327,7 +1327,7 @@ Keep policies centralized.
 | 8 | P8-002 | MomentTag CRUD | DONE |
 | 8 | P8-003 | Admin Moment CRUD | DONE |
 | 8 | P8-004 | Multiple Moment image lifecycle | DONE |
-| 8 | P8-005 | Public Moment feed/detail | TODO |
+| 8 | P8-005 | Public Moment feed/detail | DONE |
 | 9 | P9-001 | Moment like/unlike | TODO |
 | 9 | P9-002 | Moment comment create/list | TODO |
 | 9 | P9-003 | Own Moment comment update/delete | TODO |
@@ -4109,6 +4109,75 @@ Implemented admin Moment image upload, reorder, and delete lifecycle with Cloudi
 ### Roadmap Update
 last_completed_task: P8-004
 next_task: P8-005
+
+## 2026-08-12 — P8-005 — Public Moment feed/detail
+
+Status: DONE
+
+### Scope
+Implemented public Moment feed and detail routes exposing only published moments.
+
+### Architecture
+- Controller: public handlers use shared response helpers only.
+- Service: public filtering logic lives in `moment.service.ts`; no Prisma import.
+- Repository: `moment.repository.ts` applies DB-side `PUBLISHED` filtering.
+- Schema: UUID params validated with Zod.
+- DTO: public routes reuse safe `MomentDto` mapping with images and tags.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `Moment`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/moments`
+- `GET /api/v1/moments/:id`
+
+### Security
+- authentication: N/A
+- authorization: only `PUBLISHED` moments are returned.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Public feed includes published moments.
+- Public feed excludes drafts.
+- Public detail returns published moment with images and tags.
+- Draft/malformed IDs rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P8-005
+next_task: P9-001
 
 ---
 

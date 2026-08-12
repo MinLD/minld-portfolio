@@ -35,6 +35,16 @@ export async function getMoment(id: string) {
   return { moment: toMomentDto(await findMomentOrThrow(id)) }
 }
 
+export async function listPublishedMoments() {
+  return { moments: (await momentRepository.findPublished()).map(toMomentDto) }
+}
+
+export async function getPublishedMoment(id: string) {
+  const moment = await momentRepository.findPublishedById(id)
+  if (!moment) throw new AppError(404, 'MOMENT_NOT_FOUND', 'Moment not found')
+  return { moment: toMomentDto(moment) }
+}
+
 export async function updateMoment(id: string, input: UpdateMomentInput) {
   await findMomentOrThrow(id)
   await ensureTags(input.tagIds)
