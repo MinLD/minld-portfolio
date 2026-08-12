@@ -34,3 +34,8 @@ export const createMomentCommentSchema = z.object({
   params: z.object({ id: z.uuid() }),
   body: z.object({ content: z.string().trim().min(1).max(2000) }),
 })
+export const momentCommentIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
+export const updateMomentCommentSchema = z.object({
+  params: z.object({ id: z.uuid() }),
+  body: z.object({ content: z.string().trim().min(1).max(2000) }),
+})

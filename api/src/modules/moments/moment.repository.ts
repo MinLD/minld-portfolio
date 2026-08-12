@@ -66,6 +66,18 @@ export const momentRepository = {
     return prisma.momentComment.create({ data, include: momentCommentInclude })
   },
 
+  findCommentById(id: string) {
+    return prisma.momentComment.findUnique({ where: { id }, include: momentCommentInclude })
+  },
+
+  updateComment(id: string, data: { content: string }) {
+    return prisma.momentComment.update({ where: { id }, data, include: momentCommentInclude })
+  },
+
+  deleteComment(id: string) {
+    return prisma.momentComment.delete({ where: { id } })
+  },
+
   countTags(ids: string[], tx?: TxClient) {
     return ids.length ? db(tx).momentTag.count({ where: { id: { in: ids } } }) : 0
   },

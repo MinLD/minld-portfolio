@@ -70,6 +70,23 @@ export async function createMomentComment(id: string, userId: string, input: { c
   return { comment: toMomentCommentDto(await momentRepository.createComment({ momentId: id, userId, content: input.content })) }
 }
 
+async function findOwnMomentComment(id: string, userId: string) {
+  const comment = await momentRepository.findCommentById(id)
+  if (!comment) throw new AppError(404, 'MOMENT_COMMENT_NOT_FOUND', 'Moment comment not found')
+  if (comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
+  return comment
+}
+
+export async function updateOwnMomentComment(id: string, userId: string, input: { content: string }) {
+  await findOwnMomentComment(id, userId)
+  return { comment: toMomentCommentDto(await momentRepository.updateComment(id, input)) }
+}
+
+export async function deleteOwnMomentComment(id: string, userId: string) {
+  await findOwnMomentComment(id, userId)
+  await momentRepository.deleteComment(id)
+}
+
 export async function updateMoment(id: string, input: UpdateMomentInput) {
   await findMomentOrThrow(id)
   await ensureTags(input.tagIds)

@@ -195,3 +195,24 @@ test('authenticated active user can create and list visible moment comments', as
   expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Authorization', `Bearer ${token}`).send({ content: '' })).status).toBe(400)
   expect((await request(app).get(`/api/v1/moments/${draft.id}/comments`)).status).toBe(404)
 })
+
+test('authenticated user can update and delete own moment comment only', async () => {
+  const adminToken = await accessToken(adminEmail)
+  const userToken = await accessToken(userEmail)
+  const admin = await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } })
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
+  const moment = await prisma.moment.create({ data: { content: 'Test Moment Own Comment', status: 'PUBLISHED', publishedAt: new Date() } })
+  const comment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: user.id, content: 'Original' } })
+  const otherComment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: admin.id, content: 'Other' } })
+
+  expect((await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`).send({ content: 'Hack' })).status).toBe(403)
+
+  const updated = await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${userToken}`).send({ content: 'Updated' })
+  expect(updated.status).toBe(200)
+  expect(updated.body.data.comment.content).toBe('Updated')
+
+  expect((await request(app).delete(`/api/v1/moment-comments/${otherComment.id}`).set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
+  expect((await request(app).delete(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${userToken}`)).status).toBe(204)
+  expect(await prisma.momentComment.findUnique({ where: { id: comment.id } })).toBeNull()
+  expect((await request(app).patch('/api/v1/moment-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${userToken}`).send({ content: 'Missing' })).status).toBe(404)
+})

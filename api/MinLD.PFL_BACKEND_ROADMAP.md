@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_9
-current_task: P9-003
+current_task: P9-004
 current_task_status: TODO
 
-last_completed_task: P9-002
-next_task: P9-003
+last_completed_task: P9-003
+next_task: P9-004
 ```
 
 ## Why the roadmap is being rebased
@@ -1330,7 +1330,7 @@ Keep policies centralized.
 | 8 | P8-005 | Public Moment feed/detail | DONE |
 | 9 | P9-001 | Moment like/unlike | DONE |
 | 9 | P9-002 | Moment comment create/list | DONE |
-| 9 | P9-003 | Own Moment comment update/delete | TODO |
+| 9 | P9-003 | Own Moment comment update/delete | DONE |
 | 9 | P9-004 | Admin Moment comment moderation | TODO |
 | 10 | P10-001 | Admin dashboard | TODO |
 | 10 | P10-002 | Admin user list + ban/unban | TODO |
@@ -4315,6 +4315,74 @@ Implemented visible Moment comment listing and authenticated comment creation fo
 ### Roadmap Update
 last_completed_task: P9-002
 next_task: P9-003
+
+## 2026-08-12 — P9-003 — Own Moment comment update/delete
+
+Status: DONE
+
+### Scope
+Implemented authenticated owner update/delete for moment comments.
+
+### Architecture
+- Controller: owner mutation handlers use shared response helpers.
+- Service: ownership enforced before mutation; no Prisma import.
+- Repository: comment find/update/delete Prisma calls stay in `moment.repository.ts`.
+- Schema: Zod validates comment UUID params and content body.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.schema.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `MomentComment`
+- migration: N/A
+
+### Endpoints
+- `PATCH /api/v1/moment-comments/:id`
+- `DELETE /api/v1/moment-comments/:id`
+
+### Security
+- authentication: access JWT required.
+- authorization: active user required; owner-only mutations.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Owner updates comment.
+- Owner deletes comment.
+- Non-owner receives 403.
+- Missing comment receives 404.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P9-003
+next_task: P9-004
 
 ---
 

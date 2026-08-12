@@ -6,8 +6,8 @@ import { imageUpload } from '../../common/media/upload.middleware.js'
 import { momentCommentCreateRateLimit, momentLikeRateLimit } from '../../common/rate-limit/moment.rate-limit.js'
 import { adminUploadRateLimit } from '../../common/rate-limit/upload.rate-limit.js'
 import { validateRequest } from '../../common/validation/validate-request.js'
-import { addMomentImagesController, createMomentCommentController, createMomentController, deleteMomentController, deleteMomentImageController, getMomentController, getPublishedMomentController, listMomentCommentsController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, toggleMomentLikeController, updateMomentController } from './moment.controller.js'
-import { createMomentCommentSchema, createMomentSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentSchema } from './moment.schema.js'
+import { addMomentImagesController, createMomentCommentController, createMomentController, deleteMomentController, deleteMomentImageController, deleteOwnMomentCommentController, getMomentController, getPublishedMomentController, listMomentCommentsController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, toggleMomentLikeController, updateMomentController, updateOwnMomentCommentController } from './moment.controller.js'
+import { createMomentCommentSchema, createMomentSchema, momentCommentIdSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentCommentSchema, updateMomentSchema } from './moment.schema.js'
 
 export const adminMomentRouter = Router()
 export const publicMomentRouter = Router()
@@ -16,6 +16,8 @@ publicMomentRouter.get('/moments', listPublishedMomentsController)
 publicMomentRouter.post('/moments/:id/like', momentLikeRateLimit, requireAuth, requireActiveUser, validateRequest(momentIdSchema), toggleMomentLikeController)
 publicMomentRouter.get('/moments/:id/comments', validateRequest(momentIdSchema), listMomentCommentsController)
 publicMomentRouter.post('/moments/:id/comments', momentCommentCreateRateLimit, requireAuth, requireActiveUser, validateRequest(createMomentCommentSchema), createMomentCommentController)
+publicMomentRouter.patch('/moment-comments/:id', requireAuth, requireActiveUser, validateRequest(updateMomentCommentSchema), updateOwnMomentCommentController)
+publicMomentRouter.delete('/moment-comments/:id', requireAuth, requireActiveUser, validateRequest(momentCommentIdSchema), deleteOwnMomentCommentController)
 publicMomentRouter.get('/moments/:id', validateRequest(momentIdSchema), getPublishedMomentController)
 
 adminMomentRouter.use(requireAuth, requireActiveUser, requireRole('ADMIN'))
