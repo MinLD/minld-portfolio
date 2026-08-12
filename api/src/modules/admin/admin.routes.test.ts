@@ -1,0 +1,71 @@
+import type { Express } from 'express'
+import request from 'supertest'
+import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { hashPassword } from '../../common/auth/password.js'
+import type { prisma as prismaType } from '../../database/prisma.js'
+
+process.env.NODE_ENV = 'test'
+process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
+process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret'
+process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
+
+const adminEmail = 'admin.dashboard@example.com'
+const userEmail = 'admin.dashboard.user@example.com'
+const password = 'valid-password'
+let app: Express
+let prisma: typeof prismaType
+
+async function cleanup() {
+  await prisma.momentComment.deleteMany({ where: { moment: { content: { startsWith: 'Test Dashboard' } } } })
+  await prisma.moment.deleteMany({ where: { content: { startsWith: 'Test Dashboard' } } })
+  await prisma.projectComment.deleteMany({ where: { project: { slug: { startsWith: 'test-dashboard' } } } })
+  await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-dashboard' } } })
+  await prisma.authSession.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
+  await prisma.accountToken.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
+  await prisma.user.deleteMany({ where: { email: { in: [adminEmail, userEmail] } } })
+}
+
+async function createUser(email: string, role: 'USER' | 'ADMIN') {
+  return prisma.user.create({ data: { email, displayName: email, role, emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
+}
+
+async function accessToken(email: string) {
+  const response = await request(app).post('/api/v1/auth/login').send({ email, password })
+  return response.body.data.accessToken as string
+}
+
+beforeAll(async () => {
+  ;({ app } = await import('../../app.js'))
+  ;({ prisma } = await import('../../database/prisma.js'))
+})
+
+beforeEach(async () => {
+  await cleanup()
+  const admin = await createUser(adminEmail, 'ADMIN')
+  await createUser(userEmail, 'USER')
+  const project = await prisma.project.create({ data: { title: 'Dashboard Project', slug: 'test-dashboard-project', summary: 'Summary', content: 'Content', status: 'PUBLISHED' } })
+  const moment = await prisma.moment.create({ data: { content: 'Test Dashboard Moment', status: 'PUBLISHED' } })
+  await prisma.projectComment.create({ data: { projectId: project.id, userId: admin.id, content: 'Project comment' } })
+  await prisma.momentComment.create({ data: { momentId: moment.id, userId: admin.id, content: 'Moment comment' } })
+})
+
+afterAll(async () => {
+  await cleanup()
+  await prisma.$disconnect()
+})
+
+test('ADMIN can read dashboard counts', async () => {
+  const response = await request(app).get('/api/v1/admin/dashboard').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)
+
+  expect(response.status).toBe(200)
+  expect(response.body.data.dashboard.users).toBeGreaterThanOrEqual(2)
+  expect(response.body.data.dashboard.publishedProjects).toBeGreaterThanOrEqual(1)
+  expect(response.body.data.dashboard.projectComments).toBeGreaterThanOrEqual(1)
+  expect(response.body.data.dashboard.publishedMoments).toBeGreaterThanOrEqual(1)
+  expect(response.body.data.dashboard.momentComments).toBeGreaterThanOrEqual(1)
+})
+
+test('dashboard requires ADMIN', async () => {
+  expect((await request(app).get('/api/v1/admin/dashboard')).status).toBe(401)
+  expect((await request(app).get('/api/v1/admin/dashboard').set('Authorization', `Bearer ${await accessToken(userEmail)}`)).status).toBe(403)
+})

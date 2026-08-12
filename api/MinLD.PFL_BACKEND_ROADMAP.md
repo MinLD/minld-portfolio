@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_10
-current_task: P10-001
+current_task: P10-002
 current_task_status: TODO
 
-last_completed_task: P9-004
-next_task: P10-001
+last_completed_task: P10-001
+next_task: P10-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1332,7 +1332,7 @@ Keep policies centralized.
 | 9 | P9-002 | Moment comment create/list | DONE |
 | 9 | P9-003 | Own Moment comment update/delete | DONE |
 | 9 | P9-004 | Admin Moment comment moderation | DONE |
-| 10 | P10-001 | Admin dashboard | TODO |
+| 10 | P10-001 | Admin dashboard | DONE |
 | 10 | P10-002 | Admin user list + ban/unban | TODO |
 | 11 | P11-001 | Full integration test pass | TODO |
 | 11 | P11-002 | Security/performance audit | TODO |
@@ -4453,6 +4453,71 @@ Implemented admin moment comment listing, hide/unhide, and deletion.
 ### Roadmap Update
 last_completed_task: P9-004
 next_task: P10-001
+
+## 2026-08-12 — P10-001 — Admin dashboard
+
+Status: DONE
+
+### Scope
+Implemented admin dashboard counts endpoint.
+
+### Architecture
+- Controller: dashboard handler uses shared response helper.
+- Service: dashboard orchestration uses repository only; no Prisma import.
+- Repository: dashboard counts use Prisma transaction for consistent aggregate reads.
+- DTO: `AdminDashboardDto` defines stable count shape.
+
+### Files Created
+- `api/src/modules/admin/admin.controller.ts`
+- `api/src/modules/admin/admin.dto.ts`
+- `api/src/modules/admin/admin.repository.ts`
+- `api/src/modules/admin/admin.routes.test.ts`
+- `api/src/modules/admin/admin.routes.ts`
+- `api/src/modules/admin/admin.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+
+### Database
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/admin/dashboard`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN reads dashboard counts.
+- Missing token rejected.
+- USER role rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P10-001
+next_task: P10-002
 
 ---
 
