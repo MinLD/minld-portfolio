@@ -1,12 +1,5 @@
 <script setup>
-import {
-  ArrowUp,
-  Coffee,
-  Github,
-  Linkedin,
-  Mail,
-  Send,
-} from 'lucide-vue-next'
+import { ArrowUp, Github, Linkedin, Mail, Send } from 'lucide-vue-next'
 
 import AppContainer from '@/components/shared/AppContainer.vue'
 import AppLogo from '@/components/shared/AppLogo.vue'
@@ -20,49 +13,16 @@ function scrollToTop() {
 </script>
 
 <template>
-  <footer class="border-t border-zinc-800 bg-[#151515]">
+  <footer class="border-t border-zinc-800 bg-[#151515] z-50">
     <AppContainer>
-      <!-- Support banner -->
-      <section class="border-b border-zinc-800 py-16 sm:py-20">
-        <div
-          class="flex flex-col gap-5 rounded-2xl border border-yellow-500/50 bg-yellow-400/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-        >
-          <div class="flex items-center gap-4">
-            <div
-              class="flex size-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-zinc-950"
-            >
-              <Coffee :size="19" />
-            </div>
-
-            <div>
-              <h2 class="text-sm font-semibold text-zinc-100">
-                Ủng hộ nuôi website
-              </h2>
-              <p class="mt-1 text-sm text-zinc-500">
-                Nếu thấy nội dung hữu ích, mời mình một ly cà phê để tiếp thêm động lực duy trì website.
-              </p>
-            </div>
-          </div>
-
-          <a
-            href="https://www.buymeacoffee.com/minld"
-            target="_blank"
-            rel="noreferrer"
-            class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-yellow-300"
-          >
-            Buy me a coffee
-            <span aria-hidden="true">→</span>
-          </a>
-        </div>
-      </section>
-
       <!-- Main footer -->
       <div class="grid gap-12 py-14 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
         <section class="lg:col-span-5">
           <AppLogo />
 
           <p class="mt-5 max-w-sm text-sm leading-6 text-zinc-500">
-            Full Stack Developer building thoughtful web experiences and sharing the journey through code.
+            Full Stack Developer building thoughtful web experiences and sharing the journey through
+            code.
           </p>
 
           <div class="mt-8 flex items-center gap-3">

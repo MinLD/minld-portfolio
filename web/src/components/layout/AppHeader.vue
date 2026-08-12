@@ -6,8 +6,10 @@ import { RouterLink, useRoute } from 'vue-router'
 import AppContainer from '@/components/shared/AppContainer.vue'
 import AppLogo from '@/components/shared/AppLogo.vue'
 import { mainNavigation } from '@/config/navigation'
+import { useAuthStore } from '@/stores/auth.store'
 
 const route = useRoute()
+const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
 
 function closeMobileMenu() {
@@ -16,6 +18,11 @@ function closeMobileMenu() {
 
 function isActive(path) {
   return path === '/' ? route.path === '/' : route.path.startsWith(path)
+}
+
+async function logout() {
+  await authStore.logout()
+  closeMobileMenu()
 }
 </script>
 
@@ -54,12 +61,22 @@ function isActive(path) {
             />
           </label>
 
-          <a
-            href="Login"
+          <RouterLink
+            v-if="!authStore.isLoggedIn"
+            to="/login"
             class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
           >
             Login
-          </a>
+          </RouterLink>
+
+          <button
+            v-else
+            type="button"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            @click="logout"
+          >
+            Logout
+          </button>
 
           <a
             href="https://www.buymeacoffee.com/minld"
@@ -106,6 +123,24 @@ function isActive(path) {
           >
             {{ item.label }}
           </RouterLink>
+
+          <RouterLink
+            v-if="!authStore.isLoggedIn"
+            to="/login"
+            class="rounded-lg px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            @click="closeMobileMenu"
+          >
+            Login
+          </RouterLink>
+
+          <button
+            v-else
+            type="button"
+            class="rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            @click="logout"
+          >
+            Logout
+          </button>
         </nav>
       </div>
     </AppContainer>

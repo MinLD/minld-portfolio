@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@tsparticles/vue3": "^4.3.2",
     "lucide-vue-next": "latest",
     "pinia": "^4.0.2",
     "tailwindcss": "^4.3.3",
+    "tsparticles": "^4.3.2",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
   },
