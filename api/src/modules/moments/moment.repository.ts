@@ -70,8 +70,16 @@ export const momentRepository = {
     return prisma.momentComment.findUnique({ where: { id }, include: momentCommentInclude })
   },
 
+  findManyComments() {
+    return prisma.momentComment.findMany({ orderBy: { createdAt: 'desc' }, include: momentCommentInclude })
+  },
+
   updateComment(id: string, data: { content: string }) {
     return prisma.momentComment.update({ where: { id }, data, include: momentCommentInclude })
+  },
+
+  updateCommentStatus(id: string, status: 'VISIBLE' | 'HIDDEN') {
+    return prisma.momentComment.update({ where: { id }, data: { status }, include: momentCommentInclude })
   },
 
   deleteComment(id: string) {

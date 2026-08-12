@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_9
-current_task: P9-004
+current_phase: PHASE_10
+current_task: P10-001
 current_task_status: TODO
 
-last_completed_task: P9-003
-next_task: P9-004
+last_completed_task: P9-004
+next_task: P10-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1331,7 +1331,7 @@ Keep policies centralized.
 | 9 | P9-001 | Moment like/unlike | DONE |
 | 9 | P9-002 | Moment comment create/list | DONE |
 | 9 | P9-003 | Own Moment comment update/delete | DONE |
-| 9 | P9-004 | Admin Moment comment moderation | TODO |
+| 9 | P9-004 | Admin Moment comment moderation | DONE |
 | 10 | P10-001 | Admin dashboard | TODO |
 | 10 | P10-002 | Admin user list + ban/unban | TODO |
 | 11 | P11-001 | Full integration test pass | TODO |
@@ -4383,6 +4383,76 @@ Implemented authenticated owner update/delete for moment comments.
 ### Roadmap Update
 last_completed_task: P9-003
 next_task: P9-004
+
+## 2026-08-12 — P9-004 — Admin Moment comment moderation
+
+Status: DONE
+
+### Scope
+Implemented admin moment comment listing, hide/unhide, and deletion.
+
+### Architecture
+- Controller: admin moderation handlers use shared response helpers.
+- Service: moderation logic uses repository only; no Prisma import.
+- Repository: admin list/status/delete Prisma calls stay in `moment.repository.ts`.
+- Schema: Zod validates comment UUID params and status enum.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.schema.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `MomentComment`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/admin/moment-comments`
+- `PATCH /api/v1/admin/moment-comments/:id/status`
+- `DELETE /api/v1/admin/moment-comments/:id`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN lists comments.
+- ADMIN hides comments.
+- ADMIN deletes comments.
+- USER role rejected.
+- Invalid status rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P9-004
+next_task: P10-001
 
 ---
 

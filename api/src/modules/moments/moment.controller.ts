@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express'
 import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
-import { addMomentImages, createMoment, createMomentComment, deleteMoment, deleteMomentImage, deleteOwnMomentComment, getMoment, getPublishedMoment, listMomentComments, listMoments, listPublishedMoments, reorderMomentImages, toggleMomentLike, updateMoment, updateOwnMomentComment } from './moment.service.js'
+import { addMomentImages, createMoment, createMomentComment, deleteAdminMomentComment, deleteMoment, deleteMomentImage, deleteOwnMomentComment, getMoment, getPublishedMoment, listAdminMomentComments, listMomentComments, listMoments, listPublishedMoments, reorderMomentImages, toggleMomentLike, updateMoment, updateMomentCommentStatus, updateOwnMomentComment } from './moment.service.js'
 
 export const createMomentController: RequestHandler = async (req, res, next) => {
   try {
@@ -77,6 +77,31 @@ export const updateOwnMomentCommentController: RequestHandler = async (req, res,
 export const deleteOwnMomentCommentController: RequestHandler = async (req, res, next) => {
   try {
     await deleteOwnMomentComment(String(req.params.id), res.locals.auth.userId)
+    sendNoContent(res)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const listAdminMomentCommentsController: RequestHandler = async (_req, res, next) => {
+  try {
+    sendSuccess(res, await listAdminMomentComments())
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateMomentCommentStatusController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await updateMomentCommentStatus(String(req.params.id), req.body))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteAdminMomentCommentController: RequestHandler = async (req, res, next) => {
+  try {
+    await deleteAdminMomentComment(String(req.params.id))
     sendNoContent(res)
   } catch (error) {
     next(error)

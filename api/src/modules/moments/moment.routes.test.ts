@@ -216,3 +216,25 @@ test('authenticated user can update and delete own moment comment only', async (
   expect(await prisma.momentComment.findUnique({ where: { id: comment.id } })).toBeNull()
   expect((await request(app).patch('/api/v1/moment-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${userToken}`).send({ content: 'Missing' })).status).toBe(404)
 })
+
+test('ADMIN can list moderate and delete moment comments', async () => {
+  const adminToken = await accessToken(adminEmail)
+  const userToken = await accessToken(userEmail)
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
+  const moment = await prisma.moment.create({ data: { content: 'Test Moment Admin Comment', status: 'PUBLISHED', publishedAt: new Date() } })
+  const comment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: user.id, content: 'Moderate me' } })
+
+  expect((await request(app).get('/api/v1/admin/moment-comments').set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
+
+  const listed = await request(app).get('/api/v1/admin/moment-comments').set('Authorization', `Bearer ${adminToken}`)
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.comments.some((item: { id: string }) => item.id === comment.id)).toBe(true)
+
+  const hidden = await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'HIDDEN' })
+  expect(hidden.status).toBe(200)
+  expect(hidden.body.data.comment.status).toBe('HIDDEN')
+  expect((await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'BAD' })).status).toBe(400)
+
+  expect((await request(app).delete(`/api/v1/admin/moment-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`)).status).toBe(204)
+  expect(await prisma.momentComment.findUnique({ where: { id: comment.id } })).toBeNull()
+})

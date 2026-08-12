@@ -87,6 +87,26 @@ export async function deleteOwnMomentComment(id: string, userId: string) {
   await momentRepository.deleteComment(id)
 }
 
+async function findMomentCommentOrThrow(id: string) {
+  const comment = await momentRepository.findCommentById(id)
+  if (!comment) throw new AppError(404, 'MOMENT_COMMENT_NOT_FOUND', 'Moment comment not found')
+  return comment
+}
+
+export async function listAdminMomentComments() {
+  return { comments: (await momentRepository.findManyComments()).map(toMomentCommentDto) }
+}
+
+export async function updateMomentCommentStatus(id: string, input: { status: 'VISIBLE' | 'HIDDEN' }) {
+  await findMomentCommentOrThrow(id)
+  return { comment: toMomentCommentDto(await momentRepository.updateCommentStatus(id, input.status)) }
+}
+
+export async function deleteAdminMomentComment(id: string) {
+  await findMomentCommentOrThrow(id)
+  await momentRepository.deleteComment(id)
+}
+
 export async function updateMoment(id: string, input: UpdateMomentInput) {
   await findMomentOrThrow(id)
   await ensureTags(input.tagIds)
