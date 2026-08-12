@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_11
-current_task: P11-001
+current_task: P11-002
 current_task_status: TODO
 
-last_completed_task: P10-002
-next_task: P11-001
+last_completed_task: P11-001
+next_task: P11-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1334,7 +1334,7 @@ Keep policies centralized.
 | 9 | P9-004 | Admin Moment comment moderation | DONE |
 | 10 | P10-001 | Admin dashboard | DONE |
 | 10 | P10-002 | Admin user list + ban/unban | DONE |
-| 11 | P11-001 | Full integration test pass | TODO |
+| 11 | P11-001 | Full integration test pass | DONE |
 | 11 | P11-002 | Security/performance audit | TODO |
 
 ---
@@ -4588,6 +4588,65 @@ Implemented admin user listing/search/filter/pagination plus ban/unban status up
 ### Roadmap Update
 last_completed_task: P10-002
 next_task: P11-001
+
+## 2026-08-12 — P11-001 — Full integration test pass
+
+Status: DONE
+
+### Scope
+Ran full backend verification suite across Prisma, TypeScript, tests, build, and repository-boundary audit.
+
+### Architecture
+- Repository boundary: no service file imports Prisma directly.
+- Response/validation/auth flows covered by existing route and middleware tests.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+
+### Database
+- migrations: up to date
+
+### Endpoints
+- N/A
+
+### Security
+- authentication: verified through integration tests.
+- authorization: verified through integration tests.
+- rate limit: route wiring covered where endpoints exist.
+- cookie: auth tests cover refresh cookie flows.
+- trusted origin: auth tests cover protected refresh/logout paths.
+
+### Tests
+- 15 test files passed.
+- 61 tests passed.
+
+### Commands
+- `npm run prisma:validate`
+- `npx prisma migrate status`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P11-001
+next_task: P11-002
 
 ---
 
