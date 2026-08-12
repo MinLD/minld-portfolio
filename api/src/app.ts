@@ -5,6 +5,7 @@ import { errorMiddleware, notFoundMiddleware } from './common/middlewares/error.
 import { requestIdMiddleware } from './common/middleware/request-id.js'
 import { securityMiddleware } from './common/middleware/security.js'
 import { authRouter } from './modules/auth/auth.routes.js'
+import { adminCategoryRouter, publicCategoryRouter } from './modules/categories/category.routes.js'
 import { healthRouter } from './modules/health/health.routes.js'
 import { userRouter } from './modules/users/user.routes.js'
 
@@ -18,6 +19,8 @@ app.use(cookieParser())
 app.use('/api/v1', healthRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter)
+app.use('/api/v1', publicCategoryRouter)
+app.use('/api/v1/admin', adminCategoryRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorMiddleware)

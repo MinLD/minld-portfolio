@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_4
-current_task: P4-001
+current_task: P4-002
 current_task_status: TODO
 
-last_completed_task: P3-002
-next_task: P4-001
+last_completed_task: P4-001
+next_task: P4-002
 ```
 
 ## Why the roadmap is being rebased
@@ -1311,7 +1311,7 @@ Keep policies centralized.
 | 2 | P2-009 | Auth integration/security verification | DONE |
 | 3 | P3-001 | User profile read/update | DONE |
 | 3 | P3-002 | ADMIN role guard + banned-user interaction guard | DONE |
-| 4 | P4-001 | Category CRUD with repository | TODO |
+| 4 | P4-001 | Category CRUD with repository | DONE |
 | 4 | P4-002 | Technology CRUD with repository | TODO |
 | 5 | P5-001 | Project schema + relations | TODO |
 | 5 | P5-002 | Admin Project CRUD | TODO |
@@ -2939,6 +2939,90 @@ Rebased the existing partial backend to the revised clean modular monolith roadm
 ### Roadmap Update
 last_completed_task: P3-002
 next_task: P4-001
+
+## 2026-08-12 — P4-001 — Category CRUD with repository
+
+Status: DONE
+
+### Scope
+Implemented Category CRUD with repository boundary, admin-only mutation/read routes, and public category listing.
+
+### Architecture
+- Controller: `category.controller.ts` uses shared response helpers only.
+- Service: `category.service.ts` handles uniqueness/not-found rules; no Prisma import.
+- Repository: `category.repository.ts` owns all Prisma calls.
+- Schema: `category.schema.ts` validates UUID params and create/update body.
+- DTO: `CategoryDto` provides stable API shape.
+- Mapper: `toCategoryDto` converts database model to safe response DTO.
+
+### Files Created
+- `api/prisma/migrations/20260812020000_add_category/migration.sql`
+- `api/src/modules/categories/category.controller.ts`
+- `api/src/modules/categories/category.dto.ts`
+- `api/src/modules/categories/category.mapper.ts`
+- `api/src/modules/categories/category.repository.ts`
+- `api/src/modules/categories/category.routes.test.ts`
+- `api/src/modules/categories/category.routes.ts`
+- `api/src/modules/categories/category.schema.ts`
+- `api/src/modules/categories/category.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+- `api/src/app.ts`
+
+### Database
+- models: `Category`
+- migration: `20260812020000_add_category`
+
+### Endpoints
+- `POST /api/v1/admin/categories`
+- `GET /api/v1/admin/categories`
+- `GET /api/v1/admin/categories/:id`
+- `PATCH /api/v1/admin/categories/:id`
+- `DELETE /api/v1/admin/categories/:id`
+- `GET /api/v1/categories`
+
+### Security
+- authentication: admin routes require access JWT.
+- authorization: admin routes require `ADMIN` role and active user.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Admin create/list/get/update/delete.
+- Public list.
+- Missing token and USER role rejection.
+- Validation and uniqueness conflicts.
+
+### Commands
+- `docker compose ps`
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P4-001
+next_task: P4-002
 
 ---
 
