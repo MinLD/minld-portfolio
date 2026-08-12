@@ -129,3 +129,19 @@ test('project validation uniqueness and relation checks work', async () => {
   expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(201)
   expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(409)
 })
+
+test('public project routes expose only published projects', async () => {
+  await prisma.project.create({ data: { title: 'Published', slug: 'test-project-public', summary: 'Summary', content: 'Content', status: 'PUBLISHED', publishedAt: new Date() } })
+  await prisma.project.create({ data: { title: 'Draft', slug: 'test-project-draft', summary: 'Summary', content: 'Content', status: 'DRAFT' } })
+
+  const listed = await request(app).get('/api/v1/projects')
+  expect(listed.status).toBe(200)
+  expect(listed.body.data.projects.some((project: { slug: string }) => project.slug === 'test-project-public')).toBe(true)
+  expect(listed.body.data.projects.some((project: { slug: string }) => project.slug === 'test-project-draft')).toBe(false)
+
+  const published = await request(app).get('/api/v1/projects/test-project-public')
+  expect(published.status).toBe(200)
+  expect(published.body.data.project.slug).toBe('test-project-public')
+  expect((await request(app).get('/api/v1/projects/test-project-draft')).status).toBe(404)
+  expect((await request(app).get('/api/v1/projects/bad slug')).status).toBe(400)
+})

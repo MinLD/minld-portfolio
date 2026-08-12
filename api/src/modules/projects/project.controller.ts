@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express'
 import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
-import { createProject, deleteProject, getProject, listProjects, updateProject } from './project.service.js'
+import { createProject, deleteProject, getProject, getPublishedProject, listProjects, listPublishedProjects, updateProject } from './project.service.js'
 
 export const createProjectController: RequestHandler = async (req, res, next) => {
   try {
@@ -21,6 +21,22 @@ export const listProjectsController: RequestHandler = async (_req, res, next) =>
 export const getProjectController: RequestHandler = async (req, res, next) => {
   try {
     sendSuccess(res, await getProject(String(req.params.id)))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const listPublishedProjectsController: RequestHandler = async (_req, res, next) => {
+  try {
+    sendSuccess(res, await listPublishedProjects())
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getPublishedProjectController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await getPublishedProject(String(req.params.slug)))
   } catch (error) {
     next(error)
   }

@@ -41,12 +41,20 @@ export const projectRepository = {
     return prisma.project.findMany({ orderBy: { createdAt: 'desc' }, include: projectInclude })
   },
 
+  findPublished() {
+    return prisma.project.findMany({ where: { status: 'PUBLISHED' }, orderBy: { publishedAt: 'desc' }, include: projectInclude })
+  },
+
   findById(id: string, tx?: TxClient) {
     return db(tx).project.findUnique({ where: { id }, include: projectInclude })
   },
 
   findBySlug(slug: string, excludeId?: string) {
     return prisma.project.findFirst({ where: { slug, id: excludeId ? { not: excludeId } : undefined } })
+  },
+
+  findPublishedBySlug(slug: string) {
+    return prisma.project.findFirst({ where: { slug, status: 'PUBLISHED' }, include: projectInclude })
   },
 
   countCategories(ids: string[], tx?: TxClient) {

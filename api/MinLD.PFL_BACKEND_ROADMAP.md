@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_5
-current_task: P5-003
+current_task: P5-004
 current_task_status: TODO
 
-last_completed_task: P5-002
-next_task: P5-003
+last_completed_task: P5-003
+next_task: P5-004
 ```
 
 ## Why the roadmap is being rebased
@@ -1315,7 +1315,7 @@ Keep policies centralized.
 | 4 | P4-002 | Technology CRUD with repository | DONE |
 | 5 | P5-001 | Project schema + relations | DONE |
 | 5 | P5-002 | Admin Project CRUD | DONE |
-| 5 | P5-003 | Public Project list/detail | TODO |
+| 5 | P5-003 | Public Project list/detail | DONE |
 | 5 | P5-004 | Search/filter/pagination | TODO |
 | 6 | P6-001 | Project comment create/list | TODO |
 | 6 | P6-002 | Project comment ownership update/delete | TODO |
@@ -3252,6 +3252,76 @@ Implemented admin Project CRUD with repository boundary and transactional relati
 ### Roadmap Update
 last_completed_task: P5-002
 next_task: P5-003
+
+## 2026-08-12 — P5-003 — Public Project list/detail
+
+Status: DONE
+
+### Scope
+Implemented public Project list/detail routes that expose only published projects.
+
+### Architecture
+- Controller: public handlers use shared response helpers only.
+- Service: public logic lives in `project.service.ts`; no Prisma import.
+- Repository: public DB filtering by `PUBLISHED` happens in `project.repository.ts`.
+- Schema: slug params validated with Zod.
+- DTO: public routes reuse safe `ProjectDto` mapping.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+- `api/src/modules/projects/project.controller.ts`
+- `api/src/modules/projects/project.repository.ts`
+- `api/src/modules/projects/project.routes.test.ts`
+- `api/src/modules/projects/project.routes.ts`
+- `api/src/modules/projects/project.schema.ts`
+- `api/src/modules/projects/project.service.ts`
+
+### Database
+- models: existing `Project`
+- migration: N/A
+
+### Endpoints
+- `GET /api/v1/projects`
+- `GET /api/v1/projects/:slug`
+
+### Security
+- authentication: N/A
+- authorization: only `PUBLISHED` projects are returned.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Public list includes published projects.
+- Public list excludes drafts.
+- Public detail returns published project by slug.
+- Public detail rejects draft/malformed slug.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P5-003
+next_task: P5-004
 
 ---
 

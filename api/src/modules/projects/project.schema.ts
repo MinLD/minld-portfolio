@@ -49,3 +49,4 @@ export const updateProjectSchema = z.object({
 })
 
 export const projectIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
+export const projectSlugSchema = z.object({ params: z.object({ slug: slugSchema }) })

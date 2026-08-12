@@ -40,6 +40,16 @@ export async function getProject(id: string) {
   return { project: toProjectDto(await findProjectOrThrow(id)) }
 }
 
+export async function listPublishedProjects() {
+  return { projects: (await projectRepository.findPublished()).map(toProjectDto) }
+}
+
+export async function getPublishedProject(slug: string) {
+  const project = await projectRepository.findPublishedBySlug(slug)
+  if (!project) throw new AppError(404, 'PROJECT_NOT_FOUND', 'Project not found')
+  return { project: toProjectDto(project) }
+}
+
 export async function updateProject(id: string, input: UpdateProjectInput) {
   await findProjectOrThrow(id)
   await ensureUniqueSlug(input.slug, id)
