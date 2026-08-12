@@ -9,4 +9,16 @@ export const projectCommentRepository = {
   create(data: { projectId: string; userId: string; content: string }) {
     return prisma.projectComment.create({ data, include: projectCommentInclude })
   },
+
+  findById(id: string) {
+    return prisma.projectComment.findUnique({ where: { id }, include: projectCommentInclude })
+  },
+
+  update(id: string, data: { content: string }) {
+    return prisma.projectComment.update({ where: { id }, data, include: projectCommentInclude })
+  },
+
+  delete(id: string) {
+    return prisma.projectComment.delete({ where: { id } })
+  },
 }

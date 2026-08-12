@@ -18,3 +18,20 @@ export async function createProjectComment(slug: string, userId: string, input: 
   const project = await findPublishedProject(slug)
   return { comment: toProjectCommentDto(await projectCommentRepository.create({ projectId: project.id, userId, content: input.content })) }
 }
+
+async function findOwnComment(id: string, userId: string) {
+  const comment = await projectCommentRepository.findById(id)
+  if (!comment) throw new AppError(404, 'COMMENT_NOT_FOUND', 'Comment not found')
+  if (comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
+  return comment
+}
+
+export async function updateOwnProjectComment(id: string, userId: string, input: { content: string }) {
+  await findOwnComment(id, userId)
+  return { comment: toProjectCommentDto(await projectCommentRepository.update(id, input)) }
+}
+
+export async function deleteOwnProjectComment(id: string, userId: string) {
+  await findOwnComment(id, userId)
+  await projectCommentRepository.delete(id)
+}

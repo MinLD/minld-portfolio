@@ -10,6 +10,7 @@ process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret'
 process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
 
 const email = 'project-comment.user@example.com'
+const otherEmail = 'project-comment.other@example.com'
 const password = 'valid-password'
 let app: Express
 let prisma: typeof prismaType
@@ -19,13 +20,14 @@ let projectId: string
 async function cleanup() {
   await prisma.projectComment.deleteMany({ where: { project: { slug: { startsWith: 'test-comment-project' } } } })
   await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-comment-project' } } })
-  await prisma.authSession.deleteMany({ where: { user: { email } } })
-  await prisma.accountToken.deleteMany({ where: { user: { email } } })
-  await prisma.user.deleteMany({ where: { email } })
+  await prisma.authSession.deleteMany({ where: { user: { email: { in: [email, otherEmail] } } } })
+  await prisma.accountToken.deleteMany({ where: { user: { email: { in: [email, otherEmail] } } } })
+  await prisma.user.deleteMany({ where: { email: { in: [email, otherEmail] } } })
 }
 
 async function seed() {
   const user = await prisma.user.create({ data: { email, displayName: 'Comment User', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
+  await prisma.user.create({ data: { email: otherEmail, displayName: 'Other User', emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
   const project = await prisma.project.create({ data: { title: 'Comment Project', slug: 'test-comment-project', summary: 'Summary', content: 'Content', status: 'PUBLISHED', publishedAt: new Date() } })
   await prisma.project.create({ data: { title: 'Draft Project', slug: 'test-comment-project-draft', summary: 'Summary', content: 'Content', status: 'DRAFT' } })
   userId = user.id
@@ -34,6 +36,11 @@ async function seed() {
 
 async function accessToken() {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
+  return response.body.data.accessToken as string
+}
+
+async function otherAccessToken() {
+  const response = await request(app).post('/api/v1/auth/login').send({ email: otherEmail, password })
   return response.body.data.accessToken as string
 }
 
@@ -71,4 +78,22 @@ test('project comment create/list validates auth and published project', async (
   expect((await request(app).post('/api/v1/projects/test-comment-project/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: '' })).status).toBe(400)
   expect((await request(app).get('/api/v1/projects/test-comment-project-draft/comments')).status).toBe(404)
   expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: 'No draft' })).status).toBe(404)
+})
+
+test('authenticated user can update and delete own project comment only', async () => {
+  const token = await accessToken()
+  const otherToken = await otherAccessToken()
+  const comment = await prisma.projectComment.create({ data: { projectId, userId, content: 'Original' } })
+
+  const forbidden = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${otherToken}`).send({ content: 'Hack' })
+  expect(forbidden.status).toBe(403)
+
+  const updated = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${token}`).send({ content: 'Updated' })
+  expect(updated.status).toBe(200)
+  expect(updated.body.data.comment.content).toBe('Updated')
+
+  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${otherToken}`)).status).toBe(403)
+  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect(await prisma.projectComment.findUnique({ where: { id: comment.id } })).toBeNull()
+  expect((await request(app).patch('/api/v1/project-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${token}`).send({ content: 'Missing' })).status).toBe(404)
 })
