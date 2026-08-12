@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_8
-current_task: P8-003
+current_task: P8-004
 current_task_status: TODO
 
-last_completed_task: P8-002
-next_task: P8-003
+last_completed_task: P8-003
+next_task: P8-004
 ```
 
 ## Why the roadmap is being rebased
@@ -1325,7 +1325,7 @@ Keep policies centralized.
 | 7 | P7-003 | User avatar lifecycle | DONE |
 | 8 | P8-001 | Moment schema | DONE |
 | 8 | P8-002 | MomentTag CRUD | DONE |
-| 8 | P8-003 | Admin Moment CRUD | TODO |
+| 8 | P8-003 | Admin Moment CRUD | DONE |
 | 8 | P8-004 | Multiple Moment image lifecycle | TODO |
 | 8 | P8-005 | Public Moment feed/detail | TODO |
 | 9 | P9-001 | Moment like/unlike | TODO |
@@ -3964,6 +3964,82 @@ Implemented MomentTag CRUD with admin routes and public tag listing.
 ### Roadmap Update
 last_completed_task: P8-002
 next_task: P8-003
+
+## 2026-08-12 — P8-003 — Admin Moment CRUD
+
+Status: DONE
+
+### Scope
+Implemented admin Moment CRUD with MomentTag relations.
+
+### Architecture
+- Controller: `moment.controller.ts` uses shared response helpers only.
+- Service: tag validation, not-found rules, and transactions live in `moment.service.ts`; no Prisma import.
+- Repository: `moment.repository.ts` owns all Prisma calls and relation connect/set writes.
+- Schema: Zod validates UUID params, body, status enum, ISO dates, and tag IDs.
+- DTO: `MomentDto` provides stable API shape with images and tags.
+- Mapper: `toMomentDto` converts DB model to safe response DTO.
+
+### Files Created
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.dto.ts`
+- `api/src/modules/moments/moment.mapper.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.schema.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/app.ts`
+
+### Database
+- models: existing `Moment`, `MomentTag`
+- relations: create/update uses transaction for tag relation writes.
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/admin/moments`
+- `GET /api/v1/admin/moments`
+- `GET /api/v1/admin/moments/:id`
+- `PATCH /api/v1/admin/moments/:id`
+- `DELETE /api/v1/admin/moments/:id`
+
+### Security
+- authentication: admin routes require access JWT.
+- authorization: admin routes require `ADMIN` role and active user.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Admin create/list/get/update/delete.
+- Tag relation create/update.
+- Missing token and USER role rejection.
+- Validation and missing tag checks.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P8-003
+next_task: P8-004
 
 ---
 

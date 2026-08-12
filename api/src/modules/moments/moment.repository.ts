@@ -1,0 +1,53 @@
+import type { MomentStatus, Prisma } from '@prisma/client'
+import { prisma } from '../../database/prisma.js'
+import type { TxClient } from '../../database/transaction.js'
+import { momentInclude } from './moment.mapper.js'
+
+const db = (tx?: TxClient) => tx ?? prisma
+const connect = (ids: string[]) => ids.map((id) => ({ id }))
+
+export type MomentWriteInput = {
+  content?: string
+  status?: MomentStatus
+  publishedAt?: Date | null
+}
+
+export const momentRepository = {
+  create(data: MomentWriteInput & { content: string; tagIds: string[] }, tx?: TxClient) {
+    return db(tx).moment.create({
+      data: {
+        content: data.content,
+        status: data.status,
+        publishedAt: data.publishedAt,
+        tags: { connect: connect(data.tagIds) },
+      },
+      include: momentInclude,
+    })
+  },
+
+  findMany() {
+    return prisma.moment.findMany({ orderBy: { createdAt: 'desc' }, include: momentInclude })
+  },
+
+  findById(id: string, tx?: TxClient) {
+    return db(tx).moment.findUnique({ where: { id }, include: momentInclude })
+  },
+
+  countTags(ids: string[], tx?: TxClient) {
+    return ids.length ? db(tx).momentTag.count({ where: { id: { in: ids } } }) : 0
+  },
+
+  update(id: string, data: MomentWriteInput & { tagIds?: string[] }, tx?: TxClient) {
+    const updateData: Prisma.MomentUpdateInput = {
+      content: data.content,
+      status: data.status,
+      publishedAt: data.publishedAt,
+      tags: data.tagIds ? { set: connect(data.tagIds) } : undefined,
+    }
+    return db(tx).moment.update({ where: { id }, data: updateData, include: momentInclude })
+  },
+
+  delete(id: string) {
+    return prisma.moment.delete({ where: { id } })
+  },
+}
