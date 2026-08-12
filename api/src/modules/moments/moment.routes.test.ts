@@ -1,8 +1,14 @@
 import type { Express } from 'express'
 import request from 'supertest'
-import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
+import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { hashPassword } from '../../common/auth/password.js'
 import type { prisma as prismaType } from '../../database/prisma.js'
+
+const mediaMocks = vi.hoisted(() => ({ uploadImage: vi.fn(), deleteImage: vi.fn() }))
+
+vi.mock('../../common/media/media.service.js', () => ({
+  mediaService: { uploadImage: mediaMocks.uploadImage, deleteImage: mediaMocks.deleteImage },
+}))
 
 process.env.NODE_ENV = 'test'
 process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
@@ -48,6 +54,9 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
+  mediaMocks.uploadImage.mockReset()
+  mediaMocks.deleteImage.mockReset()
+  mediaMocks.deleteImage.mockResolvedValue(undefined)
   await cleanup()
   await createUser(adminEmail, 'ADMIN')
   await createUser(userEmail, 'USER')
@@ -98,4 +107,36 @@ test('moment validation and tag checks work', async () => {
 
   expect((await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`).send({ content: '', status: 'BAD' })).status).toBe(400)
   expect((await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`).send({ ...momentBody(), tagIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
+})
+
+test('ADMIN can upload reorder and delete moment images', async () => {
+  const token = await accessToken(adminEmail)
+  const moment = await prisma.moment.create({ data: { content: 'Test Moment Images' } })
+  mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/one.png', publicId: 'one-id' }).mockResolvedValueOnce({ url: 'https://cdn/two.png', publicId: 'two-id' })
+
+  const uploaded = await request(app)
+    .post(`/api/v1/admin/moments/${moment.id}/images`)
+    .set('Authorization', `Bearer ${token}`)
+    .attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })
+    .attach('images', Buffer.from('two'), { filename: 'two.webp', contentType: 'image/webp' })
+
+  expect(uploaded.status).toBe(200)
+  expect(uploaded.body.data.moment.images.map((image: { publicId: string }) => image.publicId)).toEqual(['one-id', 'two-id'])
+
+  const [first, second] = uploaded.body.data.moment.images as { id: string }[]
+  const reordered = await request(app).patch(`/api/v1/admin/moments/${moment.id}/images/reorder`).set('Authorization', `Bearer ${token}`).send({ images: [{ id: first.id, sortOrder: 1 }, { id: second.id, sortOrder: 0 }] })
+  expect(reordered.status).toBe(200)
+  expect(reordered.body.data.moment.images.map((image: { publicId: string }) => image.publicId)).toEqual(['two-id', 'one-id'])
+
+  expect((await request(app).delete(`/api/v1/admin/moment-images/${first.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('one-id')
+})
+
+test('moment image upload validates auth type and image limit', async () => {
+  const token = await accessToken(adminEmail)
+  const moment = await prisma.moment.create({ data: { content: 'Test Moment Image Limits', images: { create: Array.from({ length: 10 }, (_, index) => ({ url: `https://cdn/${index}.png`, publicId: `id-${index}`, sortOrder: index })) } } })
+
+  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(401)
+  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('bad'), { filename: 'bad.gif', contentType: 'image/gif' })).status).toBe(400)
+  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(400)
 })

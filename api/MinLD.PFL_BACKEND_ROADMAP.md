@@ -27,11 +27,11 @@ validation: Zod
 media_storage: Cloudinary
 
 current_phase: PHASE_8
-current_task: P8-004
+current_task: P8-005
 current_task_status: TODO
 
-last_completed_task: P8-003
-next_task: P8-004
+last_completed_task: P8-004
+next_task: P8-005
 ```
 
 ## Why the roadmap is being rebased
@@ -1326,7 +1326,7 @@ Keep policies centralized.
 | 8 | P8-001 | Moment schema | DONE |
 | 8 | P8-002 | MomentTag CRUD | DONE |
 | 8 | P8-003 | Admin Moment CRUD | DONE |
-| 8 | P8-004 | Multiple Moment image lifecycle | TODO |
+| 8 | P8-004 | Multiple Moment image lifecycle | DONE |
 | 8 | P8-005 | Public Moment feed/detail | TODO |
 | 9 | P9-001 | Moment like/unlike | TODO |
 | 9 | P9-002 | Moment comment create/list | TODO |
@@ -4040,6 +4040,75 @@ Implemented admin Moment CRUD with MomentTag relations.
 ### Roadmap Update
 last_completed_task: P8-003
 next_task: P8-004
+
+## 2026-08-12 — P8-004 — Multiple Moment image lifecycle
+
+Status: DONE
+
+### Scope
+Implemented admin Moment image upload, reorder, and delete lifecycle with Cloudinary cleanup.
+
+### Architecture
+- Controller: image handlers use shared response helpers.
+- Service: upload/reorder/delete orchestration, image count limit, and cleanup live in `moment.service.ts`; no Prisma import.
+- Repository: image DB writes and reads stay in `moment.repository.ts`.
+- Middleware: route uses Multer image memory upload and admin upload rate limit.
+
+### Files Created
+- N/A
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/src/modules/moments/moment.controller.ts`
+- `api/src/modules/moments/moment.repository.ts`
+- `api/src/modules/moments/moment.routes.test.ts`
+- `api/src/modules/moments/moment.routes.ts`
+- `api/src/modules/moments/moment.schema.ts`
+- `api/src/modules/moments/moment.service.ts`
+
+### Database
+- models: existing `MomentImage`
+- migration: N/A
+
+### Endpoints
+- `POST /api/v1/admin/moments/:id/images`
+- `PATCH /api/v1/admin/moments/:id/images/reorder`
+- `DELETE /api/v1/admin/moment-images/:id`
+
+### Security
+- authentication: access JWT required.
+- authorization: active `ADMIN` required.
+- rate limit: `adminUploadRateLimit` on upload.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- ADMIN uploads multiple images.
+- ADMIN reorders images.
+- ADMIN deletes image with Cloudinary cleanup.
+- Missing token, invalid media type, and 10-image limit rejected.
+
+### Commands
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: N/A
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P8-004
+next_task: P8-005
 
 ---
 

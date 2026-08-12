@@ -47,6 +47,27 @@ export const momentRepository = {
     return db(tx).moment.update({ where: { id }, data: updateData, include: momentInclude })
   },
 
+  countImages(momentId: string, tx?: TxClient) {
+    return db(tx).momentImage.count({ where: { momentId } })
+  },
+
+  createImages(momentId: string, images: { url: string; publicId: string; sortOrder: number }[], tx?: TxClient) {
+    return db(tx).moment.update({ where: { id: momentId }, data: { images: { create: images } }, include: momentInclude })
+  },
+
+  findImageById(id: string) {
+    return prisma.momentImage.findUnique({ where: { id } })
+  },
+
+  async reorderImages(momentId: string, images: { id: string; sortOrder: number }[], tx?: TxClient) {
+    await Promise.all(images.map((image) => db(tx).momentImage.update({ where: { id: image.id, momentId }, data: { sortOrder: image.sortOrder } })))
+    return db(tx).moment.findUniqueOrThrow({ where: { id: momentId }, include: momentInclude })
+  },
+
+  deleteImage(id: string) {
+    return prisma.momentImage.delete({ where: { id } })
+  },
+
   delete(id: string) {
     return prisma.moment.delete({ where: { id } })
   },

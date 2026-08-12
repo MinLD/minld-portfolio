@@ -25,3 +25,8 @@ export const updateMomentSchema = z.object({
 })
 
 export const momentIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
+export const momentImageIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
+export const reorderMomentImagesSchema = z.object({
+  params: z.object({ id: z.uuid() }),
+  body: z.object({ images: z.array(z.object({ id: z.uuid(), sortOrder: z.int().min(0) })).min(1).max(10) }),
+})

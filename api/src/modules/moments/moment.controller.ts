@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express'
 import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
-import { createMoment, deleteMoment, getMoment, listMoments, updateMoment } from './moment.service.js'
+import { addMomentImages, createMoment, deleteMoment, deleteMomentImage, getMoment, listMoments, reorderMomentImages, updateMoment } from './moment.service.js'
 
 export const createMomentController: RequestHandler = async (req, res, next) => {
   try {
@@ -37,6 +37,31 @@ export const updateMomentController: RequestHandler = async (req, res, next) => 
 export const deleteMomentController: RequestHandler = async (req, res, next) => {
   try {
     await deleteMoment(String(req.params.id))
+    sendNoContent(res)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const addMomentImagesController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await addMomentImages(String(req.params.id), req.files as Express.Multer.File[] | undefined))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const reorderMomentImagesController: RequestHandler = async (req, res, next) => {
+  try {
+    sendSuccess(res, await reorderMomentImages(String(req.params.id), req.body))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteMomentImageController: RequestHandler = async (req, res, next) => {
+  try {
+    await deleteMomentImage(String(req.params.id))
     sendNoContent(res)
   } catch (error) {
     next(error)

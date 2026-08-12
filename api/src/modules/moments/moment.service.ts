@@ -1,5 +1,6 @@
 import type { MomentStatus } from '@prisma/client'
 import { AppError } from '../../common/errors/AppError.js'
+import { mediaService } from '../../common/media/media.service.js'
 import { runTransaction } from '../../database/transaction.js'
 import { toMomentDto } from './moment.mapper.js'
 import { momentRepository, type MomentWriteInput } from './moment.repository.js'
@@ -43,4 +44,30 @@ export async function updateMoment(id: string, input: UpdateMomentInput) {
 export async function deleteMoment(id: string) {
   await findMomentOrThrow(id)
   await momentRepository.delete(id)
+}
+
+export async function addMomentImages(id: string, files: Express.Multer.File[] | undefined) {
+  if (!files?.length) throw new AppError(400, 'MEDIA_REQUIRED', 'At least one image is required')
+  const existingCount = await momentRepository.countImages((await findMomentOrThrow(id)).id)
+  if (existingCount + files.length > 10) throw new AppError(400, 'MOMENT_IMAGE_LIMIT_EXCEEDED', 'Moment can have at most 10 images')
+  const uploaded = await Promise.all(files.map((file) => mediaService.uploadImage(file, 'moments')))
+  try {
+    const moment = await momentRepository.createImages(id, uploaded.map((image, index) => ({ url: image.url, publicId: image.publicId, sortOrder: existingCount + index })))
+    return { moment: toMomentDto(moment) }
+  } catch (error) {
+    await Promise.all(uploaded.map((image) => mediaService.deleteImage(image.publicId).catch(() => undefined)))
+    throw error
+  }
+}
+
+export async function reorderMomentImages(id: string, input: { images: { id: string; sortOrder: number }[] }) {
+  await findMomentOrThrow(id)
+  return { moment: toMomentDto(await runTransaction((tx) => momentRepository.reorderImages(id, input.images, tx))) }
+}
+
+export async function deleteMomentImage(id: string) {
+  const image = await momentRepository.findImageById(id)
+  if (!image) throw new AppError(404, 'MOMENT_IMAGE_NOT_FOUND', 'Moment image not found')
+  await momentRepository.deleteImage(id)
+  await mediaService.deleteImage(image.publicId)
 }
