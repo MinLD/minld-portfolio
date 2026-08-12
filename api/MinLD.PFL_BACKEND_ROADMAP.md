@@ -26,12 +26,12 @@ orm: Prisma
 validation: Zod
 media_storage: Cloudinary
 
-current_phase: PHASE_4
-current_task: P4-002
+current_phase: PHASE_5
+current_task: P5-001
 current_task_status: TODO
 
-last_completed_task: P4-001
-next_task: P4-002
+last_completed_task: P4-002
+next_task: P5-001
 ```
 
 ## Why the roadmap is being rebased
@@ -1312,7 +1312,7 @@ Keep policies centralized.
 | 3 | P3-001 | User profile read/update | DONE |
 | 3 | P3-002 | ADMIN role guard + banned-user interaction guard | DONE |
 | 4 | P4-001 | Category CRUD with repository | DONE |
-| 4 | P4-002 | Technology CRUD with repository | TODO |
+| 4 | P4-002 | Technology CRUD with repository | DONE |
 | 5 | P5-001 | Project schema + relations | TODO |
 | 5 | P5-002 | Admin Project CRUD | TODO |
 | 5 | P5-003 | Public Project list/detail | TODO |
@@ -3023,6 +3023,91 @@ Implemented Category CRUD with repository boundary, admin-only mutation/read rou
 ### Roadmap Update
 last_completed_task: P4-001
 next_task: P4-002
+
+## 2026-08-12 — P4-002 — Technology CRUD with repository
+
+Status: DONE
+
+### Scope
+Implemented Technology CRUD with repository boundary, admin-only mutation/read routes, and public technology listing with type filter.
+
+### Architecture
+- Controller: `technology.controller.ts` uses shared response helpers only.
+- Service: `technology.service.ts` handles uniqueness/not-found rules; no Prisma import.
+- Repository: `technology.repository.ts` owns all Prisma calls.
+- Schema: `technology.schema.ts` validates UUID params, body, and `type` query.
+- DTO: `TechnologyDto` provides stable API shape.
+- Mapper: `toTechnologyDto` converts database model to safe response DTO.
+
+### Files Created
+- `api/prisma/migrations/20260812030000_add_technology/migration.sql`
+- `api/src/modules/technologies/technology.controller.ts`
+- `api/src/modules/technologies/technology.dto.ts`
+- `api/src/modules/technologies/technology.mapper.ts`
+- `api/src/modules/technologies/technology.repository.ts`
+- `api/src/modules/technologies/technology.routes.test.ts`
+- `api/src/modules/technologies/technology.routes.ts`
+- `api/src/modules/technologies/technology.schema.ts`
+- `api/src/modules/technologies/technology.service.ts`
+
+### Files Modified
+- `api/MinLD.PFL_BACKEND_ROADMAP.md`
+- `api/prisma/schema.prisma`
+- `api/src/app.ts`
+- `api/src/common/validation/validate-request.ts`
+
+### Database
+- models: `Technology`
+- enum: `TechnologyType`
+- migration: `20260812030000_add_technology`
+
+### Endpoints
+- `POST /api/v1/admin/technologies`
+- `GET /api/v1/admin/technologies`
+- `GET /api/v1/admin/technologies/:id`
+- `PATCH /api/v1/admin/technologies/:id`
+- `DELETE /api/v1/admin/technologies/:id`
+- `GET /api/v1/technologies?type=FRAMEWORK`
+
+### Security
+- authentication: admin routes require access JWT.
+- authorization: admin routes require `ADMIN` role and active user.
+- rate limit: global limiter applies.
+- cookie: N/A
+- trusted origin: N/A
+
+### Tests
+- Admin create/list/get/update/delete.
+- Public list and `type` filter.
+- Missing token and USER role rejection.
+- Validation and uniqueness conflicts.
+
+### Commands
+- `npm run prisma:format`
+- `npm run prisma:validate`
+- `npx prisma migrate deploy`
+- `npm run prisma:generate`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npx prisma migrate status`
+- service Prisma import audit with `rg`
+
+### Verification
+- docker: PASS
+- prisma: PASS
+- lint: N/A, no script configured
+- typecheck: PASS
+- tests: PASS
+- build: PASS
+- manual/browser: N/A
+
+### Remaining Issues
+- None
+
+### Roadmap Update
+last_completed_task: P4-002
+next_task: P5-001
 
 ---
 

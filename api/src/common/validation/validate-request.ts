@@ -11,7 +11,7 @@ export function validateRequest(schema: ZodType): RequestHandler {
 
     if (parsed.body !== undefined) req.body = parsed.body
     if (parsed.params !== undefined) req.params = parsed.params as typeof req.params
-    if (parsed.query !== undefined) req.query = parsed.query as typeof req.query
+    if (parsed.query !== undefined) Object.defineProperty(req, 'query', { value: parsed.query, configurable: true })
     next()
   }
 }
