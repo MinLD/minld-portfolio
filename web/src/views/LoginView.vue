@@ -1,10 +1,10 @@
 <script setup>
-import AppContainer from '@/components/shared/AppContainer.vue'
 import LoginForm from '../components/auth/LoginForm.vue'
+import LayoutContainer from '../layouts/LayoutContainer.vue';
 </script>
 
 <template>
-  <AppContainer>
+  <LayoutContainer>
     <section class="py-16">
       <div class="mb-8 text-center">
         <h1 class="mt-3 text-3xl font-bold text-white">Login to MinLD</h1>
@@ -12,5 +12,5 @@ import LoginForm from '../components/auth/LoginForm.vue'
 
       <LoginForm />
     </section>
-  </AppContainer>
+  </LayoutContainer>
 </template>

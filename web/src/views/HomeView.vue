@@ -1,12 +1,12 @@
 <script setup>
-import AppContainer from '@/components/shared/AppContainer.vue'
 import HeroSection from '../components/home/HeroSection.vue'
+import LayoutContainer from '../layouts/LayoutContainer.vue';
 </script>
 
 <template>
-  <AppContainer>
+  <LayoutContainer>
     <section>
       <HeroSection />
     </section>
-  </AppContainer>
+  </LayoutContainer>
 </template>

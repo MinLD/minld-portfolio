@@ -3,7 +3,6 @@ export const mainNavigation = [
   { label: 'About', to: '/about' },
   { label: 'Projects', to: '/projects' },
   { label: 'Contact', to: '/contact' },
-  { label: 'Register', to: '/register' },
 ]
 
 export const footerNavigation = [

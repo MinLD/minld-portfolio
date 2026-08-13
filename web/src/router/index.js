@@ -8,27 +8,31 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      meta: { layout: 'user' },
       component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/about',
       name: 'about',
+      meta: { layout: 'user' },
       component: () => import('@/views/AboutView.vue'),
     },
     {
       path: '/projects',
       name: 'projects',
+      meta: { layout: 'user' },
       component: () => import('@/views/ProjectsView.vue'),
     },
     {
       path: '/contact',
       name: 'contact',
+      meta: { layout: 'user' },
       component: () => import('@/views/ContactView.vue'),
     },
     {
       path: '/login',
       name: 'login',
-      meta: { guestOnly: true },
+      meta: { guestOnly: true, layout: 'user' },
       component: () => import('@/views/LoginView.vue'),
     },
     {
@@ -38,8 +42,26 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      meta: { guestOnly: true },
+      meta: { guestOnly: true, layout: 'user' },
       component: () => import('@/views/RegisterView.vue'),
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/AdminView.vue'),
+      meta: {
+        roles: ['admin'],
+        layout: 'admin',
+      },
+      children: [],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      meta: {
+        layout: 'blank',
+      },
+      component: () => import('@/views/NotFoundView.vue'),
     },
   ],
 

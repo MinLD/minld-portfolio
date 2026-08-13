@@ -1,10 +1,10 @@
 <script setup>
-import AppContainer from '@/components/shared/AppContainer.vue'
 import RegisterForm from '@/components/auth/RegisterForm.vue'
+import LayoutContainer from '../layouts/LayoutContainer.vue'
 </script>
 
 <template>
-  <AppContainer>
+  <LayoutContainer>
     <section class="py-16">
       <div class="mb-8 text-center">
         <h1 class="mt-3 text-4xl font-bold text-white">Tạo tài khoản</h1>
@@ -12,5 +12,5 @@ import RegisterForm from '@/components/auth/RegisterForm.vue'
 
       <RegisterForm />
     </section>
-  </AppContainer>
+  </LayoutContainer>
 </template>

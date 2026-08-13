@@ -1,9 +1,9 @@
 <script setup>
 import { ArrowUp, Github, Linkedin, Mail, Send } from 'lucide-vue-next'
 
-import AppContainer from '@/components/shared/AppContainer.vue'
 import AppLogo from '@/components/shared/AppLogo.vue'
 import { footerNavigation } from '@/config/navigation'
+import LayoutContainer from '../../layouts/LayoutContainer.vue'
 
 const currentYear = new Date().getFullYear()
 
@@ -14,7 +14,7 @@ function scrollToTop() {
 
 <template>
   <footer class="border-t border-zinc-800 bg-[#151515] z-50">
-    <AppContainer>
+    <LayoutContainer>
       <!-- Main footer -->
       <div class="grid gap-12 py-14 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
         <section class="lg:col-span-5">
@@ -148,6 +148,6 @@ function scrollToTop() {
           </button>
         </div>
       </div>
-    </AppContainer>
+    </LayoutContainer>
   </footer>
 </template>

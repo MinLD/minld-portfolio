@@ -3,10 +3,10 @@ import { ref } from 'vue'
 import { Menu, Search, X } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
-import AppContainer from '@/components/shared/AppContainer.vue'
 import AppLogo from '@/components/shared/AppLogo.vue'
 import { mainNavigation } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth.store'
+import LayoutContainer from '../../layouts/LayoutContainer.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -28,7 +28,7 @@ async function logout() {
 
 <template>
   <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-[#151515]/95 backdrop-blur">
-    <AppContainer>
+    <LayoutContainer>
       <div class="flex h-16 items-center gap-6">
         <AppLogo />
 
@@ -61,7 +61,11 @@ async function logout() {
             />
           </label>
 
-          <span v-if="!authStore.initialized" class="h-9 w-16 rounded-lg bg-zinc-800" aria-label="Loading auth state"></span>
+          <span
+            v-if="!authStore.initialized"
+            class="h-9 w-16 rounded-lg bg-zinc-800"
+            aria-label="Loading auth state"
+          ></span>
 
           <RouterLink
             v-else-if="!authStore.isAuthenticated"
@@ -145,6 +149,6 @@ async function logout() {
           </button>
         </nav>
       </div>
-    </AppContainer>
+    </LayoutContainer>
   </header>
 </template>

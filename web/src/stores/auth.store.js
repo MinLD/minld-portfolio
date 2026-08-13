@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     restorePromise = (async () => {
       try {
-        const data = await authService.refreshSession()
+        const data = await authService.fetchMe()
 
         user.value = data.user
       } catch {
