@@ -8,13 +8,17 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/styles/main.css'
+import { useAuthStore } from './stores/auth.store.js'
 
-createApp(App)
-  .use(createPinia())
-  .use(router)
-  .use(ParticlesPlugin, {
-    init: async (engine) => {
-      await loadFull(engine)
-    },
-  })
-  .mount('#app')
+const app = createApp(App)
+
+const pinia = createPinia()
+
+app.use(pinia)
+app.use(router)
+
+app.mount('#app')
+
+const authStore = useAuthStore(pinia)
+
+authStore.restoreSession()

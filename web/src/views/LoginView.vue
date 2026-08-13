@@ -1,6 +1,6 @@
 <script setup>
-import LoginForm from '@/components/auth/LoginForm.vue'
 import AppContainer from '@/components/shared/AppContainer.vue'
+import LoginForm from '../components/auth/LoginForm.vue'
 </script>
 
 <template>

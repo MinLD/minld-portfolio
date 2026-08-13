@@ -10,11 +10,17 @@ const options = {
     },
   },
 
-  fpsLimit: 120,
+  // 120 là dư với background kiểu này
+  fpsLimit: 60,
+
+  // giảm tải trên màn hình DPI cao
+  detectRetina: false,
 
   particles: {
     number: {
-      value: 200,
+      // 200 quá nhiều với network có links
+      value: 85,
+
       density: {
         enable: true,
       },
@@ -26,8 +32,8 @@ const options = {
 
     opacity: {
       value: {
-        min: 0.15,
-        max: 0.4,
+        min: 0.12,
+        max: 0.35,
       },
     },
 
@@ -40,25 +46,23 @@ const options = {
 
     links: {
       enable: true,
+
+      // giảm số lượng đường cần tính/vẽ
       distance: 150,
+
       color: '#71717a',
-      opacity: 0.2,
+      opacity: 0.18,
       width: 1,
     },
 
+    // particle tự nó đứng yên
     move: {
-      enable: true,
-      speed: 0.4,
-
-      direction: 'none',
-
-      outModes: {
-        default: 'bounce',
-      },
+      enable: false,
     },
   },
 
   interactivity: {
+    // vẫn bắt chuột dù canvas pointer-events-none
     detectsOn: 'window',
 
     events: {
@@ -78,14 +82,17 @@ const options = {
 
     modes: {
       repulse: {
-        distance: 120,
-        duration: 0.4,
-        speed: 1,
+        // vùng ảnh hưởng nhỏ hơn
+        distance: 90,
+
+        // quay về nhanh hơn
+        duration: 0.2,
+
+        // né nhẹ nhàng hơn
+        speed: 0.55,
       },
     },
   },
-
-  detectRetina: true,
 }
 </script>
 

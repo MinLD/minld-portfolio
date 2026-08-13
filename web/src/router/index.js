@@ -32,6 +32,10 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
     },
     {
+      path: '/Login',
+      redirect: '/login',
+    },
+    {
       path: '/register',
       name: 'register',
       meta: { guestOnly: true },

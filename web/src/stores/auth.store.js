@@ -1,86 +1,84 @@
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import axios from 'axios'
+
 import * as authService from '@/services/auth.service'
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null,
-    booted: false,
-    loading: false,
-    error: '',
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref(null)
 
-  getters: {
-    isLoggedIn: (state) => Boolean(state.user),
-  },
+  const loading = ref(false)
+  const error = ref('')
 
-  actions: {
-    setError(error, fallback) {
-      this.error = error?.message || fallback
-    },
+  const initialized = ref(false)
 
-    async register(credentials) {
-      this.loading = true
-      this.error = ''
+  const isAuthenticated = computed(() => Boolean(user.value))
 
-      try {
-        return await authService.register(credentials)
-      } catch (error) {
-        this.setError(error, 'Register failed')
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
+  async function login(credentials) {
+    loading.value = true
+    error.value = ''
 
-    async login(credentials) {
-      this.loading = true
-      this.error = ''
+    try {
+      const data = await authService.login(credentials)
 
-      try {
-        const data = await authService.login(credentials)
-        this.user = data.user
-        return data
-      } catch (error) {
-        this.setError(error, 'Login failed')
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
+      user.value = data.user
 
-    async fetchMe() {
-      if (!authService.getAccessToken()) await authService.refresh()
-
-      let data
-      try {
-        data = await authService.me()
-      } catch (error) {
-        if (error.status !== 401) throw error
-        await authService.refresh()
-        data = await authService.me()
-      }
-
-      this.user = data.user
       return data.user
-    },
+    } catch (err) {
+      user.value = null
 
-    async boot() {
-      if (this.booted) return this.user
+      if (axios.isAxiosError(err)) {
+        const code = err.response?.data?.error?.code
 
-      try {
-        await this.fetchMe()
-      } catch {
-        this.user = null
-      } finally {
-        this.booted = true
+        if (code === 'INVALID_CREDENTIALS') {
+          error.value = 'Incorrect email or password.'
+        } else if (!err.response) {
+          error.value = 'Unable to connect to the server.'
+        } else {
+          error.value = err.response?.data?.error?.message || 'Login failed.'
+        }
+      } else {
+        error.value = 'Login failed.'
       }
 
-      return this.user
-    },
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
-    async logout() {
-      await authService.logout()
-      this.user = null
-    },
-  },
+  async function restoreSession() {
+    if (initialized.value) {
+      return user.value
+    }
+
+    try {
+      const data = await authService.refreshSession()
+
+      user.value = data.user
+    } catch {
+      user.value = null
+    } finally {
+      initialized.value = true
+    }
+
+    return user.value
+  }
+
+  function clearError() {
+    error.value = ''
+  }
+
+  return {
+    user,
+    loading,
+    error,
+    initialized,
+
+    isAuthenticated,
+
+    login,
+    restoreSession,
+    clearError,
+  }
 })

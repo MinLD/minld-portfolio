@@ -5,7 +5,7 @@ export function registerGuards(router) {
   router.beforeEach(async (to) => {
     const authStore = useAuthStore()
 
-    if (to.meta.guestOnly || to.meta.requiresAuth) {
+    if (to.meta.requiresAuth) {
       await authStore.boot()
     }
 

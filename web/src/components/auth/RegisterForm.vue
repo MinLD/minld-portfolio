@@ -26,7 +26,7 @@ async function submitRegister() {
         <input
           id="displayName"
           v-model.trim="form.displayName"
-          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
+          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-white"
           placeholder="MinLD"
           autocomplete="name"
           required
@@ -38,7 +38,7 @@ async function submitRegister() {
         <input
           id="email"
           v-model.trim="form.email"
-          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
+          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-white"
           placeholder="you@example.com"
           type="email"
           autocomplete="email"
@@ -51,7 +51,7 @@ async function submitRegister() {
         <input
           id="password"
           v-model="form.password"
-          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-yellow-400"
+          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-white"
           placeholder="Ít nhất 8 ký tự"
           type="password"
           autocomplete="new-password"
@@ -63,7 +63,7 @@ async function submitRegister() {
       <p v-if="authStore.error" class="text-sm text-red-400">{{ authStore.error }}</p>
 
       <button
-        class="rounded-xl bg-yellow-400 px-4 py-3 font-semibold text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+        class="rounded-xl bg-white px-4 py-3 font-semibold text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         :disabled="authStore.loading"
       >
@@ -73,7 +73,7 @@ async function submitRegister() {
 
     <p class="text-center text-sm text-zinc-400">
       Đã có tài khoản?
-      <RouterLink class="font-semibold text-yellow-400 hover:text-yellow-300" to="/login">
+      <RouterLink class="font-semibold text-white hover:text-shadow-white" to="/login">
         Đăng nhập
       </RouterLink>
     </p>

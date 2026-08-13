@@ -1,29 +1,30 @@
-import { apiRequest } from './http'
+import { http } from './http'
 
-const AUTH_BASE = 'http://localhost:4000/api/v1/auth'
+export async function registerApi(payload) {
+  const response = await http.post('/auth/register', payload)
+  return response.data.data
+}
 
-export function registerApi(payload) {
-  return apiRequest(`${AUTH_BASE}/register`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
+export async function loginApi(payload) {
+  const response = await http.post('/auth/login', payload)
+  return response.data.data
+}
+
+export async function refreshApi() {
+  const response = await http.post('/auth/refresh')
+  console.log(response.data.data)
+  return response.data.data
+}
+export async function meApi(accessToken) {
+  const response = await http.get('/auth/me', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   })
+  return response.data.data
 }
 
-export function loginApi(payload) {
-  return apiRequest(`${AUTH_BASE}/login`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-}
-
-export function refreshApi() {
-  return apiRequest(`${AUTH_BASE}/refresh`, { method: 'POST' })
-}
-
-export function meApi(accessToken) {
-  return apiRequest(`${AUTH_BASE}/me`, { accessToken })
-}
-
-export function logoutApi() {
-  return apiRequest(`${AUTH_BASE}/logout`, { method: 'POST' })
+export async function logoutApi() {
+  const response = await http.post('/auth/logout')
+  return response.data.data
 }
