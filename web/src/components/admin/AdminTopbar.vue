@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth.store'
 
-defineEmits(['open-sidebar'])
+const emit = defineEmits(['open-sidebar'])
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -24,7 +24,7 @@ async function logout() {
       type="button"
       class="mr-3 flex size-10 items-center justify-center rounded-xl border border-zinc-800 text-zinc-400 transition hover:bg-zinc-900 hover:text-white lg:hidden"
       aria-label="Open sidebar"
-      @click="$emit('open-sidebar')"
+      @click="emit('open-sidebar')"
     >
       <Menu :size="20" />
     </button>
@@ -65,8 +65,8 @@ async function logout() {
       <button
         type="button"
         class="flex size-9 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-900 hover:text-red-400"
-        aria-label="Logout"
         title="Logout"
+        aria-label="Logout"
         @click="logout"
       >
         <LogOut :size="18" />

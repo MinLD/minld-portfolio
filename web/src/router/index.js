@@ -54,7 +54,15 @@ const router = createRouter({
         roles: ['admin'],
         layout: 'admin',
       },
-      children: [],
+    },
+    {
+      path: '/admin/projects',
+      name: 'admin-projects',
+      component: () => import('@/views/AdminProjectsView.vue'),
+      meta: {
+        roles: ['admin'],
+        layout: 'admin',
+      },
     },
     {
       path: '/:pathMatch(.*)*',

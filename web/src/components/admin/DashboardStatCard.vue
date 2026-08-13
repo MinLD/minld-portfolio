@@ -21,9 +21,10 @@ defineProps({
   },
 })
 </script>
+
 <template>
   <article
-    class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-700"
+    class="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 transition hover:border-zinc-700"
   >
     <div class="flex items-start justify-between gap-4">
       <div>
