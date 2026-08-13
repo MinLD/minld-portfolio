@@ -36,19 +36,19 @@ async function seed() {
   projectId = project.id
 }
 
-async function accessToken() {
+async function authCookie() {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
-async function otherAccessToken() {
+async function otherAuthCookie() {
   const response = await request(app).post('/api/v1/auth/login').send({ email: otherEmail, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
-async function adminAccessToken() {
+async function adminAuthCookie() {
   const response = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
 beforeAll(async () => {
@@ -67,9 +67,9 @@ afterAll(async () => {
 })
 
 test('authenticated active user can create and list visible project comments', async () => {
-  const token = await accessToken()
+  const cookie = await authCookie()
 
-  const created = await request(app).post('/api/v1/projects/test-comment-project/comments').set('Authorization', `Bearer ${token}`).send({ content: 'Hello project' })
+  const created = await request(app).post('/api/v1/projects/test-comment-project/comments').set('Cookie', cookie).send({ content: 'Hello project' })
   expect(created.status).toBe(201)
   expect(created.body.data.comment.content).toBe('Hello project')
   expect(created.body.data.comment.user.id).toBe(userId)
@@ -82,45 +82,45 @@ test('authenticated active user can create and list visible project comments', a
 
 test('project comment create/list validates auth and published project', async () => {
   expect((await request(app).post('/api/v1/projects/test-comment-project/comments').send({ content: 'No token' })).status).toBe(401)
-  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: '' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').set('Cookie', await authCookie()).send({ content: '' })).status).toBe(400)
   expect((await request(app).get('/api/v1/projects/test-comment-project-draft/comments')).status).toBe(404)
-  expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').set('Authorization', `Bearer ${await accessToken()}`).send({ content: 'No draft' })).status).toBe(404)
+  expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').set('Cookie', await authCookie()).send({ content: 'No draft' })).status).toBe(404)
 })
 
 test('authenticated user can update and delete own project comment only', async () => {
-  const token = await accessToken()
-  const otherToken = await otherAccessToken()
+  const cookie = await authCookie()
+  const otherCookie = await otherAuthCookie()
   const comment = await prisma.projectComment.create({ data: { projectId, userId, content: 'Original' } })
 
-  const forbidden = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${otherToken}`).send({ content: 'Hack' })
+  const forbidden = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Cookie', otherCookie).send({ content: 'Hack' })
   expect(forbidden.status).toBe(403)
 
-  const updated = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${token}`).send({ content: 'Updated' })
+  const updated = await request(app).patch(`/api/v1/project-comments/${comment.id}`).set('Cookie', cookie).send({ content: 'Updated' })
   expect(updated.status).toBe(200)
   expect(updated.body.data.comment.content).toBe('Updated')
 
-  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${otherToken}`)).status).toBe(403)
-  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Cookie', otherCookie)).status).toBe(403)
+  expect((await request(app).delete(`/api/v1/project-comments/${comment.id}`).set('Cookie', cookie)).status).toBe(204)
   expect(await prisma.projectComment.findUnique({ where: { id: comment.id } })).toBeNull()
-  expect((await request(app).patch('/api/v1/project-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${token}`).send({ content: 'Missing' })).status).toBe(404)
+  expect((await request(app).patch('/api/v1/project-comments/00000000-0000-0000-0000-000000000000').set('Cookie', cookie).send({ content: 'Missing' })).status).toBe(404)
 })
 
 test('ADMIN can list moderate and delete project comments', async () => {
-  const adminToken = await adminAccessToken()
-  const userToken = await accessToken()
+  const adminCookie = await adminAuthCookie()
+  const userCookie = await authCookie()
   const comment = await prisma.projectComment.create({ data: { projectId, userId, content: 'Moderate me' } })
 
-  expect((await request(app).get('/api/v1/admin/project-comments').set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
+  expect((await request(app).get('/api/v1/admin/project-comments').set('Cookie', userCookie)).status).toBe(403)
 
-  const listed = await request(app).get('/api/v1/admin/project-comments').set('Authorization', `Bearer ${adminToken}`)
+  const listed = await request(app).get('/api/v1/admin/project-comments').set('Cookie', adminCookie)
   expect(listed.status).toBe(200)
   expect(listed.body.data.comments.some((item: { id: string }) => item.id === comment.id)).toBe(true)
 
-  const hidden = await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'HIDDEN' })
+  const hidden = await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Cookie', adminCookie).send({ status: 'HIDDEN' })
   expect(hidden.status).toBe(200)
   expect(hidden.body.data.comment.status).toBe('HIDDEN')
-  expect((await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'BAD' })).status).toBe(400)
+  expect((await request(app).patch(`/api/v1/admin/project-comments/${comment.id}/status`).set('Cookie', adminCookie).send({ status: 'BAD' })).status).toBe(400)
 
-  expect((await request(app).delete(`/api/v1/admin/project-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/admin/project-comments/${comment.id}`).set('Cookie', adminCookie)).status).toBe(204)
   expect(await prisma.projectComment.findUnique({ where: { id: comment.id } })).toBeNull()
 })

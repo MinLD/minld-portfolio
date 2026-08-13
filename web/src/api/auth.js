@@ -12,15 +12,11 @@ export async function loginApi(payload) {
 
 export async function refreshApi() {
   const response = await http.post('/auth/refresh')
-  console.log(response.data.data)
   return response.data.data
 }
-export async function meApi(accessToken) {
-  const response = await http.get('/auth/me', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
+
+export async function meApi() {
+  const response = await http.get('/auth/me')
   return response.data.data
 }
 

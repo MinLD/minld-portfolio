@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express'
-import { clearRefreshCookie, setRefreshCookie } from '../../common/auth/cookie.js'
+import { clearAuthCookies, setAuthCookies } from '../../common/auth/cookie.js'
 import { AppError } from '../../common/errors/AppError.js'
 import { sendCreated, sendSuccess } from '../../common/responses/api-response.js'
 import { env } from '../../config/env.js'
-import { changePassword, forgotPassword, getCurrentUser, listSessions, loginUser, logoutAll, logoutSession, parseAccessTokenHeader, refreshSession, registerUser, resendVerification, resetPassword, revokeOwnSession, verifyEmail } from './auth.service.js'
+import { changePassword, forgotPassword, getCurrentUser, listSessions, loginUser, logoutAll, logoutSession, refreshSession, registerUser, resendVerification, resetPassword, revokeOwnSession, verifyEmail } from './auth.service.js'
 
 const metaFromRequest = (req: Parameters<RequestHandler>[0]) => ({ userAgent: req.header('user-agent') ?? undefined, ipAddress: req.ip })
 
@@ -33,8 +33,8 @@ export const resendVerificationController: RequestHandler = async (req, res, nex
 
 export const loginController: RequestHandler = async (req, res, next) => {
   try {
-    const { refreshToken, ...body } = await loginUser(req.body, metaFromRequest(req))
-    setRefreshCookie(res, refreshToken)
+    const { accessToken, refreshToken, ...body } = await loginUser(req.body, metaFromRequest(req))
+    setAuthCookies(res, { accessToken, refreshToken })
     res.setHeader('Cache-Control', 'no-store')
     sendSuccess(res, body)
   } catch (error) {
@@ -46,8 +46,8 @@ export const refreshController: RequestHandler = async (req, res, next) => {
   try {
     const refreshToken = req.cookies?.[env.REFRESH_TOKEN_COOKIE_NAME]
     if (!refreshToken) throw new AppError(401, 'UNAUTHORIZED', 'Unauthorized')
-    const { refreshToken: nextRefreshToken, ...body } = await refreshSession(refreshToken, metaFromRequest(req))
-    setRefreshCookie(res, nextRefreshToken)
+    const { accessToken, refreshToken: nextRefreshToken, ...body } = await refreshSession(refreshToken, metaFromRequest(req))
+    setAuthCookies(res, { accessToken, refreshToken: nextRefreshToken })
     res.setHeader('Cache-Control', 'no-store')
     sendSuccess(res, body)
   } catch (error) {
@@ -58,7 +58,7 @@ export const refreshController: RequestHandler = async (req, res, next) => {
 export const logoutController: RequestHandler = async (req, res, next) => {
   try {
     const body = await logoutSession(req.cookies?.[env.REFRESH_TOKEN_COOKIE_NAME])
-    clearRefreshCookie(res)
+    clearAuthCookies(res)
     sendSuccess(res, body)
   } catch (error) {
     next(error)
@@ -67,7 +67,7 @@ export const logoutController: RequestHandler = async (req, res, next) => {
 
 export const meController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, { user: await getCurrentUser(parseAccessTokenHeader(req.header('authorization'))) })
+    sendSuccess(res, { user: await getCurrentUser(res.locals.auth.userId) })
   } catch (error) {
     next(error)
   }
@@ -92,7 +92,7 @@ export const resetPasswordController: RequestHandler = async (req, res, next) =>
 export const changePasswordController: RequestHandler = async (req, res, next) => {
   try {
     const body = await changePassword(res.locals.auth.userId, req.body)
-    clearRefreshCookie(res)
+    clearAuthCookies(res)
     sendSuccess(res, body)
   } catch (error) {
     next(error)
@@ -118,7 +118,7 @@ export const revokeSessionController: RequestHandler = async (req, res, next) =>
 export const logoutAllController: RequestHandler = async (_req, res, next) => {
   try {
     const body = await logoutAll(res.locals.auth.userId)
-    clearRefreshCookie(res)
+    clearAuthCookies(res)
     sendSuccess(res, body)
   } catch (error) {
     next(error)

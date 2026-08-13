@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID, createHash } from 'node:crypto'
 import type { AccountTokenPurpose, User, UserCredential } from '@prisma/client'
 import { AppError } from '../../common/errors/AppError.js'
-import { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken } from '../../common/auth/jwt.js'
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/auth/jwt.js'
 import { hashPassword, verifyPassword } from '../../common/auth/password.js'
 import { sendPasswordResetEmail, sendVerificationEmail } from '../../common/mail/mailer.js'
 import { env } from '../../config/env.js'
@@ -9,7 +9,6 @@ import { runTransaction } from '../../database/transaction.js'
 import { toSessionDto, toUserDto } from './auth.mapper.js'
 import { authRepository } from './auth.repository.js'
 
-export const refreshTokenCookieName = env.REFRESH_TOKEN_COOKIE_NAME
 const genericAuthError = new AppError(401, 'INVALID_CREDENTIALS', 'Invalid credentials')
 const genericMessage = { message: 'If the account exists, instructions have been sent.' }
 
@@ -137,9 +136,8 @@ export async function logoutSession(rawRefreshToken: string | undefined) {
   return { message: 'Logged out.' }
 }
 
-export async function getCurrentUser(accessToken: string) {
-  const payload = verifyAccessToken(accessToken)
-  const user = await authRepository.findUserById(payload.sub)
+export async function getCurrentUser(userId: string) {
+  const user = await authRepository.findUserById(userId)
   if (!user) throw new AppError(401, 'UNAUTHORIZED', 'Unauthorized')
   return toUserDto(user)
 }
@@ -195,10 +193,4 @@ export async function revokeOwnSession(userId: string, sessionId: string) {
 export async function logoutAll(userId: string) {
   await authRepository.revokeAllSessions(userId)
   return { message: 'Logged out from all sessions.' }
-}
-
-export function parseAccessTokenHeader(authorization: string | undefined) {
-  const [scheme, token] = authorization?.split(' ') ?? []
-  if (scheme !== 'Bearer' || !token) throw new AppError(401, 'UNAUTHORIZED', 'Unauthorized')
-  return token
 }

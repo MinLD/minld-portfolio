@@ -5,15 +5,15 @@ export function registerGuards(router) {
   router.beforeEach(async (to) => {
     const authStore = useAuthStore()
 
-    if (to.meta.requiresAuth) {
-      await authStore.boot()
+    if (to.meta.requiresAuth || to.meta.guestOnly) {
+      await authStore.restoreSession()
     }
 
-    if (to.meta.guestOnly && authStore.isLoggedIn) {
+    if (to.meta.guestOnly && authStore.isAuthenticated) {
       return '/'
     }
 
-    if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       return { path: '/login', query: { redirect: to.fullPath } }
     }
 

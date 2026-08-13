@@ -1,27 +1,21 @@
-import { loginApi, refreshApi } from '../api/auth'
+import { loginApi, logoutApi, meApi, refreshApi, registerApi } from '../api/auth'
 
-let accessToken = null
-
-export async function login(credentials) {
-  const data = await loginApi(credentials)
-
-  accessToken = data.accessToken
-
-  return data
+export function register(payload) {
+  return registerApi(payload)
 }
 
-export async function refreshSession() {
-  const data = await refreshApi()
-
-  accessToken = data.accessToken
-
-  return data
+export function login(credentials) {
+  return loginApi(credentials)
 }
 
-export function getAccessToken() {
-  return accessToken
+export function refreshSession() {
+  return refreshApi()
 }
 
-export function clearAccessToken() {
-  accessToken = null
+export function fetchMe() {
+  return meApi()
+}
+
+export function logout() {
+  return logoutApi()
 }

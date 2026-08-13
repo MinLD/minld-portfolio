@@ -12,6 +12,7 @@ process.env.ACCESS_TOKEN_SECRET = 'test-access-secret'
 process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret'
 process.env.ACCESS_TOKEN_TTL_MINUTES = '15'
 process.env.REFRESH_TOKEN_TTL_DAYS = '7'
+process.env.ACCESS_TOKEN_COOKIE_NAME = 'minld_pfl_access'
 process.env.REFRESH_TOKEN_COOKIE_NAME = 'minld_pfl_refresh'
 process.env.CORS_ORIGIN = 'http://localhost:5173'
 
@@ -31,6 +32,14 @@ function cookieHeader(response: request.Response) {
 
 function refreshCookie(response: request.Response) {
   return cookieHeader(response).split(';').find((cookie) => cookie.trim().startsWith('minld_pfl_refresh=')) ?? ''
+}
+
+function setCookies(response: request.Response) {
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
+}
+
+function accessCookie(response: request.Response) {
+  return cookieHeader(response).split(';').find((cookie) => cookie.trim().startsWith('minld_pfl_access=')) ?? ''
 }
 
 function refreshSessionId(cookie: string) {
@@ -124,14 +133,22 @@ describe('register and verify email', () => {
 })
 
 describe('login refresh logout me password sessions', () => {
-  test('login requires verified active user and sets httpOnly refresh cookie', async () => {
+  test('login requires verified active user and sets httpOnly auth cookies', async () => {
     const good = await login(adminEmail)
     expect(good.status).toBe(200)
-    expect(good.body.data.accessToken).toEqual(expect.any(String))
+    expect(good.body.data.accessToken).toBeUndefined()
     expect(good.body.data.refreshToken).toBeUndefined()
+    expect(good.body.data.user.email).toBe(adminEmail)
+    expect(cookieHeader(good)).toContain('minld_pfl_access=')
+    expect(cookieHeader(good)).toContain('minld_pfl_refresh=')
     expect(cookieHeader(good)).toContain('HttpOnly')
+    expect(cookieHeader(good)).toContain('SameSite=Lax')
+    expect(cookieHeader(good)).toContain('Path=/api;')
+    expect(cookieHeader(good)).toContain('Path=/api/v1/auth;')
     expect(await prisma.authSession.count({ where: { user: { email: adminEmail }, refreshTokenHash: { not: '' } } })).toBe(1)
-    expect((await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'bad-password' })).status).toBe(401)
+    const bad = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'bad-password' })
+    expect(bad.status).toBe(401)
+    expect(bad.headers['set-cookie']).toBeUndefined()
     expect((await request(app).post('/api/v1/auth/login').send({ email: 'missing@example.com', password })).status).toBe(401)
     expect((await request(app).post('/api/v1/auth/login').send({ email: bannedEmail, password })).status).toBe(401)
   })
@@ -147,6 +164,11 @@ describe('login refresh logout me password sessions', () => {
 
     const rotated = await request(app).post('/api/v1/auth/refresh').set('Origin', 'http://localhost:5173').set('Cookie', cookie)
     expect(rotated.status).toBe(200)
+    expect(rotated.body.data.accessToken).toBeUndefined()
+    expect(rotated.body.data.refreshToken).toBeUndefined()
+    expect(rotated.body.data.user.email).toBe(adminEmail)
+    expect(cookieHeader(rotated)).toContain('minld_pfl_access=')
+    expect(cookieHeader(rotated)).toContain('minld_pfl_refresh=')
     expect((await prisma.authSession.findUniqueOrThrow({ where: { id: oldSessionId } })).revokedAt).toBeTruthy()
     expect((await request(app).post('/api/v1/auth/refresh').set('Origin', 'http://localhost:5173').set('Cookie', cookie)).status).toBe(401)
 
@@ -163,34 +185,38 @@ describe('login refresh logout me password sessions', () => {
 
   test('me logout forgot reset change password and sessions work safely', async () => {
     const loginResponse = await login(adminEmail)
-    const accessToken = loginResponse.body.data.accessToken
+    const cookies = setCookies(loginResponse)
     const cookie = refreshCookie(loginResponse)
 
-    expect((await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${accessToken}`)).body.data.user.email).toBe(adminEmail)
+    expect((await request(app).get('/api/v1/auth/me').set('Cookie', accessCookie(loginResponse))).body.data.user.email).toBe(adminEmail)
     expect((await request(app).get('/api/v1/auth/me')).status).toBe(401)
 
-    const sessions = await request(app).get('/api/v1/auth/sessions').set('Authorization', `Bearer ${accessToken}`)
+    const sessions = await request(app).get('/api/v1/auth/sessions').set('Cookie', cookies)
     expect(sessions.status).toBe(200)
     expect(sessions.body.data.sessions[0].refreshTokenHash).toBeUndefined()
 
-    expect((await request(app).delete(`/api/v1/auth/sessions/${randomUUID()}`).set('Authorization', `Bearer ${accessToken}`).set('Origin', 'http://localhost:5173')).status).toBe(404)
+    expect((await request(app).delete(`/api/v1/auth/sessions/${randomUUID()}`).set('Cookie', cookies).set('Origin', 'http://localhost:5173')).status).toBe(404)
     expect((await request(app).post('/api/v1/auth/forgot-password').send({ email: 'missing@example.com' })).body).toEqual((await request(app).post('/api/v1/auth/forgot-password').send({ email: adminEmail })).body)
     const resetToken = tokenFromLastMail()
     expect((await request(app).post('/api/v1/auth/reset-password').send({ token: resetToken, newPassword: 'new-valid-password' })).status).toBe(200)
     expect((await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'new-valid-password' })).status).toBe(200)
 
     const changeLogin = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'new-valid-password' })
-    expect((await request(app).post('/api/v1/auth/change-password').set('Authorization', `Bearer ${changeLogin.body.data.accessToken}`).send({ currentPassword: 'wrong', newPassword: 'another-valid-password' })).status).toBe(401)
-    expect((await request(app).post('/api/v1/auth/change-password').set('Authorization', `Bearer ${changeLogin.body.data.accessToken}`).send({ currentPassword: 'new-valid-password', newPassword: 'another-valid-password' })).status).toBe(200)
+    expect((await request(app).post('/api/v1/auth/change-password').set('Cookie', setCookies(changeLogin)).send({ currentPassword: 'wrong', newPassword: 'another-valid-password' })).status).toBe(401)
+    const changedPassword = await request(app).post('/api/v1/auth/change-password').set('Cookie', setCookies(changeLogin)).send({ currentPassword: 'new-valid-password', newPassword: 'another-valid-password' })
+    expect(changedPassword.status).toBe(200)
+    expect(cookieHeader(changedPassword)).toContain('minld_pfl_access=;')
+    expect(cookieHeader(changedPassword)).toContain('minld_pfl_refresh=;')
 
     const logoutLogin = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'another-valid-password' })
     const logoutCookie = refreshCookie(logoutLogin)
     const logout = await request(app).post('/api/v1/auth/logout').set('Origin', 'http://localhost:5173').set('Cookie', logoutCookie)
     expect(logout.status).toBe(200)
+    expect(cookieHeader(logout)).toContain('minld_pfl_access=;')
     expect(cookieHeader(logout)).toContain('minld_pfl_refresh=;')
     expect((await request(app).post('/api/v1/auth/refresh').set('Cookie', logoutCookie)).status).toBe(401)
 
     const allLogin = await request(app).post('/api/v1/auth/login').send({ email: adminEmail, password: 'another-valid-password' })
-    expect((await request(app).post('/api/v1/auth/logout-all').set('Authorization', `Bearer ${allLogin.body.data.accessToken}`).set('Origin', 'http://localhost:5173')).status).toBe(200)
+    expect((await request(app).post('/api/v1/auth/logout-all').set('Cookie', setCookies(allLogin)).set('Origin', 'http://localhost:5173')).status).toBe(200)
   })
 })

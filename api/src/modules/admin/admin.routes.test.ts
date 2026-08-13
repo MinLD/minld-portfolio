@@ -29,9 +29,9 @@ async function createUser(email: string, role: 'USER' | 'ADMIN') {
   return prisma.user.create({ data: { email, displayName: email, role, emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
 }
 
-async function accessToken(email: string) {
+async function authCookie(email: string) {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
 beforeAll(async () => {
@@ -55,7 +55,7 @@ afterAll(async () => {
 })
 
 test('ADMIN can read dashboard counts', async () => {
-  const response = await request(app).get('/api/v1/admin/dashboard').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)
+  const response = await request(app).get('/api/v1/admin/dashboard').set('Cookie', await authCookie(adminEmail))
 
   expect(response.status).toBe(200)
   expect(response.body.data.dashboard.users).toBeGreaterThanOrEqual(2)
@@ -67,34 +67,34 @@ test('ADMIN can read dashboard counts', async () => {
 
 test('dashboard requires ADMIN', async () => {
   expect((await request(app).get('/api/v1/admin/dashboard')).status).toBe(401)
-  expect((await request(app).get('/api/v1/admin/dashboard').set('Authorization', `Bearer ${await accessToken(userEmail)}`)).status).toBe(403)
+  expect((await request(app).get('/api/v1/admin/dashboard').set('Cookie', await authCookie(userEmail))).status).toBe(403)
 })
 
 test('ADMIN can list search filter and paginate users', async () => {
-  const response = await request(app).get('/api/v1/admin/users?search=dashboard.user&role=USER&status=ACTIVE&page=1&limit=1').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)
+  const response = await request(app).get('/api/v1/admin/users?search=dashboard.user&role=USER&status=ACTIVE&page=1&limit=1').set('Cookie', await authCookie(adminEmail))
 
   expect(response.status).toBe(200)
   expect(response.body.data.users).toHaveLength(1)
   expect(response.body.data.users[0].email).toBe(userEmail)
   expect(response.body.data.users[0].passwordHash).toBeUndefined()
   expect(response.body.meta.total).toBeGreaterThanOrEqual(1)
-  expect((await request(app).get('/api/v1/admin/users?role=BAD').set('Authorization', `Bearer ${await accessToken(adminEmail)}`)).status).toBe(400)
+  expect((await request(app).get('/api/v1/admin/users?role=BAD').set('Cookie', await authCookie(adminEmail))).status).toBe(400)
 })
 
 test('ADMIN can ban and unban users but not current admin', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
   const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
   const admin = await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } })
 
-  const banned = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BANNED' })
+  const banned = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Cookie', cookie).send({ status: 'BANNED' })
   expect(banned.status).toBe(200)
   expect(banned.body.data.user.status).toBe('BANNED')
 
-  const active = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'ACTIVE' })
+  const active = await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Cookie', cookie).send({ status: 'ACTIVE' })
   expect(active.status).toBe(200)
   expect(active.body.data.user.status).toBe('ACTIVE')
 
-  expect((await request(app).patch(`/api/v1/admin/users/${admin.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BANNED' })).status).toBe(400)
-  expect((await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Authorization', `Bearer ${token}`).send({ status: 'BAD' })).status).toBe(400)
-  expect((await request(app).patch('/api/v1/admin/users/00000000-0000-0000-0000-000000000000/status').set('Authorization', `Bearer ${token}`).send({ status: 'ACTIVE' })).status).toBe(404)
+  expect((await request(app).patch(`/api/v1/admin/users/${admin.id}/status`).set('Cookie', cookie).send({ status: 'BANNED' })).status).toBe(400)
+  expect((await request(app).patch(`/api/v1/admin/users/${user.id}/status`).set('Cookie', cookie).send({ status: 'BAD' })).status).toBe(400)
+  expect((await request(app).patch('/api/v1/admin/users/00000000-0000-0000-0000-000000000000/status').set('Cookie', cookie).send({ status: 'ACTIVE' })).status).toBe(404)
 })

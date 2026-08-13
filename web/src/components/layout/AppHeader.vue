@@ -61,8 +61,10 @@ async function logout() {
             />
           </label>
 
+          <span v-if="!authStore.initialized" class="h-9 w-16 rounded-lg bg-zinc-800" aria-label="Loading auth state"></span>
+
           <RouterLink
-            v-if="!authStore.isLoggedIn"
+            v-else-if="!authStore.isAuthenticated"
             to="/login"
             class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
           >
@@ -125,7 +127,7 @@ async function logout() {
           </RouterLink>
 
           <RouterLink
-            v-if="!authStore.isLoggedIn"
+            v-if="authStore.initialized && !authStore.isAuthenticated"
             to="/login"
             class="rounded-lg px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
             @click="closeMobileMenu"
@@ -134,7 +136,7 @@ async function logout() {
           </RouterLink>
 
           <button
-            v-else
+            v-else-if="authStore.initialized"
             type="button"
             class="rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
             @click="logout"

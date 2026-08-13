@@ -1,4 +1,4 @@
-# Auth flow Vue + BE cookie
+# Auth flow Vue + BE HttpOnly cookies
 
 1. `login/register` gọi từ component.
 2. Component gọi `auth.store.js`.
@@ -9,19 +9,17 @@
 ## Login
 
 - FE gọi `POST /api/v1/auth/login`.
-- BE trả `accessToken` trong JSON.
-- BE tự set refresh token vào cookie `HttpOnly`.
-- FE chỉ giữ `accessToken` trong memory, không lưu `localStorage`.
+- BE set access + refresh token bằng cookie `HttpOnly`.
+- Response chỉ trả `user`, không trả token.
+- FE chỉ giữ `user/auth state` trong Pinia.
 
 ## Reload trang
 
-- Memory mất `accessToken`.
-- `authStore.boot()` gọi `POST /api/v1/auth/refresh`.
-- Browser tự gửi cookie vì `credentials: 'include'`.
-- BE trả access token mới.
-- FE gọi `GET /api/v1/auth/me` để lấy user.
+- `authStore.restoreSession()` gọi `POST /api/v1/auth/refresh`.
+- Browser tự gửi refresh cookie vì Axios `withCredentials: true`.
+- BE rotate refresh session, set access cookie mới, trả `user`.
 
 ## API bảo vệ
 
-- Gửi `Authorization: Bearer <accessToken>`.
-- Nếu access token hết hạn, gọi refresh rồi gọi lại API.
+- Browser tự gửi access cookie.
+- Nếu access cookie hết hạn, Axios gọi một lần `POST /auth/refresh`, rồi retry request gốc.

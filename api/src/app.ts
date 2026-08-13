@@ -4,6 +4,7 @@ import { env } from './config/env.js'
 import { errorMiddleware, notFoundMiddleware } from './common/middlewares/error.middleware.js'
 import { requestIdMiddleware } from './common/middleware/request-id.js'
 import { securityMiddleware } from './common/middleware/security.js'
+import { requireTrustedOriginForUnsafeMethods } from './common/middleware/trusted-origin.js'
 import { adminRouter } from './modules/admin/admin.routes.js'
 import { authRouter } from './modules/auth/auth.routes.js'
 import { adminCategoryRouter, publicCategoryRouter } from './modules/categories/category.routes.js'
@@ -21,6 +22,7 @@ app.use(requestIdMiddleware)
 app.use(securityMiddleware)
 app.use(express.json({ limit: env.JSON_BODY_LIMIT }))
 app.use(cookieParser())
+app.use(requireTrustedOriginForUnsafeMethods)
 
 app.use('/api/v1', healthRouter)
 app.use('/api/v1/auth', authRouter)

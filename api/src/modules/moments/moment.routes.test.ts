@@ -34,9 +34,9 @@ async function createUser(email: string, role: 'USER' | 'ADMIN') {
   await prisma.user.create({ data: { email, displayName: email, role, emailVerifiedAt: new Date(), credential: { create: { passwordHash: await hashPassword(password) } } } })
 }
 
-async function accessToken(email: string) {
+async function authCookie(email: string) {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
 async function seedTag() {
@@ -69,54 +69,54 @@ afterAll(async () => {
 })
 
 test('ADMIN can create list get update delete moment', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  const created = await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`).send(momentBody())
+  const created = await request(app).post('/api/v1/admin/moments').set('Cookie', cookie).send(momentBody())
   expect(created.status).toBe(201)
   expect(created.body.data.moment.content).toBe('Test Moment One')
   expect(created.body.data.moment.tags).toHaveLength(1)
 
-  const listed = await request(app).get('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`)
+  const listed = await request(app).get('/api/v1/admin/moments').set('Cookie', cookie)
   expect(listed.status).toBe(200)
   expect(listed.body.data.moments.some((moment: { id: string }) => moment.id === created.body.data.moment.id)).toBe(true)
 
   const id = created.body.data.moment.id as string
-  expect((await request(app).get(`/api/v1/admin/moments/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(200)
+  expect((await request(app).get(`/api/v1/admin/moments/${id}`).set('Cookie', cookie)).status).toBe(200)
 
-  const updated = await request(app).patch(`/api/v1/admin/moments/${id}`).set('Authorization', `Bearer ${token}`).send({ content: 'Test Moment Updated', status: 'ARCHIVED', tagIds: [] })
+  const updated = await request(app).patch(`/api/v1/admin/moments/${id}`).set('Cookie', cookie).send({ content: 'Test Moment Updated', status: 'ARCHIVED', tagIds: [] })
   expect(updated.status).toBe(200)
   expect(updated.body.data.moment.content).toBe('Test Moment Updated')
   expect(updated.body.data.moment.status).toBe('ARCHIVED')
   expect(updated.body.data.moment.tags).toHaveLength(0)
 
-  expect((await request(app).delete(`/api/v1/admin/moments/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
-  expect((await request(app).get(`/api/v1/admin/moments/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+  expect((await request(app).delete(`/api/v1/admin/moments/${id}`).set('Cookie', cookie)).status).toBe(204)
+  expect((await request(app).get(`/api/v1/admin/moments/${id}`).set('Cookie', cookie)).status).toBe(404)
 })
 
 test('moment admin routes require ADMIN', async () => {
-  const userToken = await accessToken(userEmail)
+  const userCookie = await authCookie(userEmail)
   const noToken = await request(app).post('/api/v1/admin/moments').send(momentBody())
-  const user = await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${userToken}`).send(momentBody())
+  const user = await request(app).post('/api/v1/admin/moments').set('Cookie', userCookie).send(momentBody())
 
   expect(noToken.status).toBe(401)
   expect(user.status).toBe(403)
 })
 
 test('moment validation and tag checks work', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  expect((await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`).send({ content: '', status: 'BAD' })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/moments').set('Authorization', `Bearer ${token}`).send({ ...momentBody(), tagIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/moments').set('Cookie', cookie).send({ content: '', status: 'BAD' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/moments').set('Cookie', cookie).send({ ...momentBody(), tagIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
 })
 
 test('ADMIN can upload reorder and delete moment images', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
   const moment = await prisma.moment.create({ data: { content: 'Test Moment Images' } })
   mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/one.png', publicId: 'one-id' }).mockResolvedValueOnce({ url: 'https://cdn/two.png', publicId: 'two-id' })
 
   const uploaded = await request(app)
     .post(`/api/v1/admin/moments/${moment.id}/images`)
-    .set('Authorization', `Bearer ${token}`)
+    .set('Cookie', cookie)
     .attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })
     .attach('images', Buffer.from('two'), { filename: 'two.webp', contentType: 'image/webp' })
 
@@ -125,21 +125,21 @@ test('ADMIN can upload reorder and delete moment images', async () => {
   expect(uploaded.body.data.moment.images[0].publicId).toBeUndefined()
 
   const [first, second] = uploaded.body.data.moment.images as { id: string }[]
-  const reordered = await request(app).patch(`/api/v1/admin/moments/${moment.id}/images/reorder`).set('Authorization', `Bearer ${token}`).send({ images: [{ id: first.id, sortOrder: 1 }, { id: second.id, sortOrder: 0 }] })
+  const reordered = await request(app).patch(`/api/v1/admin/moments/${moment.id}/images/reorder`).set('Cookie', cookie).send({ images: [{ id: first.id, sortOrder: 1 }, { id: second.id, sortOrder: 0 }] })
   expect(reordered.status).toBe(200)
   expect(reordered.body.data.moment.images.map((image: { url: string }) => image.url)).toEqual(['https://cdn/two.png', 'https://cdn/one.png'])
 
-  expect((await request(app).delete(`/api/v1/admin/moment-images/${first.id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/admin/moment-images/${first.id}`).set('Cookie', cookie)).status).toBe(204)
   expect(mediaMocks.deleteImage).toHaveBeenCalledWith('one-id')
 })
 
 test('moment image upload validates auth type and image limit', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
   const moment = await prisma.moment.create({ data: { content: 'Test Moment Image Limits', images: { create: Array.from({ length: 10 }, (_, index) => ({ url: `https://cdn/${index}.png`, publicId: `id-${index}`, sortOrder: index })) } } })
 
   expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(401)
-  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('bad'), { filename: 'bad.gif', contentType: 'image/gif' })).status).toBe(400)
-  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Authorization', `Bearer ${token}`).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(400)
+  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Cookie', cookie).attach('images', Buffer.from('bad'), { filename: 'bad.gif', contentType: 'image/gif' })).status).toBe(400)
+  expect((await request(app).post(`/api/v1/admin/moments/${moment.id}/images`).set('Cookie', cookie).attach('images', Buffer.from('one'), { filename: 'one.png', contentType: 'image/png' })).status).toBe(400)
 })
 
 test('public moment routes expose only published moments', async () => {
@@ -160,29 +160,29 @@ test('public moment routes expose only published moments', async () => {
 })
 
 test('authenticated active user can like and unlike published moment', async () => {
-  const token = await accessToken(userEmail)
+  const cookie = await authCookie(userEmail)
   const published = await prisma.moment.create({ data: { content: 'Test Moment Like', status: 'PUBLISHED', publishedAt: new Date() } })
   const draft = await prisma.moment.create({ data: { content: 'Test Moment Like Draft', status: 'DRAFT' } })
 
-  const liked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Authorization', `Bearer ${token}`)
+  const liked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Cookie', cookie)
   expect(liked.status).toBe(200)
   expect(liked.body.data).toEqual({ liked: true, likeCount: 1 })
 
-  const unliked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Authorization', `Bearer ${token}`)
+  const unliked = await request(app).post(`/api/v1/moments/${published.id}/like`).set('Cookie', cookie)
   expect(unliked.status).toBe(200)
   expect(unliked.body.data).toEqual({ liked: false, likeCount: 0 })
 
   expect((await request(app).post(`/api/v1/moments/${published.id}/like`)).status).toBe(401)
-  expect((await request(app).post(`/api/v1/moments/${draft.id}/like`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+  expect((await request(app).post(`/api/v1/moments/${draft.id}/like`).set('Cookie', cookie)).status).toBe(404)
 })
 
 test('authenticated active user can create and list visible moment comments', async () => {
-  const token = await accessToken(userEmail)
+  const cookie = await authCookie(userEmail)
   const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
   const published = await prisma.moment.create({ data: { content: 'Test Moment Comments', status: 'PUBLISHED', publishedAt: new Date() } })
   const draft = await prisma.moment.create({ data: { content: 'Test Moment Comments Draft', status: 'DRAFT' } })
 
-  const created = await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Authorization', `Bearer ${token}`).send({ content: 'Nice moment' })
+  const created = await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Cookie', cookie).send({ content: 'Nice moment' })
   expect(created.status).toBe(201)
   expect(created.body.data.comment.content).toBe('Nice moment')
   expect(created.body.data.comment.user.id).toBe(user.id)
@@ -193,49 +193,49 @@ test('authenticated active user can create and list visible moment comments', as
   expect(listed.body.data.comments.map((comment: { content: string }) => comment.content)).toEqual(['Nice moment'])
 
   expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).send({ content: 'No token' })).status).toBe(401)
-  expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Authorization', `Bearer ${token}`).send({ content: '' })).status).toBe(400)
+  expect((await request(app).post(`/api/v1/moments/${published.id}/comments`).set('Cookie', cookie).send({ content: '' })).status).toBe(400)
   expect((await request(app).get(`/api/v1/moments/${draft.id}/comments`)).status).toBe(404)
 })
 
 test('authenticated user can update and delete own moment comment only', async () => {
-  const adminToken = await accessToken(adminEmail)
-  const userToken = await accessToken(userEmail)
+  const adminCookie = await authCookie(adminEmail)
+  const userCookie = await authCookie(userEmail)
   const admin = await prisma.user.findUniqueOrThrow({ where: { email: adminEmail } })
   const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
   const moment = await prisma.moment.create({ data: { content: 'Test Moment Own Comment', status: 'PUBLISHED', publishedAt: new Date() } })
   const comment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: user.id, content: 'Original' } })
   const otherComment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: admin.id, content: 'Other' } })
 
-  expect((await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`).send({ content: 'Hack' })).status).toBe(403)
+  expect((await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Cookie', adminCookie).send({ content: 'Hack' })).status).toBe(403)
 
-  const updated = await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${userToken}`).send({ content: 'Updated' })
+  const updated = await request(app).patch(`/api/v1/moment-comments/${comment.id}`).set('Cookie', userCookie).send({ content: 'Updated' })
   expect(updated.status).toBe(200)
   expect(updated.body.data.comment.content).toBe('Updated')
 
-  expect((await request(app).delete(`/api/v1/moment-comments/${otherComment.id}`).set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
-  expect((await request(app).delete(`/api/v1/moment-comments/${comment.id}`).set('Authorization', `Bearer ${userToken}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/moment-comments/${otherComment.id}`).set('Cookie', userCookie)).status).toBe(403)
+  expect((await request(app).delete(`/api/v1/moment-comments/${comment.id}`).set('Cookie', userCookie)).status).toBe(204)
   expect(await prisma.momentComment.findUnique({ where: { id: comment.id } })).toBeNull()
-  expect((await request(app).patch('/api/v1/moment-comments/00000000-0000-0000-0000-000000000000').set('Authorization', `Bearer ${userToken}`).send({ content: 'Missing' })).status).toBe(404)
+  expect((await request(app).patch('/api/v1/moment-comments/00000000-0000-0000-0000-000000000000').set('Cookie', userCookie).send({ content: 'Missing' })).status).toBe(404)
 })
 
 test('ADMIN can list moderate and delete moment comments', async () => {
-  const adminToken = await accessToken(adminEmail)
-  const userToken = await accessToken(userEmail)
+  const adminCookie = await authCookie(adminEmail)
+  const userCookie = await authCookie(userEmail)
   const user = await prisma.user.findUniqueOrThrow({ where: { email: userEmail } })
   const moment = await prisma.moment.create({ data: { content: 'Test Moment Admin Comment', status: 'PUBLISHED', publishedAt: new Date() } })
   const comment = await prisma.momentComment.create({ data: { momentId: moment.id, userId: user.id, content: 'Moderate me' } })
 
-  expect((await request(app).get('/api/v1/admin/moment-comments').set('Authorization', `Bearer ${userToken}`)).status).toBe(403)
+  expect((await request(app).get('/api/v1/admin/moment-comments').set('Cookie', userCookie)).status).toBe(403)
 
-  const listed = await request(app).get('/api/v1/admin/moment-comments').set('Authorization', `Bearer ${adminToken}`)
+  const listed = await request(app).get('/api/v1/admin/moment-comments').set('Cookie', adminCookie)
   expect(listed.status).toBe(200)
   expect(listed.body.data.comments.some((item: { id: string }) => item.id === comment.id)).toBe(true)
 
-  const hidden = await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'HIDDEN' })
+  const hidden = await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Cookie', adminCookie).send({ status: 'HIDDEN' })
   expect(hidden.status).toBe(200)
   expect(hidden.body.data.comment.status).toBe('HIDDEN')
-  expect((await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'BAD' })).status).toBe(400)
+  expect((await request(app).patch(`/api/v1/admin/moment-comments/${comment.id}/status`).set('Cookie', adminCookie).send({ status: 'BAD' })).status).toBe(400)
 
-  expect((await request(app).delete(`/api/v1/admin/moment-comments/${comment.id}`).set('Authorization', `Bearer ${adminToken}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/admin/moment-comments/${comment.id}`).set('Cookie', adminCookie)).status).toBe(204)
   expect(await prisma.momentComment.findUnique({ where: { id: comment.id } })).toBeNull()
 })

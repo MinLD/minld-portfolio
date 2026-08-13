@@ -18,3 +18,12 @@ export const requireTrustedOrigin: RequestHandler = (req, _res, next) => {
 
   next()
 }
+
+export const requireTrustedOriginForUnsafeMethods: RequestHandler = (req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    next()
+    return
+  }
+
+  requireTrustedOrigin(req, res, next)
+}

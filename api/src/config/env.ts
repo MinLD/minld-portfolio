@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import { z } from 'zod'
 
+const booleanEnv = z.preprocess((value) => (typeof value === 'string' ? value.toLowerCase() === 'true' : value), z.boolean())
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
@@ -13,11 +15,13 @@ const envSchema = z.object({
   REFRESH_TOKEN_SECRET: z.string().min(1).default('dev-refresh-secret'),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  ACCESS_TOKEN_COOKIE_NAME: z.string().min(1).default('minld_pfl_access'),
   REFRESH_TOKEN_COOKIE_NAME: z.string().min(1).default('minld_pfl_refresh'),
-  COOKIE_SECURE: z.coerce.boolean().default(false),
+  COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
+  COOKIE_SECURE: booleanEnv.default(false),
   SMTP_HOST: z.string().optional().default(''),
   SMTP_PORT: z.coerce.number().int().positive().default(587),
-  SMTP_SECURE: z.coerce.boolean().default(false),
+  SMTP_SECURE: booleanEnv.default(false),
   SMTP_USER: z.string().optional().default(''),
   SMTP_PASS: z.string().optional().default(''),
   MAIL_FROM: z.string().default('MinLD.PFL <no-reply@example.com>'),
@@ -27,9 +31,12 @@ const envSchema = z.object({
   MEDIA_MAX_FILE_SIZE_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024),
 })
 
+const parsedEnv = envSchema.parse(process.env)
+
 export const env = {
-  ...envSchema.parse(process.env),
+  ...parsedEnv,
+  COOKIE_SECURE: parsedEnv.NODE_ENV === 'production' ? true : parsedEnv.COOKIE_SECURE,
   get CORS_ORIGINS() {
-    return envSchema.parse(process.env).CORS_ORIGIN.split(',').map((origin) => origin.trim())
+    return parsedEnv.CORS_ORIGIN.split(',').map((origin) => origin.trim())
   },
 }

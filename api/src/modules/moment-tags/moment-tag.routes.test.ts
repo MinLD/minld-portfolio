@@ -34,9 +34,9 @@ async function createUser(email: string, role: 'USER' | 'ADMIN') {
   })
 }
 
-async function accessToken(email: string) {
+async function authCookie(email: string) {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
 beforeAll(async () => {
@@ -56,13 +56,13 @@ afterAll(async () => {
 })
 
 test('ADMIN can create list get update delete moment tag', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  const created = await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`).send({ name: 'Test Moment Tag One', slug: 'test-moment-tag-one' })
+  const created = await request(app).post('/api/v1/admin/moment-tags').set('Cookie', cookie).send({ name: 'Test Moment Tag One', slug: 'test-moment-tag-one' })
   expect(created.status).toBe(201)
   expect(created.body.data.tag.slug).toBe('test-moment-tag-one')
 
-  const listed = await request(app).get('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`)
+  const listed = await request(app).get('/api/v1/admin/moment-tags').set('Cookie', cookie)
   expect(listed.status).toBe(200)
   expect(listed.body.data.tags.some((tag: { slug: string }) => tag.slug === 'test-moment-tag-one')).toBe(true)
 
@@ -71,30 +71,30 @@ test('ADMIN can create list get update delete moment tag', async () => {
   expect(publicList.body.data.tags.some((tag: { slug: string }) => tag.slug === 'test-moment-tag-one')).toBe(true)
 
   const id = created.body.data.tag.id as string
-  expect((await request(app).get(`/api/v1/admin/moment-tags/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(200)
+  expect((await request(app).get(`/api/v1/admin/moment-tags/${id}`).set('Cookie', cookie)).status).toBe(200)
 
-  const updated = await request(app).patch(`/api/v1/admin/moment-tags/${id}`).set('Authorization', `Bearer ${token}`).send({ name: 'Test Moment Tag Updated' })
+  const updated = await request(app).patch(`/api/v1/admin/moment-tags/${id}`).set('Cookie', cookie).send({ name: 'Test Moment Tag Updated' })
   expect(updated.status).toBe(200)
   expect(updated.body.data.tag.name).toBe('Test Moment Tag Updated')
 
-  expect((await request(app).delete(`/api/v1/admin/moment-tags/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
-  expect((await request(app).get(`/api/v1/admin/moment-tags/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+  expect((await request(app).delete(`/api/v1/admin/moment-tags/${id}`).set('Cookie', cookie)).status).toBe(204)
+  expect((await request(app).get(`/api/v1/admin/moment-tags/${id}`).set('Cookie', cookie)).status).toBe(404)
 })
 
 test('moment tag admin routes require ADMIN', async () => {
-  const userToken = await accessToken(userEmail)
+  const userCookie = await authCookie(userEmail)
   const noToken = await request(app).post('/api/v1/admin/moment-tags').send({ name: 'Test Moment Tag No Token', slug: 'test-moment-tag-no-token' })
-  const user = await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${userToken}`).send({ name: 'Test Moment Tag User', slug: 'test-moment-tag-user' })
+  const user = await request(app).post('/api/v1/admin/moment-tags').set('Cookie', userCookie).send({ name: 'Test Moment Tag User', slug: 'test-moment-tag-user' })
 
   expect(noToken.status).toBe(401)
   expect(user.status).toBe(403)
 })
 
 test('moment tag validation and uniqueness work', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  expect((await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`).send({ name: '', slug: 'bad slug' })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`).send({ name: 'Test Moment Tag Unique', slug: 'test-moment-tag-unique' })).status).toBe(201)
-  expect((await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`).send({ name: 'Test Moment Tag Unique', slug: 'test-moment-tag-unique-2' })).status).toBe(409)
-  expect((await request(app).post('/api/v1/admin/moment-tags').set('Authorization', `Bearer ${token}`).send({ name: 'Test Moment Tag Unique 2', slug: 'test-moment-tag-unique' })).status).toBe(409)
+  expect((await request(app).post('/api/v1/admin/moment-tags').set('Cookie', cookie).send({ name: '', slug: 'bad slug' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/moment-tags').set('Cookie', cookie).send({ name: 'Test Moment Tag Unique', slug: 'test-moment-tag-unique' })).status).toBe(201)
+  expect((await request(app).post('/api/v1/admin/moment-tags').set('Cookie', cookie).send({ name: 'Test Moment Tag Unique', slug: 'test-moment-tag-unique-2' })).status).toBe(409)
+  expect((await request(app).post('/api/v1/admin/moment-tags').set('Cookie', cookie).send({ name: 'Test Moment Tag Unique 2', slug: 'test-moment-tag-unique' })).status).toBe(409)
 })

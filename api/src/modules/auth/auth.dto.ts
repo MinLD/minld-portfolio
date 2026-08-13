@@ -10,7 +10,7 @@ export type UserDto = {
   emailVerified: boolean
 }
 
-export type AuthDto = { user: UserDto; accessToken: string }
+export type AuthDto = { user: UserDto }
 
 export type SessionDto = {
   id: string

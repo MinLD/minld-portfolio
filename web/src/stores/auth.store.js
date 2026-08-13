@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
+import { setAuthFailureHandler } from '@/api/http'
 import * as authService from '@/services/auth.service'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -11,8 +12,29 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref('')
 
   const initialized = ref(false)
+  let restorePromise = null
 
   const isAuthenticated = computed(() => Boolean(user.value))
+
+  function clearSession() {
+    user.value = null
+  }
+
+  setAuthFailureHandler(clearSession)
+
+  async function register(payload) {
+    loading.value = true
+    error.value = ''
+
+    try {
+      return await authService.register(payload)
+    } catch (err) {
+      error.value = axios.isAxiosError(err) ? err.response?.data?.error?.message || 'Register failed.' : 'Register failed.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
   async function login(credentials) {
     loading.value = true
@@ -22,10 +44,11 @@ export const useAuthStore = defineStore('auth', () => {
       const data = await authService.login(credentials)
 
       user.value = data.user
+      initialized.value = true
 
       return data.user
     } catch (err) {
-      user.value = null
+      clearSession()
 
       if (axios.isAxiosError(err)) {
         const code = err.response?.data?.error?.code
@@ -52,17 +75,42 @@ export const useAuthStore = defineStore('auth', () => {
       return user.value
     }
 
-    try {
-      const data = await authService.refreshSession()
-
-      user.value = data.user
-    } catch {
-      user.value = null
-    } finally {
-      initialized.value = true
+    if (restorePromise) {
+      return restorePromise
     }
 
-    return user.value
+    restorePromise = (async () => {
+      try {
+        const data = await authService.refreshSession()
+
+        user.value = data.user
+      } catch {
+        clearSession()
+      } finally {
+        initialized.value = true
+        restorePromise = null
+      }
+
+      return user.value
+    })()
+
+    return restorePromise
+  }
+
+  async function fetchMe() {
+    const data = await authService.fetchMe()
+    user.value = data.user
+    initialized.value = true
+    return data.user
+  }
+
+  async function logout() {
+    try {
+      await authService.logout()
+    } finally {
+      clearSession()
+      initialized.value = true
+    }
   }
 
   function clearError() {
@@ -77,8 +125,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     isAuthenticated,
 
+    register,
     login,
     restoreSession,
+    fetchMe,
+    logout,
+    clearSession,
     clearError,
   }
 })

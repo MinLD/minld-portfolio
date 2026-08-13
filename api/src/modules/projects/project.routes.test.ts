@@ -44,9 +44,9 @@ async function createUser(email: string, role: 'USER' | 'ADMIN') {
   })
 }
 
-async function accessToken(email: string) {
+async function authCookie(email: string) {
   const response = await request(app).post('/api/v1/auth/login').send({ email, password })
-  return response.body.data.accessToken as string
+  return ([] as string[]).concat(response.headers['set-cookie'] ?? []).join('; ')
 }
 
 async function seedRelations() {
@@ -95,48 +95,48 @@ afterAll(async () => {
 })
 
 test('ADMIN can create list get update delete project', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  const created = await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody())
+  const created = await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody())
   expect(created.status).toBe(201)
   expect(created.body.data.project.slug).toBe('test-project-one')
   expect(created.body.data.project.categories).toHaveLength(1)
   expect(created.body.data.project.technologies).toHaveLength(1)
 
-  const listed = await request(app).get('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`)
+  const listed = await request(app).get('/api/v1/admin/projects').set('Cookie', cookie)
   expect(listed.status).toBe(200)
   expect(listed.body.data.projects.some((project: { slug: string }) => project.slug === 'test-project-one')).toBe(true)
 
   const id = created.body.data.project.id as string
-  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(200)
+  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Cookie', cookie)).status).toBe(200)
 
-  const updated = await request(app).patch(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`).send({ title: 'Test Project Updated', status: 'ARCHIVED', featured: false, categoryIds: [], technologyIds: [] })
+  const updated = await request(app).patch(`/api/v1/admin/projects/${id}`).set('Cookie', cookie).send({ title: 'Test Project Updated', status: 'ARCHIVED', featured: false, categoryIds: [], technologyIds: [] })
   expect(updated.status).toBe(200)
   expect(updated.body.data.project.title).toBe('Test Project Updated')
   expect(updated.body.data.project.status).toBe('ARCHIVED')
   expect(updated.body.data.project.categories).toHaveLength(0)
   expect(updated.body.data.project.technologies).toHaveLength(0)
 
-  expect((await request(app).delete(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
-  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Authorization', `Bearer ${token}`)).status).toBe(404)
+  expect((await request(app).delete(`/api/v1/admin/projects/${id}`).set('Cookie', cookie)).status).toBe(204)
+  expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Cookie', cookie)).status).toBe(404)
 })
 
 test('project admin routes require ADMIN', async () => {
-  const userToken = await accessToken(userEmail)
+  const userCookie = await authCookie(userEmail)
   const noToken = await request(app).post('/api/v1/admin/projects').send(projectBody('test-project-no-token'))
-  const user = await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${userToken}`).send(projectBody('test-project-user'))
+  const user = await request(app).post('/api/v1/admin/projects').set('Cookie', userCookie).send(projectBody('test-project-user'))
 
   expect(noToken.status).toBe(401)
   expect(user.status).toBe(403)
 })
 
 test('project validation uniqueness and relation checks work', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
 
-  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send({ ...projectBody('bad slug'), title: '' })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send({ ...projectBody('test-project-missing-category'), categoryIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(201)
-  expect((await request(app).post('/api/v1/admin/projects').set('Authorization', `Bearer ${token}`).send(projectBody('test-project-unique'))).status).toBe(409)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('bad slug'), title: '' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('test-project-missing-category'), categoryIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('test-project-unique'))).status).toBe(201)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('test-project-unique'))).status).toBe(409)
 })
 
 test('public project routes expose only published projects', async () => {
@@ -181,13 +181,13 @@ test('public project filters and paginates in database', async () => {
 })
 
 test('ADMIN can replace and delete project thumbnail with cleanup', async () => {
-  const token = await accessToken(adminEmail)
+  const cookie = await authCookie(adminEmail)
   const project = await prisma.project.create({ data: { title: 'Thumb Project', slug: 'test-project-thumbnail', summary: 'Summary', content: 'Content', thumbnailUrl: 'https://cdn/old.png', thumbnailPublicId: 'old-id' } })
   mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/new.png', publicId: 'new-id' })
 
   const replaced = await request(app)
     .post(`/api/v1/admin/projects/${project.id}/thumbnail`)
-    .set('Authorization', `Bearer ${token}`)
+    .set('Cookie', cookie)
     .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
 
   expect(replaced.status).toBe(200)
@@ -196,7 +196,7 @@ test('ADMIN can replace and delete project thumbnail with cleanup', async () => 
   expect((await prisma.project.findUniqueOrThrow({ where: { id: project.id } })).thumbnailPublicId).toBe('new-id')
   expect(mediaMocks.deleteImage).toHaveBeenCalledWith('old-id')
 
-  expect((await request(app).delete(`/api/v1/admin/projects/${project.id}/thumbnail`).set('Authorization', `Bearer ${token}`)).status).toBe(204)
+  expect((await request(app).delete(`/api/v1/admin/projects/${project.id}/thumbnail`).set('Cookie', cookie)).status).toBe(204)
   expect(mediaMocks.deleteImage).toHaveBeenCalledWith('new-id')
   expect((await prisma.project.findUniqueOrThrow({ where: { id: project.id } })).thumbnailPublicId).toBeNull()
 })
