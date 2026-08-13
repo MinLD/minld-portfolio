@@ -15,9 +15,10 @@
 
 ## Reload trang
 
-- `authStore.restoreSession()` gọi `POST /api/v1/auth/refresh`.
-- Browser tự gửi refresh cookie vì Axios `withCredentials: true`.
-- BE rotate refresh session, set access cookie mới, trả `user`.
+- F5 không xóa cookie, browser giữ access + refresh cookie đến khi hết hạn hoặc server clear.
+- App gọi `authStore.restoreSession()` một lần ở navigation guard, kể cả public page.
+- Store gọi `GET /api/v1/auth/me` để khôi phục `user/auth state` từ cookie.
+- Nếu access cookie hết hạn, Axios mới gọi `POST /auth/refresh`, nhận cookie mới, retry `/me`.
 
 ## API bảo vệ
 
