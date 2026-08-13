@@ -14,15 +14,15 @@ export async function listProjectComments(slug: string) {
   return { comments: (await projectCommentRepository.findVisibleByProjectId(project.id)).map(toProjectCommentDto) }
 }
 
-export async function createProjectComment(slug: string, userId: string, input: { content: string }) {
+export async function createProjectComment(slug: string, input: { authorName: string; content: string }) {
   const project = await findPublishedProject(slug)
-  return { comment: toProjectCommentDto(await projectCommentRepository.create({ projectId: project.id, userId, content: input.content })) }
+  return { comment: toProjectCommentDto(await projectCommentRepository.create({ projectId: project.id, authorName: input.authorName, content: input.content })) }
 }
 
 async function findOwnComment(id: string, userId: string) {
   const comment = await projectCommentRepository.findById(id)
   if (!comment) throw new AppError(404, 'COMMENT_NOT_FOUND', 'Comment not found')
-  if (comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
+  if (!comment.userId || comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
   return comment
 }
 

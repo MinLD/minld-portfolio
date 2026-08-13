@@ -29,7 +29,9 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       return await authService.register(payload)
     } catch (err) {
-      error.value = axios.isAxiosError(err) ? err.response?.data?.error?.message || 'Register failed.' : 'Register failed.'
+      error.value = axios.isAxiosError(err)
+        ? err.response?.data?.error?.message || 'Register failed.'
+        : 'Register failed.'
       throw err
     } finally {
       loading.value = false
@@ -43,6 +45,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const data = await authService.login(credentials)
 
+      if (data.user.role !== 'ADMIN') {
+        await authService.logout()
+        throw new Error('ADMIN_ONLY')
+      }
+
       user.value = data.user
       initialized.value = true
 
@@ -50,10 +57,14 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err) {
       clearSession()
 
-      if (axios.isAxiosError(err)) {
+      if (err?.message === 'ADMIN_ONLY') {
+        error.value = 'Only the admin is allowed to log in.'
+      } else if (axios.isAxiosError(err)) {
         const code = err.response?.data?.error?.code
 
-        if (code === 'INVALID_CREDENTIALS') {
+        if (code === 'ADMIN_ONLY') {
+          error.value = 'Only the admin is allowed to log in..'
+        } else if (code === 'INVALID_CREDENTIALS') {
           error.value = 'Incorrect email or password.'
         } else if (!err.response) {
           error.value = 'Unable to connect to the server.'

@@ -50,6 +50,7 @@ const router = createRouter({
       name: 'admin',
       component: () => import('@/views/AdminView.vue'),
       meta: {
+        requiresAuth: true,
         roles: ['admin'],
         layout: 'admin',
       },

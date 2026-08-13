@@ -11,7 +11,7 @@ export const projectCommentRouter = Router()
 export const adminProjectCommentRouter = Router()
 
 projectCommentRouter.get('/projects/:slug/comments', validateRequest(projectCommentSlugSchema), listProjectCommentsController)
-projectCommentRouter.post('/projects/:slug/comments', projectCommentCreateRateLimit, requireAuth, requireActiveUser, validateRequest(createProjectCommentSchema), createProjectCommentController)
+projectCommentRouter.post('/projects/:slug/comments', projectCommentCreateRateLimit, validateRequest(createProjectCommentSchema), createProjectCommentController)
 projectCommentRouter.patch('/project-comments/:id', requireAuth, requireActiveUser, validateRequest(updateProjectCommentSchema), updateOwnProjectCommentController)
 projectCommentRouter.delete('/project-comments/:id', requireAuth, requireActiveUser, validateRequest(projectCommentIdSchema), deleteOwnProjectCommentController)
 

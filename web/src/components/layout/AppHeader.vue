@@ -19,11 +19,6 @@ function closeMobileMenu() {
 function isActive(path) {
   return path === '/' ? route.path === '/' : route.path.startsWith(path)
 }
-
-async function logout() {
-  await authStore.logout()
-  closeMobileMenu()
-}
 </script>
 
 <template>
@@ -75,14 +70,13 @@ async function logout() {
             Login
           </RouterLink>
 
-          <button
+          <RouterLink
             v-else
-            type="button"
+            to="/admin"
             class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-            @click="logout"
           >
-            Logout
-          </button>
+            Admin
+          </RouterLink>
 
           <a
             href="https://www.buymeacoffee.com/minld"
@@ -139,14 +133,14 @@ async function logout() {
             Login
           </RouterLink>
 
-          <button
+          <RouterLink
             v-else-if="authStore.initialized"
-            type="button"
+            to="/admin"
             class="rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
-            @click="logout"
+            @click="closeMobileMenu"
           >
-            Logout
-          </button>
+            Admin
+          </RouterLink>
         </nav>
       </div>
     </LayoutContainer>

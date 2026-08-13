@@ -18,7 +18,6 @@ export function registerGuards(router) {
       const allowedRoles = to.meta.roles.map((role) => role.toUpperCase())
       const userRole = authStore.user?.role.toUpperCase()
       const hasPermission = userRole && allowedRoles.includes(userRole)
-      console.log(hasPermission)
       if (!hasPermission) {
         return {
           name: 'not-found',

@@ -161,15 +161,16 @@ model Project {
 }
 
 model ProjectComment {
-  id        String               @id @default(uuid()) @db.Uuid
-  projectId String               @db.Uuid
-  userId    String               @db.Uuid
-  content   String
-  status    ProjectCommentStatus @default(VISIBLE)
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
-  project   Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String               @id @default(uuid()) @db.Uuid
+  projectId  String               @db.Uuid
+  userId     String?              @db.Uuid
+  authorName String?
+  content    String
+  status     ProjectCommentStatus @default(VISIBLE)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  project    Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([projectId, status])
   @@index([userId])
@@ -226,15 +227,16 @@ model MomentLike {
 }
 
 model MomentComment {
-  id        String              @id @default(uuid()) @db.Uuid
-  momentId  String              @db.Uuid
-  userId    String              @db.Uuid
-  content   String
-  status    MomentCommentStatus @default(VISIBLE)
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
-  moment    Moment              @relation(fields: [momentId], references: [id], onDelete: Cascade)
-  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String              @id @default(uuid()) @db.Uuid
+  momentId   String              @db.Uuid
+  userId     String?             @db.Uuid
+  authorName String?
+  content    String
+  status     MomentCommentStatus @default(VISIBLE)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  moment     Moment              @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  user       User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([momentId, status])
   @@index([userId])

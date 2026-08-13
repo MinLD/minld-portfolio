@@ -12,7 +12,7 @@ export const listProjectCommentsController: RequestHandler = async (req, res, ne
 
 export const createProjectCommentController: RequestHandler = async (req, res, next) => {
   try {
-    sendCreated(res, await createProjectComment(String(req.params.slug), res.locals.auth.userId, req.body))
+    sendCreated(res, await createProjectComment(String(req.params.slug), req.body))
   } catch (error) {
     next(error)
   }

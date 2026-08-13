@@ -60,7 +60,7 @@ export const listMomentCommentsController: RequestHandler = async (req, res, nex
 
 export const createMomentCommentController: RequestHandler = async (req, res, next) => {
   try {
-    sendCreated(res, await createMomentComment(String(req.params.id), res.locals.auth.userId, req.body))
+    sendCreated(res, await createMomentComment(String(req.params.id), req.body))
   } catch (error) {
     next(error)
   }

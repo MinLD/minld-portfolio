@@ -6,7 +6,7 @@ export const projectCommentRepository = {
     return prisma.projectComment.findMany({ where: { projectId, status: 'VISIBLE' }, orderBy: { createdAt: 'asc' }, include: projectCommentInclude })
   },
 
-  create(data: { projectId: string; userId: string; content: string }) {
+  create(data: { projectId: string; authorName: string; content: string }) {
     return prisma.projectComment.create({ data, include: projectCommentInclude })
   },
 

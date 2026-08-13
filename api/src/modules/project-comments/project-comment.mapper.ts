@@ -13,6 +13,6 @@ export function toProjectCommentDto(comment: ProjectCommentWithUser): ProjectCom
     status: comment.status,
     createdAt: comment.createdAt.toISOString(),
     updatedAt: comment.updatedAt.toISOString(),
-    user: comment.user,
+    user: comment.user ?? { id: '', displayName: comment.authorName ?? 'Anonymous', avatarUrl: null },
   }
 }

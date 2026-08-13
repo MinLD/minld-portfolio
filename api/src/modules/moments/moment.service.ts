@@ -64,16 +64,16 @@ export async function listMomentComments(id: string) {
   return { comments: (await momentRepository.findVisibleComments(id)).map(toMomentCommentDto) }
 }
 
-export async function createMomentComment(id: string, userId: string, input: { content: string }) {
+export async function createMomentComment(id: string, input: { authorName: string; content: string }) {
   const moment = await momentRepository.findPublishedById(id)
   if (!moment) throw new AppError(404, 'MOMENT_NOT_FOUND', 'Moment not found')
-  return { comment: toMomentCommentDto(await momentRepository.createComment({ momentId: id, userId, content: input.content })) }
+  return { comment: toMomentCommentDto(await momentRepository.createComment({ momentId: id, authorName: input.authorName, content: input.content })) }
 }
 
 async function findOwnMomentComment(id: string, userId: string) {
   const comment = await momentRepository.findCommentById(id)
   if (!comment) throw new AppError(404, 'MOMENT_COMMENT_NOT_FOUND', 'Moment comment not found')
-  if (comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
+  if (!comment.userId || comment.userId !== userId) throw new AppError(403, 'FORBIDDEN', 'Forbidden')
   return comment
 }
 

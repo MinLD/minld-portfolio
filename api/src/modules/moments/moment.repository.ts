@@ -62,7 +62,7 @@ export const momentRepository = {
     return prisma.momentComment.findMany({ where: { momentId, status: 'VISIBLE' }, orderBy: { createdAt: 'asc' }, include: momentCommentInclude })
   },
 
-  createComment(data: { momentId: string; userId: string; content: string }) {
+  createComment(data: { momentId: string; authorName: string; content: string }) {
     return prisma.momentComment.create({ data, include: momentCommentInclude })
   },
 

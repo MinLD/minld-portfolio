@@ -12,6 +12,6 @@ export function toMomentCommentDto(comment: MomentCommentWithUser): MomentCommen
     status: comment.status,
     createdAt: comment.createdAt.toISOString(),
     updatedAt: comment.updatedAt.toISOString(),
-    user: comment.user,
+    user: comment.user ?? { id: '', displayName: comment.authorName ?? 'Anonymous', avatarUrl: null },
   }
 }

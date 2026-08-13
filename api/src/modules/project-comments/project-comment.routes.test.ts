@@ -66,13 +66,11 @@ afterAll(async () => {
   await prisma.$disconnect()
 })
 
-test('authenticated active user can create and list visible project comments', async () => {
-  const cookie = await authCookie()
-
-  const created = await request(app).post('/api/v1/projects/test-comment-project/comments').set('Cookie', cookie).send({ content: 'Hello project' })
+test('anonymous user can create and list visible project comments', async () => {
+  const created = await request(app).post('/api/v1/projects/test-comment-project/comments').send({ authorName: 'Guest', content: 'Hello project' })
   expect(created.status).toBe(201)
   expect(created.body.data.comment.content).toBe('Hello project')
-  expect(created.body.data.comment.user.id).toBe(userId)
+  expect(created.body.data.comment.user.displayName).toBe('Guest')
 
   await prisma.projectComment.create({ data: { projectId, userId, content: 'Hidden', status: 'HIDDEN' } })
   const listed = await request(app).get('/api/v1/projects/test-comment-project/comments')
@@ -80,11 +78,11 @@ test('authenticated active user can create and list visible project comments', a
   expect(listed.body.data.comments.map((comment: { content: string }) => comment.content)).toEqual(['Hello project'])
 })
 
-test('project comment create/list validates auth and published project', async () => {
-  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').send({ content: 'No token' })).status).toBe(401)
-  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').set('Cookie', await authCookie()).send({ content: '' })).status).toBe(400)
+test('project comment create/list validates input and published project', async () => {
+  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').send({ content: 'No name' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/projects/test-comment-project/comments').send({ authorName: 'Guest', content: '' })).status).toBe(400)
   expect((await request(app).get('/api/v1/projects/test-comment-project-draft/comments')).status).toBe(404)
-  expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').set('Cookie', await authCookie()).send({ content: 'No draft' })).status).toBe(404)
+  expect((await request(app).post('/api/v1/projects/test-comment-project-draft/comments').send({ authorName: 'Guest', content: 'No draft' })).status).toBe(404)
 })
 
 test('authenticated user can update and delete own project comment only', async () => {
