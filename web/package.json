@@ -22,6 +22,7 @@
     "tsparticles": "^4.3.2",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0",
+    "vue3-toastify": "^0.2.9",
     "zod": "^4.4.3"
   },
   "devDependencies": {

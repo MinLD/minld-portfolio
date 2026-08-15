@@ -25,14 +25,25 @@ const emit = defineEmits(['edit', 'delete'])
 
         <tbody>
           <tr v-if="loading">
-            <td colspan="5" class="px-4 py-14 text-center text-sm text-zinc-500">Loading projects...</td>
+            <td colspan="5" class="px-4 py-14 text-center text-sm text-zinc-500">
+              Loading projects...
+            </td>
           </tr>
 
           <template v-else>
-            <tr v-for="project in projects" :key="project.id" class="border-b border-zinc-800/80 transition last:border-0 hover:bg-zinc-800/30">
+            <tr
+              v-for="project in projects"
+              :key="project.id"
+              class="border-b border-zinc-800/80 transition last:border-0 hover:bg-zinc-800/30"
+            >
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <img v-if="project.thumbnailUrl" :src="project.thumbnailUrl" alt="" class="size-12 rounded-lg object-cover" />
+                  <img
+                    v-if="project.thumbnailUrl"
+                    :src="project.thumbnailUrl"
+                    alt=""
+                    class="size-12 rounded-lg object-cover"
+                  />
                   <div class="min-w-0">
                     <p class="truncate text-sm font-medium text-zinc-200">{{ project.title }}</p>
                     <p class="mt-1 line-clamp-2 text-xs text-zinc-500">{{ project.summary }}</p>
@@ -54,8 +65,22 @@ const emit = defineEmits(['edit', 'delete'])
 
               <td class="px-4 py-4">
                 <div class="flex items-center justify-end gap-1">
-                  <button type="button" title="Edit project" class="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-white" @click="emit('edit', project)">Edit</button>
-                  <button type="button" title="Delete project" class="rounded-md px-3 py-1.5 text-xs text-red-400 hover:bg-red-950/40" @click="emit('delete', project)">Delete</button>
+                  <button
+                    type="button"
+                    title="Edit project"
+                    class="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                    @click="emit('edit', project)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete project"
+                    class="rounded-md px-3 py-1.5 text-xs text-red-400 hover:bg-red-950/40"
+                    @click="emit('delete', project)"
+                  >
+                    Delete
+                  </button>
                 </div>
               </td>
             </tr>

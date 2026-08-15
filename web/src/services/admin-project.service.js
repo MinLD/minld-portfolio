@@ -21,6 +21,12 @@ function appendValue(formData, key, value) {
   formData.append(key, value)
 }
 
+function isoDateTime(value) {
+  if (!value) return ''
+
+  return new Date(value).toISOString()
+}
+
 function toProjectFormData(payload) {
   const formData = new FormData()
 
@@ -30,7 +36,7 @@ function toProjectFormData(payload) {
   appendValue(formData, 'status', payload.status)
   appendValue(formData, 'featured', String(Boolean(payload.featured)))
   appendValue(formData, 'year', payload.year)
-  appendValue(formData, 'publishedAt', payload.publishedAt)
+  appendValue(formData, 'publishedAt', isoDateTime(payload.publishedAt))
   appendValue(formData, 'demoUrl', payload.demoUrl)
   appendValue(formData, 'githubUrl', payload.githubUrl)
   appendValue(formData, 'sourceUrl', payload.sourceUrl)

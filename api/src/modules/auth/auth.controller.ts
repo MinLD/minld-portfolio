@@ -51,7 +51,8 @@ export const refreshController: RequestHandler = async (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store')
     sendSuccess(res, body)
   } catch (error) {
-    next(error)
+    clearAuthCookies(res)
+    next(error instanceof AppError ? error : new AppError(401, 'UNAUTHORIZED', 'Unauthorized'))
   }
 }
 

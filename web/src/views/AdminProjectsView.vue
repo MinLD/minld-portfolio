@@ -1,18 +1,25 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import axios from 'axios'
 import ProjectToolbar from '@/components/admin/projects/ProjectToolbar.vue'
 import ProjectTable from '@/components/admin/projects/ProjectTable.vue'
 import ProjectFormModal from '@/components/admin/projects/ProjectFormModal.vue'
-import { createProject, deleteProject, getProjectRelations, getProjects, updateProject } from '@/services/admin-project.service'
+import {
+  createProject,
+  deleteProject,
+  getProjectRelations,
+  getProjects,
+  updateProject,
+} from '@/services/admin-project.service'
 import { projectTagService } from '@/services/project-tag.service'
 import { technologyService } from '@/services/technology.service'
+import { toast } from 'vue3-toastify'
+import axios from 'axios'
+import DeleteProjectModal from '../components/admin/projects/DeleteProjectModal.vue'
 
 const projects = ref([])
 const tags = ref([])
 const technologies = ref([])
 const loading = ref(false)
-const saving = ref(false)
 const error = ref('')
 const search = ref('')
 const status = ref('all')
@@ -21,21 +28,28 @@ const showForm = ref(false)
 const newTagName = ref('')
 const newTechnologyName = ref('')
 const newTechnologyType = ref('FRAMEWORK')
+const isLoadingCreate = ref(false)
+const isDeleting = ref(false)
+const showFormDelete = ref(false)
+const deletingProject = ref(null)
+function messageFromError(err, fallback) {
+  return axios.isAxiosError(err) ? err.response?.data?.error?.message || fallback : fallback
+}
 
 const filteredProjects = computed(() => {
   const term = search.value.trim().toLowerCase()
 
   return projects.value.filter((project) => {
     const matchesStatus = status.value === 'all' || project.status === status.value
-    const matchesSearch = !term || [project.title, project.summary, project.slug].some((value) => value?.toLowerCase().includes(term))
+    const matchesSearch =
+      !term ||
+      [project.title, project.summary, project.slug].some((value) =>
+        value?.toLowerCase().includes(term),
+      )
 
     return matchesStatus && matchesSearch
   })
 })
-
-function messageFromError(err, fallback) {
-  return axios.isAxiosError(err) ? err.response?.data?.error?.message || fallback : fallback
-}
 
 async function loadData() {
   loading.value = true
@@ -62,41 +76,9 @@ function openEdit(project) {
   editingProject.value = project
   showForm.value = true
 }
-
-async function saveProject(payload) {
-  saving.value = true
-  error.value = ''
-
-  try {
-    const saved = editingProject.value ? await updateProject(editingProject.value.id, payload) : await createProject(payload)
-    const index = projects.value.findIndex((project) => project.id === saved.id)
-
-    if (index === -1) {
-      projects.value.unshift(saved)
-    } else {
-      projects.value[index] = saved
-    }
-
-    showForm.value = false
-    editingProject.value = null
-  } catch (err) {
-    error.value = messageFromError(err, 'Unable to save project.')
-  } finally {
-    saving.value = false
-  }
-}
-
-async function removeProject(project) {
-  if (!window.confirm(`Delete project "${project.title}"?`)) return
-
-  error.value = ''
-
-  try {
-    await deleteProject(project.id)
-    projects.value = projects.value.filter((item) => item.id !== project.id)
-  } catch (err) {
-    error.value = messageFromError(err, 'Unable to delete project.')
-  }
+function openDelete(project) {
+  showFormDelete.value = true
+  deletingProject.value = project
 }
 
 async function addTag() {
@@ -107,7 +89,7 @@ async function addTag() {
     tags.value.push(await projectTagService.create({ name }))
     newTagName.value = ''
   } catch (err) {
-    error.value = messageFromError(err, 'Unable to create tag.')
+    error.value = messageFromError(err, 'Unable to load projects.')
   }
 }
 
@@ -119,10 +101,50 @@ async function addTechnology() {
     technologies.value.push(await technologyService.create({ name, type: newTechnologyType.value }))
     newTechnologyName.value = ''
   } catch (err) {
-    error.value = messageFromError(err, 'Unable to create technology.')
+    error.value = messageFromError(err, 'Unable to load projects.')
+  }
+}
+async function handleSave(form) {
+  try {
+    isLoadingCreate.value = true
+    error.value = ''
+    if (editingProject.value) {
+      await updateProject(editingProject.value.id, form)
+      toast.success('Update project successfully!')
+    } else {
+      await createProject(form)
+      toast.success('Create project successfully!')
+    }
+    await loadData()
+    showForm.value = false
+    editingProject.value = null
+  } catch (err) {
+    error.value = messageFromError(err, 'Unable to load projects.')
+  } finally {
+    setTimeout(() => {
+      isLoadingCreate.value = false
+    }, 5000)
   }
 }
 
+async function removeProject() {
+  const project = deletingProject.value
+  if (!project) return
+
+  try {
+    isDeleting.value = true
+    error.value = ''
+    await deleteProject(project.id)
+    projects.value = projects.value.filter((item) => item.id !== project.id)
+    showFormDelete.value = false
+    deletingProject.value = null
+    toast.success('Delete project successfully!')
+  } catch (err) {
+    error.value = messageFromError(err, 'Unable to load projects.')
+  } finally {
+    isDeleting.value = false
+  }
+}
 onMounted(loadData)
 </script>
 
@@ -132,23 +154,43 @@ onMounted(loadData)
       <div>
         <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">Overview</p>
         <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Projects</h1>
-        <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Create projects, upload thumbnails, select tags and technologies.</p>
+        <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
+          Create projects, upload thumbnails, select tags and technologies.
+        </p>
       </div>
     </section>
 
-    <p v-if="error" class="mb-4 rounded-lg border border-red-900/60 bg-red-950/30 px-4 py-3 text-sm text-red-300">{{ error }}</p>
+    <p
+      v-if="error"
+      class="mb-4 rounded-lg border border-red-900/60 bg-red-950/30 px-4 py-3 text-sm text-red-300"
+    >
+      {{ error }}
+    </p>
 
     <ProjectToolbar v-model:search="search" v-model:status="status" @create="openCreate" />
 
     <div class="mb-4 grid gap-3 rounded-lg border border-zinc-800 bg-[#18181b] p-4 lg:grid-cols-2">
       <form class="flex gap-2" @submit.prevent="addTag">
-        <input v-model="newTagName" class="min-w-0 flex-1 rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500" placeholder="New tag" />
-        <button class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black" type="submit">Add Tag</button>
+        <input
+          v-model="newTagName"
+          class="min-w-0 flex-1 rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500"
+          placeholder="New tag"
+        />
+        <button class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black" type="submit">
+          Add Tag
+        </button>
       </form>
 
       <form class="flex gap-2" @submit.prevent="addTechnology">
-        <input v-model="newTechnologyName" class="min-w-0 flex-1 rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500" placeholder="New technology" />
-        <select v-model="newTechnologyType" class="rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500">
+        <input
+          v-model="newTechnologyName"
+          class="min-w-0 flex-1 rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500"
+          placeholder="New technology"
+        />
+        <select
+          v-model="newTechnologyType"
+          class="rounded-md border border-zinc-700 bg-[#111111] px-3 py-2 text-sm text-white outline-none focus:border-zinc-500"
+        >
           <option value="LANGUAGE">Language</option>
           <option value="FRAMEWORK">Framework</option>
           <option value="LIBRARY">Library</option>
@@ -156,12 +198,35 @@ onMounted(loadData)
           <option value="TOOL">Tool</option>
           <option value="OTHER">Other</option>
         </select>
-        <button class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black" type="submit">Add Tech</button>
+        <button class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black" type="submit">
+          Add Tech
+        </button>
       </form>
     </div>
 
-    <ProjectTable :projects="filteredProjects" :loading="loading" @edit="openEdit" @delete="removeProject" />
+    <ProjectTable
+      :projects="filteredProjects"
+      :loading="loading"
+      @edit="openEdit"
+      @delete="openDelete"
+    />
 
-    <ProjectFormModal v-if="showForm" :project="editingProject" :tags="tags" :technologies="technologies" :saving="saving" @close="showForm = false" @save="saveProject" />
+    <ProjectFormModal
+      v-if="showForm"
+      @save="handleSave"
+      @exit="() => (showForm = false)"
+      :tags="tags"
+      :technologies="technologies"
+      :is-loading="isLoadingCreate"
+      :error="error"
+      :project="editingProject"
+    />
+    <DeleteProjectModal
+      v-if="showFormDelete"
+      :project="deletingProject"
+      :is-loading="isDeleting"
+      @cancel="() => (showFormDelete = false)"
+      @confirm="removeProject"
+    />
   </div>
 </template>

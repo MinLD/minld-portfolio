@@ -1,56 +1,57 @@
 import { z } from 'zod'
 
-const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
-const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .refine((value) => !value || URL.canParse(value), 'Invalid URL')
+const optionalUrl = (message) => z.union([z.literal(''), z.string().trim().url(message)])
 
 export const projectSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(2, 'Title must be at least 2 characters')
-    .max(150, 'Title is too long'),
+    .min(1, 'Title is required')
+    .min(3, 'Title must be at least 3 characters')
+    .max(150, 'Title must not exceed 150 characters'),
 
   summary: z
     .string()
     .trim()
-    .min(5, 'Summary must be at least 5 characters')
-    .max(300, 'Summary is too long'),
+    .min(1, 'Summary is required')
+    .max(500, 'Summary must not exceed 500 characters'),
 
-  content: z.string().trim().min(10, 'Content must be at least 10 characters'),
+  content: z.string().trim().min(1, 'Content is required'),
 
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED'], {
+    error: 'Invalid project status',
+  }),
+
+  year: z.coerce
+    .number()
+    .int('Year must be an integer')
+    .min(2000, 'Year must be at least 2000')
+    .max(2100, 'Year must not exceed 2100'),
+
+  publishedAt: z.string(),
 
   featured: z.boolean(),
 
-  year: z.coerce.number().int().min(2000, 'Invalid year').max(2100, 'Invalid year'),
+  demoUrl: optionalUrl('Demo URL is invalid'),
 
-  publishedAt: z.string().optional().or(z.literal('')),
+  githubUrl: optionalUrl('Github URL is invalid'),
 
-  demoUrl: optionalUrl,
-
-  githubUrl: optionalUrl,
-
-  sourceUrl: optionalUrl,
-
-  tagIds: z.array(z.string()).min(1, 'Select at least one tag'),
-
-  technologyIds: z.array(z.string()).min(1, 'Select at least one technology'),
+  sourceUrl: optionalUrl('Source URL is invalid'),
 
   thumbnail: z
     .instanceof(File)
     .nullable()
+    .refine((file) => !file || file.size <= MAX_FILE_SIZE, 'Thumbnail must be smaller than 5MB')
     .refine(
-      (file) => !file || file.size <= MAX_THUMBNAIL_SIZE,
-      'Thumbnail must be smaller than 5MB',
-    )
-    .refine(
-      (file) => !file || IMAGE_TYPES.includes(file.type),
-      'Only JPG, PNG and WEBP are allowed',
+      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
+      'Only JPG, PNG and WEBP images are allowed',
     ),
+
+  tagIds: z.array(z.string()),
+
+  technologyIds: z.array(z.string()),
 })

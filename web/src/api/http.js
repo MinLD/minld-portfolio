@@ -9,48 +9,52 @@ export const http = axios.create({
 })
 
 let refreshPromise = null
-let authFailureHandler = null
+let onAuthFail = null
 
 export function setAuthFailureHandler(handler) {
-  authFailureHandler = handler
+  onAuthFail = handler
 }
 
-const retryBlockedPaths = new Set([
-  '/auth/login',
-  '/auth/register',
-  '/auth/refresh',
-  '/auth/logout',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/verify-email',
-  '/auth/resend-verification',
-])
+const noRetryPaths = new Set(['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'])
 
-function pathname(url = '') {
-  const path = url.startsWith('http') ? new URL(url).pathname : url.split('?')[0]
-  return path.replace(/^\/api\/v1/, '')
+function pathOf(url = '') {
+  if (!url) return ''
+
+  const pathname = url.startsWith('http') ? new URL(url).pathname : url.split('?')[0]
+
+  return pathname.replace(/^\/api\/v1/, '')
 }
 
 http.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const config = error.config
+  (res) => res,
+  async (err) => {
+    const config = err.config
+    const path = pathOf(config?.url)
 
-    if (error.response?.status !== 401 || !config || config._retry || config._skipAuthRefresh || retryBlockedPaths.has(pathname(config.url))) {
-      return Promise.reject(error)
+    if (
+      err.response?.status !== 401 ||
+      !config ||
+      config._retry ||
+      config._skipAuthRefresh ||
+      noRetryPaths.has(path)
+    ) {
+      return Promise.reject(err)
     }
 
     config._retry = true
 
     try {
-      refreshPromise ??= http.post('/auth/refresh', null, { _skipAuthRefresh: true }).finally(() => {
-        refreshPromise = null
-      })
+      refreshPromise ??= http
+        .post('/auth/refresh', null, { _skipAuthRefresh: true })
+        .finally(() => {
+          refreshPromise = null
+        })
+
       await refreshPromise
       return http(config)
-    } catch (refreshError) {
-      authFailureHandler?.()
-      return Promise.reject(refreshError)
+    } catch (refreshErr) {
+      onAuthFail?.()
+      return Promise.reject(refreshErr)
     }
   },
 )
