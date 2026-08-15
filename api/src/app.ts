@@ -12,6 +12,7 @@ import { healthRouter } from './modules/health/health.routes.js'
 import { adminMomentTagRouter, publicMomentTagRouter } from './modules/moment-tags/moment-tag.routes.js'
 import { adminMomentRouter, publicMomentRouter } from './modules/moments/moment.routes.js'
 import { adminProjectCommentRouter, projectCommentRouter } from './modules/project-comments/project-comment.routes.js'
+import { adminProjectTagRouter, publicProjectTagRouter } from './modules/project-tags/project-tag.routes.js'
 import { adminProjectRouter, publicProjectRouter } from './modules/projects/project.routes.js'
 import { adminTechnologyRouter, publicTechnologyRouter } from './modules/technologies/technology.routes.js'
 import { userRouter } from './modules/users/user.routes.js'
@@ -28,12 +29,14 @@ app.use('/api/v1', healthRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1', publicCategoryRouter)
+app.use('/api/v1', publicProjectTagRouter)
 app.use('/api/v1', publicTechnologyRouter)
 app.use('/api/v1', publicProjectRouter)
 app.use('/api/v1', publicMomentTagRouter)
 app.use('/api/v1', publicMomentRouter)
 app.use('/api/v1', projectCommentRouter)
 app.use('/api/v1/admin', adminCategoryRouter)
+app.use('/api/v1/admin', adminProjectTagRouter)
 app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/admin', adminTechnologyRouter)
 app.use('/api/v1/admin', adminProjectRouter)

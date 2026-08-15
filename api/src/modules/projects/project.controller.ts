@@ -5,7 +5,7 @@ import { createProject, deleteProject, deleteProjectThumbnail, getProject, getPu
 
 export const createProjectController: RequestHandler = async (req, res, next) => {
   try {
-    sendCreated(res, await createProject(req.body))
+    sendCreated(res, await createProject(req.body, req.file))
   } catch (error) {
     next(error)
   }
@@ -46,7 +46,7 @@ export const getPublishedProjectController: RequestHandler = async (req, res, ne
 
 export const updateProjectController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await updateProject(String(req.params.id), req.body))
+    sendSuccess(res, await updateProject(String(req.params.id), req.body, req.file))
   } catch (error) {
     next(error)
   }

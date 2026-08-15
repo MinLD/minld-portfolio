@@ -1,13 +1,21 @@
 import express from 'express'
 import request from 'supertest'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { sendSuccess } from '../responses/api-response.js'
 import { errorHandler } from '../middleware/error-handler.js'
 import { requestIdMiddleware } from '../middleware/request-id.js'
 import { imageUpload } from './upload.middleware.js'
-import { mediaService } from './media.service.js'
 
 process.env.NODE_ENV = 'test'
+
+function restoreEnv(name: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[name]
+    return
+  }
+
+  process.env[name] = value
+}
 
 const app = express()
   .use(requestIdMiddleware)
@@ -29,5 +37,24 @@ test('imageUpload rejects unsupported media types', async () => {
 })
 
 test('mediaService refuses Cloudinary calls without credentials', async () => {
-  await expect(mediaService.uploadImage({ buffer: Buffer.from('fake') } as Express.Multer.File, 'tests')).rejects.toMatchObject({ code: 'MEDIA_NOT_CONFIGURED' })
+  const previous = {
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  }
+
+  delete process.env.CLOUDINARY_CLOUD_NAME
+  delete process.env.CLOUDINARY_API_KEY
+  delete process.env.CLOUDINARY_API_SECRET
+  vi.resetModules()
+
+  try {
+    const { mediaService } = await import('./media.service.js')
+    await expect(mediaService.uploadImage({ buffer: Buffer.from('fake') } as Express.Multer.File, 'tests')).rejects.toMatchObject({ code: 'MEDIA_NOT_CONFIGURED' })
+  } finally {
+    restoreEnv('CLOUDINARY_CLOUD_NAME', previous.CLOUDINARY_CLOUD_NAME)
+    restoreEnv('CLOUDINARY_API_KEY', previous.CLOUDINARY_API_KEY)
+    restoreEnv('CLOUDINARY_API_SECRET', previous.CLOUDINARY_API_SECRET)
+    vi.resetModules()
+  }
 })

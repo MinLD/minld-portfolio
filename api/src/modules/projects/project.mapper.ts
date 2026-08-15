@@ -1,5 +1,5 @@
 import type { Category, Prisma, Project, Technology } from '@prisma/client'
-import { toCategoryDto } from '../categories/category.mapper.js'
+import { toProjectTagDto } from '../project-tags/project-tag.mapper.js'
 import { toTechnologyDto } from '../technologies/technology.mapper.js'
 import type { ProjectDto } from './project.dto.js'
 
@@ -24,7 +24,7 @@ export function toProjectDto(project: ProjectWithRelations): ProjectDto {
     publishedAt: project.publishedAt?.toISOString() ?? null,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
-    categories: project.categories.map(toCategoryDto),
+    tags: project.categories.map(toProjectTagDto),
     technologies: project.technologies.map(toTechnologyDto),
   }
 }

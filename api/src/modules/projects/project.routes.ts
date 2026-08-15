@@ -15,10 +15,10 @@ publicProjectRouter.get('/projects', validateRequest(listPublishedProjectsSchema
 publicProjectRouter.get('/projects/:slug', validateRequest(projectSlugSchema), getPublishedProjectController)
 
 adminProjectRouter.use(requireAuth, requireActiveUser, requireRole('ADMIN'))
-adminProjectRouter.post('/projects', validateRequest(createProjectSchema), createProjectController)
+adminProjectRouter.post('/projects', adminUploadRateLimit, imageUpload.single('thumbnail'), validateRequest(createProjectSchema), createProjectController)
 adminProjectRouter.get('/projects', listProjectsController)
 adminProjectRouter.post('/projects/:id/thumbnail', adminUploadRateLimit, validateRequest(projectIdSchema), imageUpload.single('thumbnail'), replaceProjectThumbnailController)
 adminProjectRouter.delete('/projects/:id/thumbnail', validateRequest(projectIdSchema), deleteProjectThumbnailController)
 adminProjectRouter.get('/projects/:id', validateRequest(projectIdSchema), getProjectController)
-adminProjectRouter.patch('/projects/:id', validateRequest(updateProjectSchema), updateProjectController)
+adminProjectRouter.patch('/projects/:id', adminUploadRateLimit, imageUpload.single('thumbnail'), validateRequest(updateProjectSchema), updateProjectController)
 adminProjectRouter.delete('/projects/:id', validateRequest(projectIdSchema), deleteProjectController)

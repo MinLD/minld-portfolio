@@ -23,6 +23,7 @@ export type ProjectWriteInput = {
 
 export type PublishedProjectFilter = {
   search?: string
+  tag?: string
   category?: string
   technology?: string
   technologyType?: TechnologyType
@@ -35,24 +36,26 @@ export type PublishedProjectFilter = {
 const connect = (ids: string[]) => ids.map((id) => ({ id }))
 
 function publishedWhere(filter: PublishedProjectFilter): Prisma.ProjectWhereInput {
+  const tag = filter.tag ?? filter.category
+
   return {
     status: 'PUBLISHED',
     featured: filter.featured,
     year: filter.year,
     OR: filter.search ? [{ title: { contains: filter.search, mode: 'insensitive' } }, { summary: { contains: filter.search, mode: 'insensitive' } }, { content: { contains: filter.search, mode: 'insensitive' } }] : undefined,
-    categories: filter.category ? { some: { slug: filter.category } } : undefined,
+    categories: tag ? { some: { slug: tag } } : undefined,
     technologies: filter.technology || filter.technologyType ? { some: { slug: filter.technology, type: filter.technologyType } } : undefined,
   }
 }
 
 export const projectRepository = {
-  create(data: ProjectWriteInput & { title: string; slug: string; summary: string; content: string; categoryIds: string[]; technologyIds: string[] }, tx?: TxClient) {
+  create(data: ProjectWriteInput & { title: string; slug: string; summary: string; content: string; tagIds: string[]; technologyIds: string[] }, tx?: TxClient) {
     return db(tx).project.create({
       data: {
         ...data,
-        categoryIds: undefined,
+        tagIds: undefined,
         technologyIds: undefined,
-        categories: { connect: connect(data.categoryIds) },
+        categories: { connect: connect(data.tagIds) },
         technologies: { connect: connect(data.technologyIds) },
       },
       include: projectInclude,
@@ -84,7 +87,7 @@ export const projectRepository = {
     return prisma.project.findFirst({ where: { slug, status: 'PUBLISHED' }, include: projectInclude })
   },
 
-  countCategories(ids: string[], tx?: TxClient) {
+  countTags(ids: string[], tx?: TxClient) {
     return ids.length ? db(tx).category.count({ where: { id: { in: ids } } }) : 0
   },
 
@@ -92,7 +95,7 @@ export const projectRepository = {
     return ids.length ? db(tx).technology.count({ where: { id: { in: ids } } }) : 0
   },
 
-  update(id: string, data: ProjectWriteInput & { categoryIds?: string[]; technologyIds?: string[] }, tx?: TxClient) {
+  update(id: string, data: ProjectWriteInput & { tagIds?: string[]; technologyIds?: string[] }, tx?: TxClient) {
     const updateData: Prisma.ProjectUpdateInput = {
       title: data.title,
       slug: data.slug,
@@ -107,7 +110,7 @@ export const projectRepository = {
       featured: data.featured,
       year: data.year,
       publishedAt: data.publishedAt,
-      categories: data.categoryIds ? { set: connect(data.categoryIds) } : undefined,
+      categories: data.tagIds ? { set: connect(data.tagIds) } : undefined,
       technologies: data.technologyIds ? { set: connect(data.technologyIds) } : undefined,
     }
     return db(tx).project.update({ where: { id }, data: updateData, include: projectInclude })

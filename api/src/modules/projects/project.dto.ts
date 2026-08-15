@@ -1,5 +1,5 @@
 import type { ProjectStatus } from '@prisma/client'
-import type { CategoryDto } from '../categories/category.dto.js'
+import type { ProjectTagDto } from '../project-tags/project-tag.dto.js'
 import type { TechnologyDto } from '../technologies/technology.dto.js'
 
 export type ProjectDto = {
@@ -18,6 +18,6 @@ export type ProjectDto = {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
-  categories: CategoryDto[]
+  tags: ProjectTagDto[]
   technologies: TechnologyDto[]
 }

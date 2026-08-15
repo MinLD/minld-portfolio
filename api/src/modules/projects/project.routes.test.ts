@@ -20,12 +20,12 @@ const userEmail = 'project.user@example.com'
 const password = 'valid-password'
 let app: Express
 let prisma: typeof prismaType
-let categoryId: string
+let tagId: string
 let technologyId: string
 
 async function cleanup() {
   await prisma.project.deleteMany({ where: { slug: { startsWith: 'test-project' } } })
-  await prisma.category.deleteMany({ where: { slug: { startsWith: 'test-project-category' } } })
+  await prisma.category.deleteMany({ where: { slug: { startsWith: 'test-project-tag' } } })
   await prisma.technology.deleteMany({ where: { slug: { startsWith: 'test-project-technology' } } })
   await prisma.authSession.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
   await prisma.accountToken.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
@@ -50,15 +50,15 @@ async function authCookie(email: string) {
 }
 
 async function seedRelations() {
-  const category = await prisma.category.create({ data: { name: 'Test Project Category', slug: 'test-project-category' } })
+  const tag = await prisma.category.create({ data: { name: 'Test Project Tag', slug: 'test-project-tag' } })
   const technology = await prisma.technology.create({ data: { name: 'Test Project Technology', slug: 'test-project-technology', type: 'FRAMEWORK' } })
-  categoryId = category.id
+  tagId = tag.id
   technologyId = technology.id
 }
 
-function projectBody(slug = 'test-project-one') {
+function projectBody(title = 'Test Project One', slug?: string) {
   return {
-    title: 'Test Project One',
+    title,
     slug,
     summary: 'Summary',
     content: 'Content',
@@ -69,7 +69,7 @@ function projectBody(slug = 'test-project-one') {
     featured: true,
     year: 2026,
     publishedAt: '2026-08-12T00:00:00.000Z',
-    categoryIds: [categoryId],
+    tagIds: [tagId],
     technologyIds: [technologyId],
   }
 }
@@ -100,7 +100,7 @@ test('ADMIN can create list get update delete project', async () => {
   const created = await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody())
   expect(created.status).toBe(201)
   expect(created.body.data.project.slug).toBe('test-project-one')
-  expect(created.body.data.project.categories).toHaveLength(1)
+  expect(created.body.data.project.tags).toHaveLength(1)
   expect(created.body.data.project.technologies).toHaveLength(1)
 
   const listed = await request(app).get('/api/v1/admin/projects').set('Cookie', cookie)
@@ -110,11 +110,11 @@ test('ADMIN can create list get update delete project', async () => {
   const id = created.body.data.project.id as string
   expect((await request(app).get(`/api/v1/admin/projects/${id}`).set('Cookie', cookie)).status).toBe(200)
 
-  const updated = await request(app).patch(`/api/v1/admin/projects/${id}`).set('Cookie', cookie).send({ title: 'Test Project Updated', status: 'ARCHIVED', featured: false, categoryIds: [], technologyIds: [] })
+  const updated = await request(app).patch(`/api/v1/admin/projects/${id}`).set('Cookie', cookie).send({ title: 'Test Project Updated', status: 'ARCHIVED', featured: false, tagIds: [], technologyIds: [] })
   expect(updated.status).toBe(200)
   expect(updated.body.data.project.title).toBe('Test Project Updated')
   expect(updated.body.data.project.status).toBe('ARCHIVED')
-  expect(updated.body.data.project.categories).toHaveLength(0)
+  expect(updated.body.data.project.tags).toHaveLength(0)
   expect(updated.body.data.project.technologies).toHaveLength(0)
 
   expect((await request(app).delete(`/api/v1/admin/projects/${id}`).set('Cookie', cookie)).status).toBe(204)
@@ -123,8 +123,8 @@ test('ADMIN can create list get update delete project', async () => {
 
 test('project admin routes require ADMIN', async () => {
   const userCookie = await authCookie(userEmail)
-  const noToken = await request(app).post('/api/v1/admin/projects').send(projectBody('test-project-no-token'))
-  const user = await request(app).post('/api/v1/admin/projects').set('Cookie', userCookie).send(projectBody('test-project-user'))
+  const noToken = await request(app).post('/api/v1/admin/projects').send(projectBody('Test Project No Token'))
+  const user = await request(app).post('/api/v1/admin/projects').set('Cookie', userCookie).send(projectBody('Test Project User'))
 
   expect(noToken.status).toBe(401)
   expect(user.status).toBe(403)
@@ -133,10 +133,12 @@ test('project admin routes require ADMIN', async () => {
 test('project validation uniqueness and relation checks work', async () => {
   const cookie = await authCookie(adminEmail)
 
-  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('bad slug'), title: '' })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('test-project-missing-category'), categoryIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
-  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('test-project-unique'))).status).toBe(201)
-  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('test-project-unique'))).status).toBe(409)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('Bad Project'), title: '', slug: 'bad slug' })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send({ ...projectBody('Test Project Missing Tag'), tagIds: ['00000000-0000-0000-0000-000000000000'] })).status).toBe(400)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('Test Project Unique'))).body.data.project.slug).toBe('test-project-unique')
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('Test Project Unique'))).body.data.project.slug).toBe('test-project-unique-2')
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('Explicit Slug One', 'test-project-explicit'))).status).toBe(201)
+  expect((await request(app).post('/api/v1/admin/projects').set('Cookie', cookie).send(projectBody('Explicit Slug Two', 'test-project-explicit'))).status).toBe(409)
 })
 
 test('public project routes expose only published projects', async () => {
@@ -166,18 +168,53 @@ test('public project filters and paginates in database', async () => {
       featured: true,
       year: 2026,
       publishedAt: new Date('2026-08-12T00:00:00.000Z'),
-      categories: { connect: [{ id: categoryId }] },
+      categories: { connect: [{ id: tagId }] },
       technologies: { connect: [{ id: technologyId }] },
     },
   })
   await prisma.project.create({ data: { title: 'API Draft', slug: 'test-project-api-filter', summary: 'Backend', content: 'Node', status: 'PUBLISHED', featured: false, year: 2025, publishedAt: new Date('2025-01-01T00:00:00.000Z') } })
 
-  const filtered = await request(app).get('/api/v1/projects?search=react&category=test-project-category&technology=test-project-technology&technologyType=FRAMEWORK&featured=true&year=2026&page=1&limit=1')
+  const filtered = await request(app).get('/api/v1/projects?search=react&tag=test-project-tag&technology=test-project-technology&technologyType=FRAMEWORK&featured=true&year=2026&page=1&limit=1')
   expect(filtered.status).toBe(200)
   expect(filtered.body.data.projects).toHaveLength(1)
   expect(filtered.body.data.projects[0].slug).toBe('test-project-react-filter')
   expect(filtered.body.meta).toEqual({ page: 1, limit: 1, total: 1, totalPages: 1 })
   expect((await request(app).get('/api/v1/projects?technologyType=BAD')).status).toBe(400)
+})
+
+test('ADMIN can create and update project with multipart thumbnail', async () => {
+  const cookie = await authCookie(adminEmail)
+  mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/create.png', publicId: 'create-id' }).mockResolvedValueOnce({ url: 'https://cdn/update.png', publicId: 'update-id' })
+
+  const created = await request(app)
+    .post('/api/v1/admin/projects')
+    .set('Cookie', cookie)
+    .field('title', 'Test Project Multipart')
+    .field('summary', 'Summary')
+    .field('content', 'Content')
+    .field('status', 'PUBLISHED')
+    .field('featured', 'true')
+    .field('year', '2026')
+    .field('tagIds', tagId)
+    .field('technologyIds', technologyId)
+    .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+
+  expect(created.status).toBe(201)
+  expect(created.body.data.project.slug).toBe('test-project-multipart')
+  expect(created.body.data.project.thumbnailUrl).toBe('https://cdn/create.png')
+  expect(created.body.data.project.tags).toHaveLength(1)
+
+  const updated = await request(app)
+    .patch(`/api/v1/admin/projects/${created.body.data.project.id}`)
+    .set('Cookie', cookie)
+    .field('title', 'Test Project Multipart Updated')
+    .field('tagIds', '')
+    .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+
+  expect(updated.status).toBe(200)
+  expect(updated.body.data.project.thumbnailUrl).toBe('https://cdn/update.png')
+  expect(updated.body.data.project.tags).toHaveLength(0)
+  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('create-id')
 })
 
 test('ADMIN can replace and delete project thumbnail with cleanup', async () => {
