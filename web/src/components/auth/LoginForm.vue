@@ -42,7 +42,7 @@ function getRedirectPath() {
     return redirect
   }
 
-  return '/'
+  return '/admin'
 }
 
 function clearError(field) {

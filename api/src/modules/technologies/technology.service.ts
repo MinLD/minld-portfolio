@@ -8,15 +8,39 @@ async function ensureUnique(name: string | undefined, slug: string | undefined, 
   if (existing) throw new AppError(409, 'TECHNOLOGY_EXISTS', 'Technology name or slug already exists')
 }
 
+function slugifyName(name: string) {
+  return name
+    .normalize('NFD')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'technology'
+}
+
+async function uniqueSlugFromName(name: string) {
+  const base = slugifyName(name)
+  let slug = base
+  let suffix = 2
+
+  while (await technologyRepository.findByNameOrSlug(undefined, slug)) {
+    slug = `${base}-${suffix}`
+    suffix += 1
+  }
+
+  return slug
+}
+
 async function findTechnologyOrThrow(id: string) {
   const technology = await technologyRepository.findById(id)
   if (!technology) throw new AppError(404, 'TECHNOLOGY_NOT_FOUND', 'Technology not found')
   return technology
 }
 
-export async function createTechnology(input: { name: string; slug: string; type: TechnologyType; description?: string }) {
+export async function createTechnology(input: { name: string; slug?: string; type: TechnologyType; description?: string }) {
+  const slug = input.slug ?? (await uniqueSlugFromName(input.name))
   await ensureUnique(input.name, input.slug)
-  return { technology: toTechnologyDto(await technologyRepository.create(input)) }
+  return { technology: toTechnologyDto(await technologyRepository.create({ ...input, slug })) }
 }
 
 export async function listTechnologies(filter?: { type?: TechnologyType }) {

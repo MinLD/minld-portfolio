@@ -110,6 +110,8 @@ test('technology validation and uniqueness work', async () => {
   expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: '', slug: 'bad slug', type: 'BAD' })).status).toBe(400)
   expect((await request(app).get('/api/v1/technologies?type=BAD')).status).toBe(400)
   expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: 'Test Technology Unique', slug: 'test-technology-unique', type: 'TOOL' })).status).toBe(201)
+  expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: 'Test Technology Auto Slug', type: 'TOOL' })).body.data.technology.slug).toBe('test-technology-auto-slug')
+  expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: 'Test Technology Auto Slug', type: 'TOOL' })).status).toBe(409)
   expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: 'Test Technology Unique', slug: 'test-technology-unique-2', type: 'TOOL' })).status).toBe(409)
   expect((await request(app).post('/api/v1/admin/technologies').set('Cookie', cookie).send({ name: 'Test Technology Unique 2', slug: 'test-technology-unique', type: 'TOOL' })).status).toBe(409)
 })

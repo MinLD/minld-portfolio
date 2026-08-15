@@ -2,12 +2,13 @@ import { TechnologyType } from '@prisma/client'
 import { z } from 'zod'
 
 const slugSchema = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+const optionalSlugSchema = z.preprocess((value) => (value === '' ? undefined : value), slugSchema.optional())
 const technologyTypeSchema = z.enum(TechnologyType)
 
 export const createTechnologySchema = z.object({
   body: z.object({
     name: z.string().trim().min(1),
-    slug: slugSchema,
+    slug: optionalSlugSchema,
     type: technologyTypeSchema,
     description: z.string().trim().min(1).optional(),
   }),
@@ -18,7 +19,7 @@ export const updateTechnologySchema = z.object({
   body: z
     .object({
       name: z.string().trim().min(1).optional(),
-      slug: slugSchema.optional(),
+      slug: optionalSlugSchema,
       type: technologyTypeSchema.optional(),
       description: z.string().trim().min(1).nullable().optional(),
     })

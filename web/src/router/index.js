@@ -60,6 +60,7 @@ const router = createRouter({
       name: 'admin-projects',
       component: () => import('@/views/AdminProjectsView.vue'),
       meta: {
+        requiresAuth: true,
         roles: ['admin'],
         layout: 'admin',
       },

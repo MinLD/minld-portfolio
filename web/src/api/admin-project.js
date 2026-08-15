@@ -13,13 +13,21 @@ export async function getAdminProjectApi(id) {
 }
 
 export async function createAdminProjectApi(payload) {
-  const response = await http.post('/admin/projects', payload)
+  const response = await http.post('/admin/projects', payload, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 
   return response.data.data
 }
 
 export async function updateAdminProjectApi(id, payload) {
-  const response = await http.patch(`/admin/projects/${id}`, payload)
+  const response = await http.patch(`/admin/projects/${id}`, payload, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 
   return response.data.data
 }
@@ -46,8 +54,8 @@ export async function deleteProjectThumbnailApi(id) {
   await http.delete(`/admin/projects/${id}/thumbnail`)
 }
 
-export async function listAdminCategoriesApi() {
-  const response = await http.get('/admin/categories')
+export async function listAdminProjectTagsApi() {
+  const response = await http.get('/admin/project-tags')
 
   return response.data.data
 }
