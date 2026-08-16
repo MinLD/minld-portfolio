@@ -13,28 +13,28 @@ export const adminNavigation = [
     icon: FolderKanban,
     enabled: true,
   },
-  {
-    label: 'Categories',
-    to: '/admin/categories',
-    icon: Tags,
-    enabled: false,
-  },
-  {
-    label: 'Technologies',
-    to: '/admin/technologies',
-    icon: Boxes,
-    enabled: false,
-  },
+  // {
+  //   label: 'Categories',
+  //   to: '/admin/categories',
+  //   icon: Tags,
+  //   enabled: false,
+  // },
+  // {
+  //   label: 'Technologies',
+  //   to: '/admin/technologies',
+  //   icon: Boxes,
+  //   enabled: false,
+  // },
   {
     label: 'Moments',
     to: '/admin/moments',
     icon: Zap,
-    enabled: false,
+    enabled: true,
   },
-  {
-    label: 'Comments',
-    to: '/admin/comments',
-    icon: MessageSquareText,
-    enabled: false,
-  },
+  // {
+  //   label: 'Comments',
+  //   to: '/admin/comments',
+  //   icon: MessageSquareText,
+  //   enabled: false,
+  // },
 ]

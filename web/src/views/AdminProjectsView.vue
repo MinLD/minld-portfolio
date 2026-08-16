@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import ProjectToolbar from '@/components/admin/projects/ProjectToolbar.vue'
 import ProjectTable from '@/components/admin/projects/ProjectTable.vue'
 import ProjectFormModal from '@/components/admin/projects/ProjectFormModal.vue'
@@ -15,6 +15,7 @@ import { technologyService } from '@/services/technology.service'
 import { toast } from 'vue3-toastify'
 import axios from 'axios'
 import DeleteProjectModal from '../components/admin/projects/DeleteProjectModal.vue'
+import ProjectPagination from '../components/admin/projects/ProjectPagination.vue'
 
 const projects = ref([])
 const tags = ref([])
@@ -23,6 +24,14 @@ const loading = ref(false)
 const error = ref('')
 const search = ref('')
 const status = ref('all')
+const page = ref(1)
+const limit = ref(5)
+const pagination = ref({
+  page: 1,
+  limit: 5,
+  total: 0,
+  totalPages: 0,
+})
 const editingProject = ref(null)
 const showForm = ref(false)
 const newTagName = ref('')
@@ -35,31 +44,37 @@ const deletingProject = ref(null)
 function messageFromError(err, fallback) {
   return axios.isAxiosError(err) ? err.response?.data?.error?.message || fallback : fallback
 }
+async function changePage(newPage) {
+  if (newPage < 1) return
+  if (newPage > pagination.value.totalPages) return
+  if (newPage === page.value) return
 
-const filteredProjects = computed(() => {
-  const term = search.value.trim().toLowerCase()
+  page.value = newPage
 
-  return projects.value.filter((project) => {
-    const matchesStatus = status.value === 'all' || project.status === status.value
-    const matchesSearch =
-      !term ||
-      [project.title, project.summary, project.slug].some((value) =>
-        value?.toLowerCase().includes(term),
-      )
-
-    return matchesStatus && matchesSearch
-  })
-})
-
-async function loadData() {
+  await loadProjects()
+}
+async function loadProjects() {
   loading.value = true
   error.value = ''
 
   try {
-    const [projectList, relations] = await Promise.all([getProjects(), getProjectRelations()])
-    projects.value = projectList
-    tags.value = relations.tags
-    technologies.value = relations.technologies
+    const params = {
+      page: page.value,
+      limit: limit.value,
+    }
+
+    if (search.value.trim()) {
+      params.search = search.value.trim()
+    }
+
+    if (status.value !== 'all') {
+      params.status = status.value
+    }
+
+    const result = await getProjects(params)
+
+    projects.value = result.projects
+    pagination.value = result.meta
   } catch (err) {
     error.value = messageFromError(err, 'Unable to load projects.')
   } finally {
@@ -67,6 +82,16 @@ async function loadData() {
   }
 }
 
+async function loadRelations() {
+  try {
+    const relations = await getProjectRelations()
+
+    tags.value = relations.tags
+    technologies.value = relations.technologies
+  } catch (err) {
+    error.value = messageFromError(err, 'Unable to load project relations.')
+  }
+}
 function openCreate() {
   editingProject.value = null
   showForm.value = true
@@ -115,7 +140,7 @@ async function handleSave(form) {
       await createProject(form)
       toast.success('Create project successfully!')
     }
-    await loadData()
+    await loadProjects()
     showForm.value = false
     editingProject.value = null
   } catch (err) {
@@ -145,7 +170,33 @@ async function removeProject() {
     isDeleting.value = false
   }
 }
-onMounted(loadData)
+
+let searchTimer = null
+
+watch(search, () => {
+  page.value = 1
+
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+
+  searchTimer = setTimeout(() => {
+    loadProjects()
+  }, 400)
+})
+watch(status, () => {
+  page.value = 1
+  loadProjects()
+})
+onMounted(() => {
+  loadProjects()
+  loadRelations()
+})
+onUnmounted(() => {
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+})
 </script>
 
 <template>
@@ -204,13 +255,14 @@ onMounted(loadData)
       </form>
     </div>
 
-    <ProjectTable
-      :projects="filteredProjects"
+    <ProjectTable :projects="projects" :loading="loading" @edit="openEdit" @delete="openDelete" />
+    <ProjectPagination
+      :page="pagination.page"
+      :total-pages="pagination.totalPages"
+      :total="pagination.total"
       :loading="loading"
-      @edit="openEdit"
-      @delete="openDelete"
+      @change="changePage"
     />
-
     <ProjectFormModal
       v-if="showForm"
       @save="handleSave"

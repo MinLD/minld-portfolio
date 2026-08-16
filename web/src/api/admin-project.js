@@ -1,9 +1,11 @@
 import { http } from '@/api/http'
 
-export async function listAdminProjectsApi() {
-  const response = await http.get('/admin/projects')
+export async function listAdminProjectsApi(params = {}) {
+  const response = await http.get('/admin/projects', {
+    params: params,
+  })
 
-  return response.data.data
+  return response.data
 }
 
 export async function getAdminProjectApi(id) {

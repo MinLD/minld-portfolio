@@ -45,7 +45,7 @@ http.interceptors.response.use(
 
     try {
       refreshPromise ??= http
-        .post('/auth/refresh', null, { _skipAuthRefresh: true })
+        .post('/auth/refresh', undefined, { _skipAuthRefresh: true })
         .finally(() => {
           refreshPromise = null
         })

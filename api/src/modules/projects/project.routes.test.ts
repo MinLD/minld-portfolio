@@ -182,6 +182,24 @@ test('public project filters and paginates in database', async () => {
   expect((await request(app).get('/api/v1/projects?technologyType=BAD')).status).toBe(400)
 })
 
+test('ADMIN searches projects with pagination', async () => {
+  const cookie = await authCookie(adminEmail)
+  await prisma.project.createMany({
+    data: [
+      { title: 'Admin ZZLIKE Alpha', slug: 'test-project-admin-like-alpha', summary: 'First match', content: 'Content', status: 'DRAFT' },
+      { title: 'Admin ZZLIKE Beta', slug: 'test-project-admin-like-beta', summary: 'Second match', content: 'Content', status: 'DRAFT' },
+      { title: 'Other Project', slug: 'test-project-admin-other', summary: 'No match', content: 'Content', status: 'PUBLISHED' },
+    ],
+  })
+
+  const response = await request(app).get('/api/v1/admin/projects?search=zzlike&status=DRAFT&page=1&limit=1').set('Cookie', cookie)
+  expect(response.status).toBe(200)
+  expect(response.body.data.projects).toHaveLength(1)
+  expect(response.body.data.projects[0].title).toContain('Admin ZZLIKE')
+  expect(response.body.meta).toEqual({ page: 1, limit: 1, total: 2, totalPages: 2 })
+  expect((await request(app).get('/api/v1/admin/projects?status=BAD').set('Cookie', cookie)).status).toBe(400)
+})
+
 test('ADMIN can create and update project with multipart thumbnail', async () => {
   const cookie = await authCookie(adminEmail)
   mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/create.png', publicId: 'create-id' }).mockResolvedValueOnce({ url: 'https://cdn/update.png', publicId: 'update-id' })

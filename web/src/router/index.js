@@ -66,6 +66,16 @@ const router = createRouter({
       },
     },
     {
+      path: '/admin/moments',
+      name: 'admin-moments',
+      component: () => import('@/views/AdminMomentsView.vue'),
+      meta: {
+        requiresAuth: true,
+        roles: ['admin'],
+        layout: 'admin',
+      },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       meta: {

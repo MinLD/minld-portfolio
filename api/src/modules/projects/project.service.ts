@@ -3,7 +3,7 @@ import { AppError } from '../../common/errors/AppError.js'
 import { mediaService } from '../../common/media/media.service.js'
 import { runTransaction } from '../../database/transaction.js'
 import { toProjectDto } from './project.mapper.js'
-import { projectRepository, type ProjectWriteInput, type PublishedProjectFilter } from './project.repository.js'
+import { projectRepository, type ProjectListFilter, type ProjectWriteInput, type PublishedProjectFilter } from './project.repository.js'
 
 type CreateProjectInput = ProjectWriteInput & { title: string; slug?: string; summary: string; content: string; publishedAt?: string; tagIds: string[]; categoryIds?: string[]; technologyIds: string[]; status?: ProjectStatus }
 type UpdateProjectInput = ProjectWriteInput & { publishedAt?: string | null; tagIds?: string[]; categoryIds?: string[]; technologyIds?: string[]; status?: ProjectStatus }
@@ -76,8 +76,9 @@ export async function createProject(input: CreateProjectInput, file?: Express.Mu
   }
 }
 
-export async function listProjects() {
-  return { projects: (await projectRepository.findMany()).map(toProjectDto) }
+export async function listProjects(filter: ProjectListFilter) {
+  const { projects, total } = await projectRepository.findMany(filter)
+  return { projects: projects.map(toProjectDto), meta: { page: filter.page, limit: filter.limit, total, totalPages: Math.ceil(total / filter.limit) } }
 }
 
 export async function getProject(id: string) {

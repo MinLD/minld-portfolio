@@ -47,10 +47,13 @@ function toProjectFormData(payload) {
   return formData
 }
 
-export async function getProjects() {
-  const data = await listAdminProjectsApi()
+export async function getProjects(params = {}) {
+  const response = await listAdminProjectsApi(params)
 
-  return data.projects
+  return {
+    projects: response.data.projects,
+    meta: response.meta,
+  }
 }
 
 export async function getProject(id) {

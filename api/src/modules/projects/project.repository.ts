@@ -21,8 +21,9 @@ export type ProjectWriteInput = {
   publishedAt?: Date | null
 }
 
-export type PublishedProjectFilter = {
+export type ProjectListFilter = {
   search?: string
+  status?: ProjectStatus
   tag?: string
   category?: string
   technology?: string
@@ -33,13 +34,15 @@ export type PublishedProjectFilter = {
   limit: number
 }
 
+export type PublishedProjectFilter = Omit<ProjectListFilter, 'status'>
+
 const connect = (ids: string[]) => ids.map((id) => ({ id }))
 
-function publishedWhere(filter: PublishedProjectFilter): Prisma.ProjectWhereInput {
+function projectWhere(filter: ProjectListFilter, publishedOnly = false): Prisma.ProjectWhereInput {
   const tag = filter.tag ?? filter.category
 
   return {
-    status: 'PUBLISHED',
+    status: publishedOnly ? 'PUBLISHED' : filter.status,
     featured: filter.featured,
     year: filter.year,
     OR: filter.search ? [{ title: { contains: filter.search, mode: 'insensitive' } }, { summary: { contains: filter.search, mode: 'insensitive' } }, { content: { contains: filter.search, mode: 'insensitive' } }] : undefined,
@@ -62,12 +65,17 @@ export const projectRepository = {
     })
   },
 
-  findMany() {
-    return prisma.project.findMany({ orderBy: { createdAt: 'desc' }, include: projectInclude })
+  async findMany(filter: ProjectListFilter) {
+    const where = projectWhere(filter)
+    const [projects, total] = await prisma.$transaction([
+      prisma.project.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (filter.page - 1) * filter.limit, take: filter.limit, include: projectInclude }),
+      prisma.project.count({ where }),
+    ])
+    return { projects, total }
   },
 
   async findPublished(filter: PublishedProjectFilter) {
-    const where = publishedWhere(filter)
+    const where = projectWhere(filter, true)
     const [projects, total] = await prisma.$transaction([
       prisma.project.findMany({ where, orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }], skip: (filter.page - 1) * filter.limit, take: filter.limit, include: projectInclude }),
       prisma.project.count({ where }),
