@@ -16,6 +16,7 @@ import { adminProjectTagRouter, publicProjectTagRouter } from './modules/project
 import { adminProjectRouter, publicProjectRouter } from './modules/projects/project.routes.js'
 import { adminTechnologyRouter, publicTechnologyRouter } from './modules/technologies/technology.routes.js'
 import { userRouter } from './modules/users/user.routes.js'
+import { docsRouter } from './modules/docs/docs.routes.js'
 
 export const app = express()
 
@@ -26,6 +27,7 @@ app.use(cookieParser())
 app.use(requireTrustedOriginForUnsafeMethods)
 
 app.use('/api/v1', healthRouter)
+app.use('/api/v1', docsRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1', publicCategoryRouter)

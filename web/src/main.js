@@ -6,10 +6,19 @@ import router from './router'
 import 'vue3-toastify/dist/index.css'
 import './assets/styles/main.css'
 import Vue3Toastify from 'vue3-toastify'
-
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 const app = createApp(App)
 
 const pinia = createPinia()
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,
+      retry: 1,
+    },
+  },
+})
 
 app.use(pinia)
 app.use(router)
@@ -23,4 +32,8 @@ app.use(Vue3Toastify, {
   hideProgressBar: false,
   newestOnTop: true,
 })
+app.use(VueQueryPlugin, {
+  queryClient,
+})
+
 app.mount('#app')

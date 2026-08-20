@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
   search: { type: String, default: '' },
-  status: { type: String, default: 'all' },
+  status: { type: String, default: null },
 })
 const emit = defineEmits(['create', 'update:search', 'update:status'])
 </script>
@@ -30,7 +30,7 @@ const emit = defineEmits(['create', 'update:search', 'update:status'])
     </div>
     <div class="flex items-center gap-2">
       <!-- Filter -->
-      <div class="relative">
+      <div class="relative" v-if="status !== null">
         <svg
           class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400"
           viewBox="0 0 24 24"
@@ -44,6 +44,7 @@ const emit = defineEmits(['create', 'update:search', 'update:status'])
         </svg>
 
         <select
+          v-if="status !== null"
           :value="status"
           class="h-10 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-[#171717] py-0 pl-9 pr-8 text-sm text-zinc-300 outline-none transition hover:bg-zinc-800"
           @change="emit('update:status', $event.target.value)"

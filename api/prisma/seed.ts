@@ -36,6 +36,8 @@ const projectTags = [
   ['Backend', 'backend'],
   ['Full Stack', 'full-stack'],
   ['Cloud', 'cloud'],
+  ['Developer Tooling', 'developer-tooling'],
+  ['Personal', 'personal'],
 ] as const
 
 const technologies = [
@@ -99,6 +101,105 @@ const technologies = [
   ['Netlify', 'netlify', 'OTHER'],
 ] as const
 
+const projects = [
+  {
+    title: 'Prismo Booth',
+    slug: 'seed-prismo-booth',
+    summary: 'A modern online photobooth with themed frames, live previews, and share-ready exports.',
+    content: 'Prismo Booth is a browser-based photobooth experience built for events, creators, and small teams. It focuses on fast capture flow, responsive UI, branded frames, gallery previews, and a clean admin experience for managing public content.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&auto=format&fit=crop',
+    demoUrl: 'https://example.com/prismo-booth',
+    githubUrl: 'https://github.com/minld/prismo-booth',
+    sourceUrl: 'https://github.com/minld/prismo-booth',
+    status: 'PUBLISHED',
+    featured: true,
+    year: 2026,
+    publishedAt: '2026-08-10T08:00:00.000Z',
+    tags: ['web-application', 'portfolio', 'frontend'],
+    technologies: ['vue-js', 'vite', 'tailwind-css', 'pinia'],
+  },
+  {
+    title: 'Lutest',
+    slug: 'seed-lutest',
+    summary: 'A lightweight runtime testing dashboard for validating web app behavior during development.',
+    content: 'Lutest helps developers run focused checks against routes, APIs, fixtures, and user journeys without overbuilding a full test platform. The project emphasizes fast feedback, simple setup, and practical reports.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop',
+    demoUrl: 'https://example.com/lutest',
+    githubUrl: 'https://github.com/minld/lutest',
+    sourceUrl: 'https://github.com/minld/lutest',
+    status: 'PUBLISHED',
+    featured: true,
+    year: 2026,
+    publishedAt: '2026-07-22T09:30:00.000Z',
+    tags: ['developer-tooling', 'automation', 'open-source'],
+    technologies: ['typescript', 'node-js', 'express', 'playwright', 'vitest'],
+  },
+  {
+    title: 'Portfolio Admin CMS',
+    slug: 'seed-portfolio-admin-cms',
+    summary: 'A full-stack admin panel for managing projects, moments, tags, technologies, and auth sessions.',
+    content: 'Portfolio Admin CMS powers a personal software engineering portfolio with secure cookie auth, project management, media uploads, reusable taxonomy data, moments, comments, and a focused Vue admin interface.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop',
+    demoUrl: 'https://example.com/portfolio-admin',
+    githubUrl: 'https://github.com/minld/portfolio',
+    sourceUrl: 'https://github.com/minld/portfolio',
+    status: 'PUBLISHED',
+    featured: true,
+    year: 2026,
+    publishedAt: '2026-08-16T04:00:00.000Z',
+    tags: ['admin-panel', 'content-management', 'full-stack'],
+    technologies: ['vue-js', 'express', 'postgresql', 'prisma', 'zod'],
+  },
+  {
+    title: 'Realtime Analytics Dashboard',
+    slug: 'seed-realtime-analytics-dashboard',
+    summary: 'A realtime dashboard concept for monitoring business metrics, events, and operational health.',
+    content: 'This dashboard prototype demonstrates realtime metric cards, trend charts, filtering, alert surfaces, and a responsive interface suitable for product analytics or internal operations teams.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&auto=format&fit=crop',
+    demoUrl: 'https://example.com/realtime-dashboard',
+    githubUrl: 'https://github.com/minld/realtime-dashboard',
+    sourceUrl: 'https://github.com/minld/realtime-dashboard',
+    status: 'PUBLISHED',
+    featured: false,
+    year: 2025,
+    publishedAt: '2025-12-04T11:00:00.000Z',
+    tags: ['dashboard', 'realtime', 'data-visualization'],
+    technologies: ['react', 'typescript', 'tailwind-css', 'node-js', 'redis'],
+  },
+  {
+    title: 'AI Content Helper',
+    slug: 'seed-ai-content-helper',
+    summary: 'An AI-assisted writing workflow for drafting, editing, and organizing portfolio content.',
+    content: 'AI Content Helper explores structured prompts, content review flows, revision history, and clean exports for blog posts, case studies, and project documentation.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&auto=format&fit=crop',
+    demoUrl: 'https://example.com/ai-content-helper',
+    githubUrl: 'https://github.com/minld/ai-content-helper',
+    sourceUrl: 'https://github.com/minld/ai-content-helper',
+    status: 'PUBLISHED',
+    featured: false,
+    year: 2025,
+    publishedAt: '2025-10-18T07:45:00.000Z',
+    tags: ['ai', 'automation', 'content-management'],
+    technologies: ['next-js', 'typescript', 'postgresql', 'prisma'],
+  },
+  {
+    title: 'Mobile Habit Tracker',
+    slug: 'seed-mobile-habit-tracker',
+    summary: 'A mobile-first habit tracker concept with streaks, reminders, and weekly progress summaries.',
+    content: 'Mobile Habit Tracker is a draft product concept focused on fast daily check-ins, streak feedback, simple analytics, and calm UI patterns for personal routines.',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&auto=format&fit=crop',
+    demoUrl: null,
+    githubUrl: null,
+    sourceUrl: null,
+    status: 'DRAFT',
+    featured: false,
+    year: 2026,
+    publishedAt: null,
+    tags: ['mobile-app', 'ui-ux', 'personal'],
+    technologies: ['flutter', 'dart', 'sqlite'],
+  },
+] as const
+
 await runTransaction(async (tx) => {
   await authRepository.createAdmin(
     {
@@ -115,5 +216,31 @@ await runTransaction(async (tx) => {
 
   for (const [name, slug, type] of technologies) {
     await tx.technology.upsert({ where: { slug }, update: { name, type }, create: { name, slug, type } })
+  }
+
+  for (const project of projects) {
+    const relationConnect = {
+      categories: { connect: project.tags.map((slug) => ({ slug })) },
+      technologies: { connect: project.technologies.map((slug) => ({ slug })) },
+    }
+    const data = {
+      title: project.title,
+      summary: project.summary,
+      content: project.content,
+      thumbnailUrl: project.thumbnailUrl,
+      demoUrl: project.demoUrl,
+      githubUrl: project.githubUrl,
+      sourceUrl: project.sourceUrl,
+      status: project.status,
+      featured: project.featured,
+      year: project.year,
+      publishedAt: project.publishedAt ? new Date(project.publishedAt) : null,
+    }
+
+    await tx.project.upsert({
+      where: { slug: project.slug },
+      update: { ...data, categories: { set: project.tags.map((slug) => ({ slug })) }, technologies: { set: project.technologies.map((slug) => ({ slug })) } },
+      create: { ...data, slug: project.slug, ...relationConnect },
+    })
   }
 })

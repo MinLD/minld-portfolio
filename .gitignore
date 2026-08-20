@@ -27,3 +27,7 @@ coverage/
 .idea/
 *.swp
 *.swo
+
+# generated/local API docs
+api/FRONTEND_*.md
+api/openapi/*.json
