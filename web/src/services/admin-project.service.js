@@ -10,41 +10,36 @@ import {
   uploadProjectThumbnailApi,
 } from '@/api/admin-project'
 
-function appendValue(formData, key, value) {
-  if (value === undefined || value === null || value === '') return
-
-  if (Array.isArray(value)) {
-    value.forEach((item) => formData.append(key, item))
-    return
-  }
-
-  formData.append(key, value)
-}
-
 function isoDateTime(value) {
-  if (!value) return ''
+  if (!value) return undefined
 
   return new Date(value).toISOString()
 }
 
-function toProjectFormData(payload) {
-  const formData = new FormData()
+function emptyToUndefined(value) {
+  return value === '' ? undefined : value
+}
 
-  appendValue(formData, 'title', payload.title)
-  appendValue(formData, 'summary', payload.summary)
-  appendValue(formData, 'content', payload.content)
-  appendValue(formData, 'status', payload.status)
-  appendValue(formData, 'featured', String(Boolean(payload.featured)))
-  appendValue(formData, 'year', payload.year)
-  appendValue(formData, 'publishedAt', isoDateTime(payload.publishedAt))
-  appendValue(formData, 'demoUrl', payload.demoUrl)
-  appendValue(formData, 'githubUrl', payload.githubUrl)
-  appendValue(formData, 'sourceUrl', payload.sourceUrl)
-  appendValue(formData, 'tagIds', payload.tagIds)
-  appendValue(formData, 'technologyIds', payload.technologyIds)
-  appendValue(formData, 'thumbnail', payload.thumbnail)
+function emptyToNull(value) {
+  return value === '' ? null : value
+}
 
-  return formData
+function toProjectPayload(payload, isUpdate = false) {
+  return {
+    title: payload.title,
+    summary: payload.summary,
+    content: payload.content,
+    status: payload.status,
+    featured: Boolean(payload.featured),
+    year: payload.year,
+    publishedAt: isoDateTime(payload.publishedAt),
+    demoUrl: isUpdate ? emptyToNull(payload.demoUrl) : emptyToUndefined(payload.demoUrl),
+    githubUrl: isUpdate ? emptyToNull(payload.githubUrl) : emptyToUndefined(payload.githubUrl),
+    sourceUrl: isUpdate ? emptyToNull(payload.sourceUrl) : emptyToUndefined(payload.sourceUrl),
+    thumbnailUrl: isUpdate ? emptyToNull(payload.thumbnailUrl) : emptyToUndefined(payload.thumbnailUrl),
+    tagIds: payload.tagIds,
+    technologyIds: payload.technologyIds,
+  }
 }
 
 export async function getProjects(params = {}) {
@@ -63,13 +58,13 @@ export async function getProject(id) {
 }
 
 export async function createProject(payload) {
-  const data = await createAdminProjectApi(toProjectFormData(payload))
+  const data = await createAdminProjectApi(toProjectPayload(payload))
 
   return data.project
 }
 
 export async function updateProject(id, payload) {
-  const data = await updateAdminProjectApi(id, toProjectFormData(payload))
+  const data = await updateAdminProjectApi(id, toProjectPayload(payload, true))
 
   return data.project
 }

@@ -200,39 +200,46 @@ test('ADMIN searches projects with pagination', async () => {
   expect((await request(app).get('/api/v1/admin/projects?status=BAD').set('Cookie', cookie)).status).toBe(400)
 })
 
-test('ADMIN can create and update project with multipart thumbnail', async () => {
+test('ADMIN uploads image then saves project thumbnail URL', async () => {
   const cookie = await authCookie(adminEmail)
   mediaMocks.uploadImage.mockResolvedValueOnce({ url: 'https://cdn/create.png', publicId: 'create-id' }).mockResolvedValueOnce({ url: 'https://cdn/update.png', publicId: 'update-id' })
+
+  const firstUpload = await request(app)
+    .post('/api/v1/admin/uploads/images')
+    .set('Cookie', cookie)
+    .field('folder', 'projects/thumbnails')
+    .attach('image', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+
+  expect(firstUpload.status).toBe(201)
+  expect(firstUpload.body.data.image.url).toBe('https://cdn/create.png')
 
   const created = await request(app)
     .post('/api/v1/admin/projects')
     .set('Cookie', cookie)
-    .field('title', 'Test Project Multipart')
-    .field('summary', 'Summary')
-    .field('content', 'Content')
-    .field('status', 'PUBLISHED')
-    .field('featured', 'true')
-    .field('year', '2026')
-    .field('tagIds', tagId)
-    .field('technologyIds', technologyId)
-    .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+    .send({ ...projectBody('Test Project Upload URL'), thumbnailUrl: firstUpload.body.data.image.url })
 
   expect(created.status).toBe(201)
-  expect(created.body.data.project.slug).toBe('test-project-multipart')
+  expect(created.body.data.project.slug).toBe('test-project-upload-url')
   expect(created.body.data.project.thumbnailUrl).toBe('https://cdn/create.png')
   expect(created.body.data.project.tags).toHaveLength(1)
+
+  const secondUpload = await request(app)
+    .post('/api/v1/admin/uploads/images')
+    .set('Cookie', cookie)
+    .field('folder', 'projects/thumbnails')
+    .attach('image', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+
+  expect(secondUpload.status).toBe(201)
+  expect(secondUpload.body.data.image.url).toBe('https://cdn/update.png')
 
   const updated = await request(app)
     .patch(`/api/v1/admin/projects/${created.body.data.project.id}`)
     .set('Cookie', cookie)
-    .field('title', 'Test Project Multipart Updated')
-    .field('tagIds', '')
-    .attach('thumbnail', Buffer.from('fake'), { filename: 'thumbnail.png', contentType: 'image/png' })
+    .send({ title: 'Test Project Upload URL Updated', thumbnailUrl: secondUpload.body.data.image.url, tagIds: [] })
 
   expect(updated.status).toBe(200)
   expect(updated.body.data.project.thumbnailUrl).toBe('https://cdn/update.png')
   expect(updated.body.data.project.tags).toHaveLength(0)
-  expect(mediaMocks.deleteImage).toHaveBeenCalledWith('create-id')
 })
 
 test('ADMIN can replace and delete project thumbnail with cleanup', async () => {

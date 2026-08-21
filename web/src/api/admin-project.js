@@ -15,21 +15,13 @@ export async function getAdminProjectApi(id) {
 }
 
 export async function createAdminProjectApi(payload) {
-  const response = await http.post('/admin/projects', payload, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  const response = await http.post('/admin/projects', payload)
 
   return response.data.data
 }
 
 export async function updateAdminProjectApi(id, payload) {
-  const response = await http.patch(`/admin/projects/${id}`, payload, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  const response = await http.patch(`/admin/projects/${id}`, payload)
 
   return response.data.data
 }

@@ -17,6 +17,7 @@ import { adminProjectRouter, publicProjectRouter } from './modules/projects/proj
 import { adminTechnologyRouter, publicTechnologyRouter } from './modules/technologies/technology.routes.js'
 import { userRouter } from './modules/users/user.routes.js'
 import { docsRouter } from './modules/docs/docs.routes.js'
+import { adminUploadRouter } from './modules/uploads/upload.routes.js'
 
 export const app = express()
 
@@ -45,6 +46,7 @@ app.use('/api/v1/admin', adminProjectRouter)
 app.use('/api/v1/admin', adminProjectCommentRouter)
 app.use('/api/v1/admin', adminMomentTagRouter)
 app.use('/api/v1/admin', adminMomentRouter)
+app.use('/api/v1/admin', adminUploadRouter)
 
 app.use(notFoundMiddleware)
 app.use(errorMiddleware)

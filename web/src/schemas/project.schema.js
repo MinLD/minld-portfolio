@@ -1,9 +1,5 @@
 import { z } from 'zod'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-
 const optionalUrl = (message) => z.union([z.literal(''), z.string().trim().url(message)])
 
 export const projectSchema = z.object({
@@ -42,14 +38,7 @@ export const projectSchema = z.object({
 
   sourceUrl: optionalUrl('Source URL is invalid'),
 
-  thumbnail: z
-    .instanceof(File)
-    .nullable()
-    .refine((file) => !file || file.size <= MAX_FILE_SIZE, 'Thumbnail must be smaller than 5MB')
-    .refine(
-      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-      'Only JPG, PNG and WEBP images are allowed',
-    ),
+  thumbnailUrl: optionalUrl('Thumbnail URL is invalid'),
 
   tagIds: z.array(z.string()),
 

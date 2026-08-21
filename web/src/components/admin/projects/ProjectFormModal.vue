@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onUnmounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 import FormField from '@/components/form/FormField.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import UploadImage from '@/components/shared/uploadImage.vue'
 import { projectSchema } from '@/schemas/project.schema.js'
 
 const formatDateTimeLocal = (value) => {
@@ -67,7 +68,7 @@ const form = reactive({
   githubUrl: props.project?.githubUrl ?? '',
   sourceUrl: props.project?.sourceUrl ?? '',
 
-  thumbnail: null,
+  thumbnailUrl: props.project?.thumbnailUrl ?? '',
 
   tagIds: props.project?.tags?.map((tag) => tag.id) ?? [],
 
@@ -190,50 +191,6 @@ const validateForm = () => {
   return result
 }
 
-const fileInput = ref(null)
-
-const existingThumbnailUrl = ref(props.project?.thumbnailUrl ?? '')
-
-const newThumbnailPreviewUrl = ref('')
-
-const thumbnailPreview = computed(() => {
-  return newThumbnailPreviewUrl.value || existingThumbnailUrl.value
-})
-
-const handleFile = (event) => {
-  const file = event.target.files?.[0] ?? null
-
-  if (newThumbnailPreviewUrl.value) {
-    URL.revokeObjectURL(newThumbnailPreviewUrl.value)
-
-    newThumbnailPreviewUrl.value = ''
-  }
-
-  form.thumbnail = file
-
-  clearError('thumbnail')
-
-  if (file) {
-    newThumbnailPreviewUrl.value = URL.createObjectURL(file)
-  }
-}
-
-const removeNewThumbnail = () => {
-  if (newThumbnailPreviewUrl.value) {
-    URL.revokeObjectURL(newThumbnailPreviewUrl.value)
-  }
-
-  newThumbnailPreviewUrl.value = ''
-
-  form.thumbnail = null
-
-  if (fileInput.value) {
-    fileInput.value.value = ''
-  }
-
-  clearError('thumbnail')
-}
-
 const toggleValue = (array, value) => {
   const index = array.indexOf(value)
 
@@ -253,12 +210,6 @@ const submit = () => {
 
   emit('save', result.data)
 }
-
-onUnmounted(() => {
-  if (newThumbnailPreviewUrl.value) {
-    URL.revokeObjectURL(newThumbnailPreviewUrl.value)
-  }
-})
 </script>
 
 <template>
@@ -332,67 +283,16 @@ onUnmounted(() => {
             <div class="sm:col-span-2">
               <span class="mb-1.5 block text-sm text-zinc-300"> Thumbnail </span>
 
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                class="w-full rounded-md border bg-[#111111] px-3 py-2.5 text-sm text-zinc-300 file:mr-3 file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-black"
-                :class="errors.thumbnail ? 'border-red-500' : 'border-zinc-700'"
-                @change="handleFile"
+              <UploadImage
+                v-model="form.thumbnailUrl"
+                folder="projects/thumbnails"
+                :disabled="props.isLoading"
+                @uploaded="clearError('thumbnailUrl')"
+                @clear="clearError('thumbnailUrl')"
               />
 
               <p class="mt-1 min-h-5 text-xs text-red-400">
-                {{ errors.thumbnail }}
-              </p>
-
-              <!-- Thông tin file MỚI -->
-              <div
-                v-if="form.thumbnail"
-                class="mb-3 flex items-center justify-between text-xs text-zinc-500"
-              >
-                <span class="truncate">
-                  {{ form.thumbnail.name }}
-                </span>
-
-                <span class="ml-4 shrink-0">
-                  {{ (form.thumbnail.size / 1024).toFixed(1) }}
-                  KB
-                </span>
-              </div>
-
-              <!-- Preview ảnh -->
-              <div
-                v-if="thumbnailPreview"
-                class="relative overflow-hidden rounded-lg border border-zinc-700 bg-[#111111]"
-              >
-                <img
-                  :src="thumbnailPreview"
-                  alt="Thumbnail preview"
-                  class="h-64 w-full object-cover"
-                />
-
-                <!-- Đang hiển thị ảnh MỚI -->
-                <button
-                  v-if="form.thumbnail"
-                  type="button"
-                  class="absolute right-3 top-3 rounded-md bg-black/80 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-black"
-                  @click="removeNewThumbnail"
-                >
-                  Remove new image
-                </button>
-
-                <!-- Đang hiển thị ảnh CŨ -->
-                <span
-                  v-else-if="existingThumbnailUrl"
-                  class="absolute bottom-3 left-3 rounded-md bg-black/80 px-3 py-1.5 text-xs text-white"
-                >
-                  Current thumbnail
-                </span>
-              </div>
-
-              <!-- Edit mode nhưng project không có ảnh -->
-              <p v-else-if="isEditMode" class="text-xs text-zinc-500">
-                This project has no thumbnail.
+                {{ errors.thumbnailUrl }}
               </p>
             </div>
 
