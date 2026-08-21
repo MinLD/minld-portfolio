@@ -101,6 +101,64 @@ const technologies = [
   ['Netlify', 'netlify', 'OTHER'],
 ] as const
 
+const momentTags = [
+  ['Work', 'work'],
+  ['Learning', 'learning'],
+  ['Behind the Scenes', 'behind-the-scenes'],
+  ['Release Notes', 'release-notes'],
+  ['Bug Fix', 'bug-fix'],
+  ['Design', 'design'],
+  ['Architecture', 'architecture'],
+  ['Performance', 'performance'],
+  ['DevOps', 'devops'],
+  ['Personal', 'personal'],
+] as const
+
+const moments = [
+  {
+    content: '[seed] Shipped the admin project management flow with search, filters, pagination, image upload, and safer token refresh handling.',
+    status: 'PUBLISHED',
+    publishedAt: '2026-08-16T03:00:00.000Z',
+    tags: ['work', 'release-notes'],
+    images: ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&auto=format&fit=crop'],
+  },
+  {
+    content: '[seed] Refined backend project APIs so the frontend can search with SQL LIKE semantics and receive pagination metadata in one response.',
+    status: 'PUBLISHED',
+    publishedAt: '2026-08-15T10:30:00.000Z',
+    tags: ['architecture', 'performance'],
+    images: ['https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&auto=format&fit=crop'],
+  },
+  {
+    content: '[seed] Added real-world project tags and technologies to make admin forms useful immediately after a local database reset.',
+    status: 'PUBLISHED',
+    publishedAt: '2026-08-14T08:00:00.000Z',
+    tags: ['work', 'behind-the-scenes'],
+    images: ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop'],
+  },
+  {
+    content: '[seed] Debugged a refresh-token failure caused by a frontend request body mismatch and tightened the API client behavior.',
+    status: 'PUBLISHED',
+    publishedAt: '2026-08-13T14:15:00.000Z',
+    tags: ['bug-fix', 'learning'],
+    images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop'],
+  },
+  {
+    content: '[seed] Designed the moments API contract for the frontend: public timeline, admin CRUD, image gallery, likes, and comments.',
+    status: 'PUBLISHED',
+    publishedAt: '2026-08-12T09:45:00.000Z',
+    tags: ['design', 'architecture'],
+    images: ['https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=1200&auto=format&fit=crop'],
+  },
+  {
+    content: '[seed] Draft note: explore richer moment pagination and tag filters when the frontend timeline needs infinite scroll.',
+    status: 'DRAFT',
+    publishedAt: null,
+    tags: ['learning', 'performance'],
+    images: [],
+  },
+] as const
+
 const projects = [
   {
     title: 'Prismo Booth',
@@ -200,6 +258,154 @@ const projects = [
   },
 ] as const
 
+const projectBlueprints = [
+  ['OpsPulse Incident Board', 'Internal incident response dashboard with escalation timelines, service ownership, and postmortem tracking.', 'A practical operations board for engineering teams to track incidents, assign owners, document decisions, and review service reliability after release windows.', 'dashboard', 'backend', ['vue-js', 'express', 'postgresql', 'prisma']],
+  ['LedgerLite Expense Tracker', 'Small-business expense tracking with receipts, monthly reports, and accountant exports.', 'LedgerLite helps founders capture expenses quickly, categorize transactions, upload receipts, and export clean monthly summaries without spreadsheet drift.', 'saas', 'full-stack', ['next-js', 'typescript', 'postgresql', 'prisma']],
+  ['LaunchKit Landing Builder', 'A landing-page builder for validating product ideas with reusable sections and analytics.', 'LaunchKit focuses on fast campaign setup, reusable hero blocks, lead capture, and simple conversion tracking for early-stage product tests.', 'landing-page', 'frontend', ['vue-js', 'tailwind-css', 'vite', 'pinia']],
+  ['DeskFlow Support Inbox', 'A shared support inbox with assignments, saved replies, and customer context.', 'DeskFlow organizes inbound support requests with status queues, teammate assignment, customer notes, and search-first workflows for small teams.', 'web-application', 'dashboard', ['react', 'node-js', 'postgresql', 'redis']],
+  ['RouteWise Delivery Planner', 'A delivery planning tool with route batches, driver notes, and live dispatch status.', 'RouteWise helps operations teams build daily route plans, review driver capacity, and keep dispatch updates visible without juggling chat threads.', 'dashboard', 'automation', ['typescript', 'express', 'postgresql', 'redis']],
+  ['Classroom Notes Hub', 'A collaborative note platform for lessons, resources, and study checkpoints.', 'Classroom Notes Hub gives instructors a clean place to publish lesson notes, attach resources, and help students follow progress across a course.', 'content-management', 'web-application', ['vue-js', 'node-js', 'postgresql', 'zod']],
+  ['FitLog Mobile Companion', 'A workout and habit companion focused on quick check-ins and weekly summaries.', 'FitLog keeps the daily flow small: log workouts, mark habits complete, review weekly momentum, and keep personal progress visible.', 'mobile-app', 'personal', ['flutter', 'dart', 'sqlite']],
+  ['Stockroom Scanner', 'A warehouse inventory concept for scanning items, counting stock, and flagging variance.', 'Stockroom Scanner combines barcode flows, low-stock alerts, variance notes, and admin reports for small warehouse teams.', 'mobile-app', 'automation', ['react-native', 'typescript', 'node-js', 'postgresql']],
+  ['BrandShelf Asset Library', 'A brand asset manager for logos, images, documents, and campaign kits.', 'BrandShelf gives marketing teams one place to find approved assets, group campaign files, and avoid stale downloads.', 'content-management', 'ui-ux', ['vue-js', 'cloudinary', 'express', 'postgresql']],
+  ['OpenRoad Trip Planner', 'A road-trip planner with stops, route notes, budgets, and shareable itineraries.', 'OpenRoad helps travelers plan route stops, estimate daily distance, save notes, and share a clean itinerary before the trip starts.', 'web-application', 'personal', ['next-js', 'typescript', 'tailwind-css', 'postgresql']],
+  ['MetricGarden Product Analytics', 'A product analytics dashboard for funnels, retention cohorts, and feature usage.', 'MetricGarden visualizes product signals with funnel reports, cohort snapshots, and feature adoption views for product teams.', 'data-visualization', 'saas', ['react', 'typescript', 'postgresql', 'redis']],
+  ['InvoiceDock Client Billing', 'A billing workspace for invoices, client records, payments, and reminders.', 'InvoiceDock streamlines recurring invoices, payment tracking, client notes, and monthly revenue review for freelancers and studios.', 'saas', 'dashboard', ['vue-js', 'express', 'postgresql', 'prisma']],
+  ['RecipeNest Meal Planner', 'A meal planning app with recipe collections, shopping lists, and weekly menus.', 'RecipeNest organizes favorite meals, builds weekly plans, and turns recipes into practical grocery lists.', 'web-application', 'personal', ['svelte', 'typescript', 'sqlite', 'tailwind-css']],
+  ['DeployRadar Release Monitor', 'A release monitor for deployments, environment checks, and rollout notes.', 'DeployRadar keeps release activity visible with deployment history, environment health, rollback notes, and ownership metadata.', 'devops', 'developer-tooling', ['node-js', 'express', 'postgresql', 'github-actions']],
+  ['TalentTrack Hiring Pipeline', 'A hiring pipeline board for candidates, scorecards, and interview loops.', 'TalentTrack helps small teams manage candidates, coordinate interview feedback, and keep hiring decisions traceable.', 'dashboard', 'saas', ['react', 'typescript', 'postgresql', 'prisma']],
+  ['ClinicQueue Appointment Board', 'A clinic scheduling board for appointments, patient flow, and daily capacity.', 'ClinicQueue models appointment status, visit notes, room availability, and simple reporting for clinic coordinators.', 'web-application', 'dashboard', ['vue-js', 'express', 'postgresql', 'zod']],
+  ['EventForge Registration Portal', 'An event registration portal with ticket types, attendee lists, and check-in status.', 'EventForge supports event setup, attendee registration, check-in workflows, and organizer reports.', 'web-application', 'content-management', ['next-js', 'typescript', 'postgresql', 'tailwind-css']],
+  ['BugTrail QA Tracker', 'A QA tracker for reproductions, browser notes, severity, and release verification.', 'BugTrail keeps bug reports focused with steps to reproduce, environment fields, owner assignment, and verification state.', 'developer-tooling', 'dashboard', ['vue-js', 'node-js', 'postgresql', 'vitest']],
+  ['GreenCart Marketplace', 'A small marketplace concept for local produce boxes and pickup scheduling.', 'GreenCart demonstrates catalog management, order checkout, pickup windows, and producer profiles.', 'e-commerce', 'web-application', ['react', 'node-js', 'postgresql', 'redis']],
+  ['LearnLoop Course Portal', 'A course portal with lessons, checkpoints, notes, and progress tracking.', 'LearnLoop supports lesson publishing, student progress, resource links, and simple admin controls.', 'content-management', 'saas', ['vue-js', 'express', 'postgresql', 'pinia']],
+  ['VaultNote Secure Journal', 'A private note app focused on encrypted local-first writing workflows.', 'VaultNote explores secure journals, offline drafts, search, and minimal sync assumptions for privacy-heavy notes.', 'desktop-app', 'personal', ['typescript', 'sqlite', 'rust', 'tailwind-css']],
+  ['CafeShift Staff Scheduler', 'A staff scheduling board for shifts, availability, swaps, and payroll prep.', 'CafeShift helps managers build weekly schedules, record availability, approve swaps, and export time summaries.', 'dashboard', 'automation', ['laravel', 'mysql', 'vue-js', 'tailwind-css']],
+  ['DataLens Report Builder', 'A report builder for saved queries, charts, and stakeholder-ready exports.', 'DataLens lets teams create reusable reports, chart SQL-backed data, and publish clean dashboards without manual slides.', 'data-visualization', 'developer-tooling', ['python', 'fastapi', 'postgresql', 'react']],
+  ['NotifyBridge Message Center', 'A notification center for email templates, delivery logs, and retry workflows.', 'NotifyBridge manages notification templates, event payload previews, delivery tracking, and failure retries.', 'automation', 'backend', ['node-js', 'express', 'postgresql', 'redis']],
+  ['TravelDesk Agency CRM', 'A lightweight CRM for travel agencies managing leads, trips, and client preferences.', 'TravelDesk keeps client conversations, trip ideas, quote status, and booking notes in one operational workspace.', 'saas', 'dashboard', ['next-js', 'typescript', 'postgresql', 'prisma']],
+  ['MediaFrame Portfolio Gallery', 'A media-heavy portfolio gallery with collections, captions, and optimized image delivery.', 'MediaFrame showcases photography and design work through albums, detail pages, and Cloudinary-powered image delivery.', 'portfolio', 'ui-ux', ['vue-js', 'cloudinary', 'tailwind-css', 'vite']],
+  ['TaskHarbor Team Planner', 'A task planning app with milestones, workload views, and sprint notes.', 'TaskHarbor helps small teams plan milestones, split work, inspect workload, and document weekly progress.', 'web-application', 'dashboard', ['react', 'redux', 'node-js', 'postgresql']],
+  ['SurveyMill Feedback Tool', 'A survey builder with share links, response analytics, and exportable insights.', 'SurveyMill supports quick survey creation, response collection, charts, and CSV exports for product feedback.', 'saas', 'data-visualization', ['vue-js', 'express', 'postgresql', 'tanstack-query']],
+  ['ShopPilot Admin Console', 'An e-commerce admin console for catalog, orders, customers, and promotions.', 'ShopPilot models practical back-office workflows for product updates, order status, customer profiles, and promotional campaigns.', 'e-commerce', 'admin-panel', ['next-js', 'typescript', 'postgresql', 'prisma']],
+  ['BuildLog Engineering Journal', 'A public engineering journal with project notes, timelines, and searchable updates.', 'BuildLog turns engineering notes into public progress pages, release entries, tags, and shareable project history.', 'portfolio', 'content-management', ['vue-js', 'express', 'postgresql', 'zod']],
+  ['FleetCheck Maintenance Planner', 'A fleet maintenance planner for inspections, service intervals, and repair notes.', 'FleetCheck tracks vehicles, maintenance schedules, inspection results, and upcoming service work.', 'dashboard', 'automation', ['angular', 'spring-boot', 'postgresql', 'docker']],
+  ['FundFlow Donation Portal', 'A donation portal with campaigns, donor receipts, and admin reporting.', 'FundFlow supports campaign pages, donor checkout, receipt emails, and donation reporting for small nonprofits.', 'web-application', 'saas', ['next-js', 'typescript', 'postgresql', 'tailwind-css']],
+  ['SecureGate Auth Lab', 'An authentication lab for cookie sessions, refresh rotation, and admin role checks.', 'SecureGate demonstrates practical auth flows with HttpOnly cookies, session listing, role guards, and account status controls.', 'authentication', 'developer-tooling', ['express', 'typescript', 'zod', 'postgresql']],
+  ['MapBoard Store Locator', 'A store locator with region filters, branch profiles, and map-ready data.', 'MapBoard organizes branches, service areas, opening hours, and search filters for location-heavy businesses.', 'web-application', 'data-visualization', ['vue-js', 'typescript', 'postgresql', 'tailwind-css']],
+  ['ContentDock Editorial Calendar', 'An editorial calendar for drafts, review dates, publishing state, and topic tags.', 'ContentDock gives content teams a focused view of upcoming articles, ownership, review state, and publishing history.', 'content-management', 'dashboard', ['react', 'typescript', 'node-js', 'postgresql']],
+  ['PaySplit Shared Expenses', 'A shared expense app for trips, roommates, and small group budgets.', 'PaySplit tracks expenses, balances, settlement suggestions, and trip summaries for small groups.', 'mobile-app', 'personal', ['flutter', 'dart', 'firebase', 'sqlite']],
+  ['CacheWatch API Monitor', 'An API monitor for uptime checks, latency snapshots, and incident notes.', 'CacheWatch runs endpoint checks, stores latency trends, and provides simple incident context for API owners.', 'devops', 'backend', ['go', 'postgresql', 'docker', 'github-actions']],
+  ['UXBoard Design Review', 'A design review board for screenshots, comments, decisions, and handoff status.', 'UXBoard helps design and frontend teams review screens, resolve feedback, and track handoff readiness.', 'ui-ux', 'web-application', ['svelte', 'typescript', 'tailwind-css', 'node-js']],
+  ['RentNest Property Manager', 'A property management dashboard for units, tenants, rent status, and maintenance.', 'RentNest supports property records, tenant notes, rent tracking, and maintenance requests.', 'dashboard', 'saas', ['laravel', 'mysql', 'vue-js', 'bootstrap']],
+  ['DocuTrail Audit Archive', 'A document archive with audit trails, tags, review status, and secure downloads.', 'DocuTrail organizes documents with ownership, review workflow, audit logs, and searchable metadata.', 'content-management', 'backend', ['asp-net-core', 'c-sharp', 'postgresql', 'docker']],
+  ['ChatOps Helper Bot', 'A chat automation helper for deployment reminders, triage prompts, and status summaries.', 'ChatOps Helper Bot connects team workflows with lightweight automation, scheduled reminders, and operational summaries.', 'automation', 'devops', ['node-js', 'typescript', 'redis', 'github-actions']],
+  ['MuseGrid Creative Directory', 'A creative directory for profiles, collections, skills, and inquiry routing.', 'MuseGrid showcases creative professionals with profile pages, searchable skills, work samples, and inquiry routing.', 'portfolio', 'web-application', ['nuxt', 'vue-js', 'tailwind-css', 'cloudinary']],
+  ['CodeReview Notebook', 'A developer notebook for code review patterns, snippets, and team conventions.', 'CodeReview Notebook stores review notes, examples, conventions, and reusable checklists for engineering teams.', 'developer-tooling', 'content-management', ['vue-js', 'typescript', 'sqlite', 'vite']],
+  ['RevenueBoard KPI Console', 'A KPI console for subscriptions, revenue movement, churn, and sales notes.', 'RevenueBoard gives founders a high-signal view of revenue, churn, active accounts, and weekly movement.', 'dashboard', 'data-visualization', ['react', 'typescript', 'postgresql', 'tanstack-query']],
+] as const
+
+const generatedProjects = projectBlueprints.map(([title, summary, content, tagA, tagB, technologies], index) => ({
+  title,
+  slug: `seed-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
+  summary,
+  content,
+  thumbnailUrl: `https://images.unsplash.com/photo-${[
+    '1497366811353-6870744d04b2',
+    '1500530855697-b586d89ba3ee',
+    '1518005020951-eccb494ad742',
+    '1521737604893-d14cc237f11d',
+    '1531403009284-440f080d1e12',
+    '1542744173-8e7e53415bb0',
+    '1556761175-b413da4baf72',
+    '1563986768609-322da13575f3',
+    '1573164713714-d95e436ab8d6',
+    '1581291518857-4e27b48ff24e',
+  ][index % 10]}?w=1200&auto=format&fit=crop`,
+  demoUrl: `https://example.com/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
+  githubUrl: `https://github.com/minld/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
+  sourceUrl: `https://github.com/minld/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`,
+  status: (index % 9 === 0 ? 'DRAFT' : index % 13 === 0 ? 'ARCHIVED' : 'PUBLISHED') as const,
+  featured: index % 7 === 0,
+  year: 2024 + (index % 3),
+  publishedAt: index % 9 === 0 ? null : new Date(Date.UTC(2026, index % 8, 2 + (index % 24), 8, 0)).toISOString(),
+  tags: [tagA, tagB],
+  technologies,
+}))
+
+const seedProjects = [...projects, ...generatedProjects].slice(0, 50)
+
+const momentContents = [
+  'Reviewed the admin dashboard spacing after adding more realistic seed records and pagination states.',
+  'Captured a small UI bug where empty result pages still need a stable footer position.',
+  'Moved image upload earlier in the workflow so saving a moment only writes metadata to the database.',
+  'Documented the tradeoff between appending and replacing moment images during edit flows.',
+  'Added a regression check around moment list pagination after the frontend started reading meta.',
+  'Cleaned up a few admin copy labels so project and moment management feel consistent.',
+  'Sketched a simpler moderation flow for comments before adding bulk actions.',
+  'Tested draft and published state transitions after removing manual published date input.',
+  'Compared table density on desktop with a smaller mobile breakpoint for admin screens.',
+  'Refined seed content to look closer to a real working portfolio instead of throwaway examples.',
+  'Checked how Cloudinary URLs render in compact table thumbnails and modal previews.',
+  'Reviewed API error payloads from the frontend perspective before updating Swagger examples.',
+  'Trimmed a slow save path by avoiding duplicate uploads during moment creation.',
+  'Verified cookie-based Swagger Try it out flow after a docs CSP issue caused a blank page.',
+  'Reworked page height so pagination stays anchored when the current page has only one row.',
+  'Added project filters first, then mirrored the same pagination pattern for moments.',
+  'Tracked a frontend shape mismatch where service code dropped response meta.',
+  'Used backend pagination metadata directly instead of recomputing totals on the client.',
+  'Re-tested update image behavior because the table showed the first old image after append.',
+  'Removed a noisy date input from the moment form and let status drive publication behavior.',
+  'Drafted follow-up notes for moment tag filtering on the public timeline.',
+  'Reviewed generated OpenAPI operation IDs for client generation readiness.',
+  'Tightened upload field names so Swagger and runtime middleware agree.',
+  'Checked empty states after deleting the last record on a paginated page.',
+  'Compared admin project and moment layouts to keep toolbar behavior consistent.',
+  'Validated that archived moments stay visible to admin but not public endpoints.',
+  'Added realistic project cards for dashboards, SaaS tools, mobile apps, and developer tooling.',
+  'Ran a small smoke test against image preview, delete, and replacement flows.',
+  'Updated seed moments with realistic release, debugging, and design notes.',
+  'Reviewed table row height after adding longer content snippets.',
+  'Checked search debounce behavior with generated portfolio records.',
+  'Confirmed backend page reset when filters change on the admin screen.',
+  'Prepared sample content for a case-study style portfolio homepage.',
+  'Audited relation seeds so technologies and tags connect without missing slugs.',
+  'Verified Prisma upserts keep seed data stable across repeated local resets.',
+  'Captured a note about keeping admin controls quiet and utilitarian.',
+  'Mapped a future public moments timeline with likes, comments, and tag chips.',
+  'Tested comment moderation state names against Prisma enum values.',
+  'Adjusted local development data to cover draft, published, and archived states.',
+  'Checked that generated project URLs are fake but valid and non-sensitive.',
+  'Documented why image publicId must be stored with URL for later cleanup.',
+  'Reviewed backend response wrappers so frontend services return consistent shapes.',
+  'Added seed coverage for authentication, dashboards, mobile apps, and reporting tools.',
+  'Kept seed generation deterministic to avoid random diffs during debugging.',
+] as const
+
+const seedMoments = [
+  ...moments.map((moment) => ({ ...moment, content: moment.content.replace(/^\[seed\]\s*/, '') })),
+  ...momentContents.map((content, index) => ({
+    content,
+    status: (index % 10 === 0 ? 'DRAFT' : index % 17 === 0 ? 'ARCHIVED' : 'PUBLISHED') as const,
+    publishedAt: index % 10 === 0 ? null : new Date(Date.UTC(2026, 7, 1 + (index % 20), 2 + (index % 12), 15)).toISOString(),
+    tags: [
+      ['work', 'release-notes'],
+      ['bug-fix', 'learning'],
+      ['design', 'behind-the-scenes'],
+      ['architecture', 'performance'],
+      ['devops', 'behind-the-scenes'],
+      ['personal', 'learning'],
+    ][index % 6],
+    images: index % 5 === 0 ? [] : [`https://images.unsplash.com/photo-${[
+      '1515879218367-8466d910aaa4',
+      '1555066931-4365d14bab8c',
+      '1551288049-bebda4e38f71',
+      '1559028006-448665bd7c7f',
+      '1498050108023-c5249f4df085',
+    ][index % 5]}?w=1200&auto=format&fit=crop`],
+  })),
+].slice(0, 50)
+
 await runTransaction(async (tx) => {
   await authRepository.createAdmin(
     {
@@ -218,7 +424,7 @@ await runTransaction(async (tx) => {
     await tx.technology.upsert({ where: { slug }, update: { name, type }, create: { name, slug, type } })
   }
 
-  for (const project of projects) {
+  for (const project of seedProjects) {
     const relationConnect = {
       categories: { connect: project.tags.map((slug) => ({ slug })) },
       technologies: { connect: project.technologies.map((slug) => ({ slug })) },
@@ -241,6 +447,23 @@ await runTransaction(async (tx) => {
       where: { slug: project.slug },
       update: { ...data, categories: { set: project.tags.map((slug) => ({ slug })) }, technologies: { set: project.technologies.map((slug) => ({ slug })) } },
       create: { ...data, slug: project.slug, ...relationConnect },
+    })
+  }
+
+  for (const [name, slug] of momentTags) {
+    await tx.momentTag.upsert({ where: { slug }, update: { name }, create: { name, slug } })
+  }
+
+  await tx.moment.deleteMany({ where: { OR: [{ content: { startsWith: '[seed]' } }, { content: { in: seedMoments.map((moment) => moment.content) } }] } })
+  for (const moment of seedMoments) {
+    await tx.moment.create({
+      data: {
+        content: moment.content,
+        status: moment.status,
+        publishedAt: moment.publishedAt ? new Date(moment.publishedAt) : null,
+        tags: { connect: moment.tags.map((slug) => ({ slug })) },
+        images: { create: moment.images.map((url, sortOrder) => ({ url, publicId: `seed/${sortOrder}-${url.split('/').at(-1)}`, sortOrder })) },
+      },
     })
   }
 })

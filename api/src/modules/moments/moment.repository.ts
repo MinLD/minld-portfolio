@@ -13,21 +13,41 @@ export type MomentWriteInput = {
   publishedAt?: Date | null
 }
 
+export type MomentListFilter = {
+  search?: string
+  status?: MomentStatus
+  page: number
+  limit: number
+}
+
+function momentWhere(filter: MomentListFilter): Prisma.MomentWhereInput {
+  return {
+    status: filter.status,
+    content: filter.search ? { contains: filter.search, mode: 'insensitive' } : undefined,
+  }
+}
+
 export const momentRepository = {
-  create(data: MomentWriteInput & { content: string; tagIds: string[] }, tx?: TxClient) {
+  create(data: MomentWriteInput & { content: string; tagIds: string[]; images?: { url: string; publicId: string }[] }, tx?: TxClient) {
     return db(tx).moment.create({
       data: {
         content: data.content,
         status: data.status,
         publishedAt: data.publishedAt,
         tags: { connect: connect(data.tagIds) },
+        images: data.images?.length ? { create: data.images.map((image, index) => ({ ...image, sortOrder: index })) } : undefined,
       },
       include: momentInclude,
     })
   },
 
-  findMany() {
-    return prisma.moment.findMany({ orderBy: { createdAt: 'desc' }, include: momentInclude })
+  async findMany(filter: MomentListFilter) {
+    const where = momentWhere(filter)
+    const [moments, total] = await prisma.$transaction([
+      prisma.moment.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (filter.page - 1) * filter.limit, take: filter.limit, include: momentInclude }),
+      prisma.moment.count({ where }),
+    ])
+    return { moments, total }
   },
 
   findPublished() {
@@ -90,12 +110,13 @@ export const momentRepository = {
     return ids.length ? db(tx).momentTag.count({ where: { id: { in: ids } } }) : 0
   },
 
-  update(id: string, data: MomentWriteInput & { tagIds?: string[] }, tx?: TxClient) {
+  update(id: string, data: MomentWriteInput & { tagIds?: string[]; images?: { url: string; publicId: string; sortOrder: number }[] }, tx?: TxClient) {
     const updateData: Prisma.MomentUpdateInput = {
       content: data.content,
       status: data.status,
       publishedAt: data.publishedAt,
       tags: data.tagIds ? { set: connect(data.tagIds) } : undefined,
+      images: data.images ? { deleteMany: {}, create: data.images } : undefined,
     }
     return db(tx).moment.update({ where: { id }, data: updateData, include: momentInclude })
   },

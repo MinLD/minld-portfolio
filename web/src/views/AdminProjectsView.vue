@@ -386,7 +386,7 @@ async function removeProject() {
     </div>
 
     <div
-      class="transition-opacity duration-200"
+      class="flex min-h-[560px] flex-col transition-opacity duration-200"
       :class="{
         'pointer-events-none opacity-50': isProjectsFetching && !isProjectsPending,
       }"
@@ -400,16 +400,17 @@ async function removeProject() {
         @delete="openDelete"
       />
 
-      <div v-else class="min-h-[487px]" />
-    </div>
+      <div v-else class="flex-1" />
 
-    <ProjectPagination
-      :page="page"
-      :total-pages="pagination.totalPages"
-      :total="pagination.total"
-      :loading="isProjectsFetching"
-      @change="changePage"
-    />
+      <ProjectPagination
+        :page="page"
+        :limit="limit"
+        :total-pages="pagination.totalPages"
+        :total="pagination.total"
+        :loading="isProjectsFetching"
+        @change="changePage"
+      />
+    </div>
 
     <ProjectFormModal
       v-if="showForm"

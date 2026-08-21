@@ -2,45 +2,24 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  page: {
-    type: Number,
-    default: 1,
-  },
-
-  totalPages: {
-    type: Number,
-    default: 0,
-  },
-
-  total: {
-    type: Number,
-    default: 0,
-  },
-
-  loading: {
-    type: Boolean,
-    default: false,
-  },
+  page: { type: Number, default: 1 },
+  totalPages: { type: Number, default: 0 },
+  total: { type: Number, default: 0 },
+  limit: { type: Number, default: 20 },
+  loading: { type: Boolean, default: false },
+  itemLabel: { type: String, default: 'projects' },
 })
 
 const emit = defineEmits(['change'])
 
 const pages = computed(() => {
-  if (props.totalPages <= 1) {
-    return []
-  }
+  if (props.totalPages <= 1) return []
 
-  const current = props.page
-  const total = props.totalPages
-
-  const start = Math.max(1, current - 2)
-  const end = Math.min(total, current + 2)
-
+  const start = Math.max(1, props.page - 2)
+  const end = Math.min(props.totalPages, props.page + 2)
   const result = []
 
-  for (let page = start; page <= end; page++) {
-    result.push(page)
-  }
+  for (let page = start; page <= end; page++) result.push(page)
 
   return result
 })
@@ -58,27 +37,18 @@ const goToPage = (page) => {
 <template>
   <div
     v-if="totalPages > 0"
-    class="mt-4 flex flex-col gap-3 rounded-lg border border-zinc-800 bg-[#18181b] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+    class="sticky bottom-0 z-10 mt-10 flex flex-col gap-3 rounded-lg border border-zinc-800 bg-[#18181b] px-4 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between"
   >
-    <!-- Result info -->
     <p class="text-sm text-zinc-500">
       Page
-      <span class="font-medium text-zinc-300">
-        {{ page }}
-      </span>
+      <span class="font-medium text-zinc-300">{{ page }}</span>
       of
-      <span class="font-medium text-zinc-300">
-        {{ totalPages }}
-      </span>
-
+      <span class="font-medium text-zinc-300">{{ totalPages }}</span>
       <span class="mx-1">•</span>
-
-      {{ total }} projects
+      {{ total }} {{ itemLabel }}
     </p>
 
-    <!-- Pagination buttons -->
     <div class="flex items-center gap-1">
-      <!-- Previous -->
       <button
         type="button"
         :disabled="page <= 1 || loading"
@@ -88,7 +58,6 @@ const goToPage = (page) => {
         Previous
       </button>
 
-      <!-- Page numbers -->
       <button
         v-for="item in pages"
         :key="item"
@@ -105,7 +74,6 @@ const goToPage = (page) => {
         {{ item }}
       </button>
 
-      <!-- Next -->
       <button
         type="button"
         :disabled="page >= totalPages || loading"

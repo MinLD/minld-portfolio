@@ -18,7 +18,7 @@ function scrollToTop() {
       <!-- Main footer -->
       <div class="grid gap-12 py-14 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
         <section class="lg:col-span-5">
-          <AppLogo />
+          <AppLogo />Ấ
 
           <p class="mt-5 max-w-sm text-sm leading-6 text-zinc-500">
             Full Stack Developer building thoughtful web experiences and sharing the journey through

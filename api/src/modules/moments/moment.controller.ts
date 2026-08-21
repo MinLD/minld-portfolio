@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express'
-import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
+import { sendCreated, sendNoContent, sendPaginated, sendSuccess } from '../../common/responses/api-response.js'
+import type { MomentListFilter } from './moment.repository.js'
 import { addMomentImages, createMoment, createMomentComment, deleteAdminMomentComment, deleteMoment, deleteMomentImage, deleteOwnMomentComment, getMoment, getPublishedMoment, listAdminMomentComments, listMomentComments, listMoments, listPublishedMoments, reorderMomentImages, toggleMomentLike, updateMoment, updateMomentCommentStatus, updateOwnMomentComment } from './moment.service.js'
 
 export const createMomentController: RequestHandler = async (req, res, next) => {
@@ -10,9 +11,10 @@ export const createMomentController: RequestHandler = async (req, res, next) => 
   }
 }
 
-export const listMomentsController: RequestHandler = async (_req, res, next) => {
+export const listMomentsController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await listMoments())
+    const { moments, meta } = await listMoments(req.query as unknown as MomentListFilter)
+    sendPaginated(res, { moments }, meta)
   } catch (error) {
     next(error)
   }

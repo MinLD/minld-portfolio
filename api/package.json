@@ -31,7 +31,7 @@
     "multer": "^2.2.0",
     "nodemailer": "^9.0.5",
     "pg": "^8.23.0",
-    "swagger-ui-express": "^5.0.1",
+    "swagger-ui-dist": "^5.32.14",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -44,7 +44,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.21.0",
     "@types/supertest": "^7.2.1",
-    "@types/swagger-ui-express": "^4.1.8",
     "prisma": "^7.9.1",
     "supertest": "^7.2.2",
     "tsx": "^4.23.12",

@@ -2,6 +2,8 @@
 defineProps({
   search: { type: String, default: '' },
   status: { type: String, default: null },
+  searchPlaceholder: { type: String, default: 'Search projects...' },
+  createLabel: { type: String, default: 'New Project' },
 })
 const emit = defineEmits(['create', 'update:search', 'update:status'])
 </script>
@@ -23,7 +25,7 @@ const emit = defineEmits(['create', 'update:search', 'update:status'])
       <input
         type="text"
         :value="search"
-        placeholder="Search projects..."
+        :placeholder="searchPlaceholder"
         class="h-10 w-full rounded-md border border-zinc-800 bg-[#111111] pl-9 pr-3 text-sm text-zinc-200 outline-none transition placeholder:text-zinc-600 hover:border-zinc-700 focus:border-zinc-600"
         @input="emit('update:search', $event.target.value)"
       />
@@ -80,7 +82,7 @@ const emit = defineEmits(['create', 'update:search', 'update:status'])
           <path d="M5 12h14" />
         </svg>
 
-        New Project
+        {{ createLabel }}
       </button>
     </div>
   </div>

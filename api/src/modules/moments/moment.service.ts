@@ -4,10 +4,11 @@ import { mediaService } from '../../common/media/media.service.js'
 import { runTransaction } from '../../database/transaction.js'
 import { toMomentCommentDto } from './moment-comment.mapper.js'
 import { toMomentDto } from './moment.mapper.js'
-import { momentRepository, type MomentWriteInput } from './moment.repository.js'
+import { momentRepository, type MomentListFilter, type MomentWriteInput } from './moment.repository.js'
 
-type CreateMomentInput = MomentWriteInput & { content: string; publishedAt?: string; status?: MomentStatus; tagIds: string[] }
-type UpdateMomentInput = MomentWriteInput & { publishedAt?: string | null; status?: MomentStatus; tagIds?: string[] }
+type UploadedMomentImage = { url: string; publicId: string }
+type CreateMomentInput = MomentWriteInput & { content: string; publishedAt?: string; status?: MomentStatus; tagIds: string[]; images?: UploadedMomentImage[] }
+type UpdateMomentInput = MomentWriteInput & { publishedAt?: string | null; status?: MomentStatus; tagIds?: string[]; images?: UploadedMomentImage[] }
 
 async function findMomentOrThrow(id: string) {
   const moment = await momentRepository.findById(id)
@@ -20,16 +21,18 @@ async function ensureTags(tagIds: string[] | undefined) {
 }
 
 function normalize(input: CreateMomentInput | UpdateMomentInput) {
-  return { ...input, publishedAt: input.publishedAt === undefined ? undefined : input.publishedAt ? new Date(input.publishedAt) : null }
+  const { images: _images, ...data } = input
+  return { ...data, publishedAt: input.publishedAt === undefined ? undefined : input.publishedAt ? new Date(input.publishedAt) : null }
 }
 
 export async function createMoment(input: CreateMomentInput) {
   await ensureTags(input.tagIds)
-  return { moment: toMomentDto(await runTransaction((tx) => momentRepository.create(normalize(input) as CreateMomentInput & { publishedAt?: Date | null }, tx))) }
+  return { moment: toMomentDto(await runTransaction((tx) => momentRepository.create({ ...normalize(input), images: input.images ?? [] } as CreateMomentInput & { publishedAt?: Date | null; images: UploadedMomentImage[] }, tx))) }
 }
 
-export async function listMoments() {
-  return { moments: (await momentRepository.findMany()).map(toMomentDto) }
+export async function listMoments(filter: MomentListFilter) {
+  const { moments, total } = await momentRepository.findMany(filter)
+  return { moments: moments.map(toMomentDto), meta: { page: filter.page, limit: filter.limit, total, totalPages: Math.ceil(total / filter.limit) } }
 }
 
 export async function getMoment(id: string) {
@@ -108,9 +111,13 @@ export async function deleteAdminMomentComment(id: string) {
 }
 
 export async function updateMoment(id: string, input: UpdateMomentInput) {
-  await findMomentOrThrow(id)
+  const existing = await findMomentOrThrow(id)
   await ensureTags(input.tagIds)
-  return { moment: toMomentDto(await runTransaction((tx) => momentRepository.update(id, normalize(input) as UpdateMomentInput & { publishedAt?: Date | null }, tx))) }
+  if (input.images && input.images.length > 10) throw new AppError(400, 'MOMENT_IMAGE_LIMIT_EXCEEDED', 'Moment can have at most 10 images')
+  const nextImages = input.images?.map((image, index) => ({ ...image, sortOrder: index }))
+  const moment = await runTransaction((tx) => momentRepository.update(id, { ...normalize(input), images: nextImages } as UpdateMomentInput & { publishedAt?: Date | null; images?: (UploadedMomentImage & { sortOrder: number })[] }, tx))
+  if (input.images) await Promise.all(existing.images.map((image) => mediaService.deleteImage(image.publicId).catch(() => undefined)))
+  return { moment: toMomentDto(moment) }
 }
 
 export async function deleteMoment(id: string) {

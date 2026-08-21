@@ -7,7 +7,7 @@ import { momentCommentCreateRateLimit, momentLikeRateLimit } from '../../common/
 import { adminUploadRateLimit } from '../../common/rate-limit/upload.rate-limit.js'
 import { validateRequest } from '../../common/validation/validate-request.js'
 import { addMomentImagesController, createMomentCommentController, createMomentController, deleteAdminMomentCommentController, deleteMomentController, deleteMomentImageController, deleteOwnMomentCommentController, getMomentController, getPublishedMomentController, listAdminMomentCommentsController, listMomentCommentsController, listMomentsController, listPublishedMomentsController, reorderMomentImagesController, toggleMomentLikeController, updateMomentCommentStatusController, updateMomentController, updateOwnMomentCommentController } from './moment.controller.js'
-import { createMomentCommentSchema, createMomentSchema, momentCommentIdSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentCommentSchema, updateMomentCommentStatusSchema, updateMomentSchema } from './moment.schema.js'
+import { createMomentCommentSchema, createMomentSchema, listMomentsSchema, momentCommentIdSchema, momentIdSchema, momentImageIdSchema, reorderMomentImagesSchema, updateMomentCommentSchema, updateMomentCommentStatusSchema, updateMomentSchema } from './moment.schema.js'
 
 export const adminMomentRouter = Router()
 export const publicMomentRouter = Router()
@@ -22,7 +22,7 @@ publicMomentRouter.get('/moments/:id', validateRequest(momentIdSchema), getPubli
 
 adminMomentRouter.use(requireAuth, requireActiveUser, requireRole('ADMIN'))
 adminMomentRouter.post('/moments', validateRequest(createMomentSchema), createMomentController)
-adminMomentRouter.get('/moments', listMomentsController)
+adminMomentRouter.get('/moments', validateRequest(listMomentsSchema), listMomentsController)
 adminMomentRouter.get('/moment-comments', listAdminMomentCommentsController)
 adminMomentRouter.patch('/moment-comments/:id/status', validateRequest(updateMomentCommentStatusSchema), updateMomentCommentStatusController)
 adminMomentRouter.delete('/moment-comments/:id', validateRequest(momentCommentIdSchema), deleteAdminMomentCommentController)

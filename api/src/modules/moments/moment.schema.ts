@@ -2,6 +2,16 @@ import { MomentStatus } from '@prisma/client'
 import { z } from 'zod'
 
 const tagIdsSchema = z.array(z.uuid()).default([])
+const uploadedImagesSchema = z.array(z.object({
+  url: z.url(),
+  publicId: z.string().trim().min(1),
+})).max(10).default([])
+const listMomentsQuerySchema = z.object({
+  search: z.string().trim().min(1).optional(),
+  status: z.enum(MomentStatus).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+})
 
 export const createMomentSchema = z.object({
   body: z.object({
@@ -9,6 +19,7 @@ export const createMomentSchema = z.object({
     status: z.enum(MomentStatus).default('DRAFT'),
     publishedAt: z.iso.datetime().optional(),
     tagIds: tagIdsSchema,
+    images: uploadedImagesSchema,
   }),
 })
 
@@ -20,10 +31,12 @@ export const updateMomentSchema = z.object({
       status: z.enum(MomentStatus).optional(),
       publishedAt: z.iso.datetime().nullable().optional(),
       tagIds: z.array(z.uuid()).optional(),
+      images: uploadedImagesSchema.optional(),
     })
     .refine((body) => Object.keys(body).length > 0, { message: 'At least one field is required' }),
 })
 
+export const listMomentsSchema = z.object({ query: listMomentsQuerySchema })
 export const momentIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
 export const momentImageIdSchema = z.object({ params: z.object({ id: z.uuid() }) })
 export const reorderMomentImagesSchema = z.object({

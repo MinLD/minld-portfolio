@@ -17,6 +17,11 @@
 
 ## Projects
 
+- Swagger/OpenAPI: `api/openapi/projects.openapi.json`
+- Public list: `GET /api/v1/projects?search=&page=1&limit=20`
+- Admin list: `GET /api/v1/admin/projects?search=&status=DRAFT&page=1&limit=20`
+- Search uses SQL LIKE/ILIKE matching on `title`, `summary`, `content`.
+- Pagination response meta: `{ page, limit, total, totalPages }`.
 - Create: `POST /api/v1/admin/projects`
 - Update: `PATCH /api/v1/admin/projects/:id`
 - Content-Type: `multipart/form-data` when uploading an image.
