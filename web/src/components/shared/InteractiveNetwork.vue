@@ -1,6 +1,13 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 
+const props = defineProps({
+  density: {
+    type: Number,
+    default: 1,
+  },
+})
+
 const canvasRef = ref(null)
 
 let canvas = null
@@ -75,9 +82,12 @@ function getParticleCount() {
   const config = getConfig()
   const area = width * height
 
-  const count = Math.floor(area / config.areaPerParticle)
+  const count = Math.floor((area / config.areaPerParticle) * props.density)
 
-  return Math.min(config.maxParticles, Math.max(config.minParticles, count))
+  return Math.min(
+    Math.round(config.maxParticles * props.density),
+    Math.max(Math.round(config.minParticles * props.density), count),
+  )
 }
 
 function createParticles() {
