@@ -1,0 +1,16 @@
+{
+  "name": "MinLD Portfolio",
+  "short_name": "MinLD",
+  "description": "Software engineer portfolio for MinLD.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}

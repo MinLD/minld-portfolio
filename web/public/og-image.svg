@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#111111"/>
+  <circle cx="190" cy="120" r="180" fill="#27272a" opacity="0.7"/>
+  <circle cx="1010" cy="520" r="220" fill="#3f3f46" opacity="0.45"/>
+  <text x="96" y="285" fill="#f4f4f5" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="800">MinLD</text>
+  <text x="96" y="370" fill="#d4d4d8" font-family="Inter, Arial, sans-serif" font-size="44">Software Engineer Portfolio</text>
+  <text x="96" y="445" fill="#a1a1aa" font-family="Inter, Arial, sans-serif" font-size="30">Full-stack projects, backend systems, QA automation.</text>
+  <rect x="96" y="505" width="210" height="10" rx="5" fill="#facc15"/>
+</svg>
