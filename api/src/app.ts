@@ -21,6 +21,11 @@ import { docsRouter } from './modules/docs/docs.routes.js'
 
 export const app = express()
 
+// Production traffic reaches Express through the single Nginx reverse proxy.
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 app.use(requestIdMiddleware)
 app.use(securityMiddleware)
 app.use(express.json({ limit: env.JSON_BODY_LIMIT }))
