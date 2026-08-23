@@ -46,6 +46,12 @@ const router = createRouter({
       component: () => import('@/views/RegisterView.vue'),
     },
     {
+      path: '/photo',
+      name: 'Gallery',
+      meta: { layout: 'user' },
+      component: () => import('@/views/GalleyView.vue'),
+    },
+    {
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/AdminView.vue'),
