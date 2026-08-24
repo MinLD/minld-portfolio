@@ -9,6 +9,7 @@ import ProjectTableSkeleton from '@/components/admin/skeleton/ProjectTableSkelet
 import ProjectPagination from '@/components/admin/projects/ProjectPagination.vue'
 import ProjectFormModal from '@/components/admin/projects/ProjectFormModal.vue'
 import DeleteProjectModal from '@/components/admin/projects/DeleteProjectModal.vue'
+import LoadingButton from '@/components/loading/LoadingButton.vue'
 
 import { useDebouncedValue } from '@/composables/useDebouncedValue'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
@@ -347,13 +348,13 @@ async function removeProject() {
           placeholder="New tag"
         />
 
-        <button
-          :disabled="isCreatingTag"
+        <LoadingButton
+          :loading="isCreatingTag"
           class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black disabled:cursor-not-allowed disabled:opacity-50"
           type="submit"
         >
-          {{ isCreatingTag ? 'Adding...' : 'Add Tag' }}
-        </button>
+          <span>{{ isCreatingTag ? 'Adding...' : 'Add Tag' }}</span>
+        </LoadingButton>
       </form>
 
       <!-- Add technology -->
@@ -383,13 +384,13 @@ async function removeProject() {
           <option value="OTHER">Other</option>
         </select>
 
-        <button
-          :disabled="isCreatingTechnology"
+        <LoadingButton
+          :loading="isCreatingTechnology"
           class="rounded-md bg-white px-3 py-2 text-sm font-medium text-black disabled:cursor-not-allowed disabled:opacity-50"
           type="submit"
         >
-          {{ isCreatingTechnology ? 'Adding...' : 'Add Tech' }}
-        </button>
+          <span>{{ isCreatingTechnology ? 'Adding...' : 'Add Tech' }}</span>
+        </LoadingButton>
       </form>
     </div>
 

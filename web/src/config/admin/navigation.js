@@ -1,4 +1,4 @@
-import { Boxes, FolderKanban, LayoutDashboard, MessageSquareText, Tags, Zap } from 'lucide-vue-next'
+import { FolderKanban, LayoutDashboard, Zap } from 'lucide-vue-next'
 
 export const adminNavigation = [
   {

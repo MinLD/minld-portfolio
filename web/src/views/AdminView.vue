@@ -11,10 +11,11 @@ import {
 import { computed, onMounted, ref } from 'vue'
 
 import DashboardStatCard from '@/components/admin/DashboardStatCard.vue'
+import DashboardStatSkeleton from '@/components/admin/skeleton/DashboardStatSkeleton.vue'
 import { useI18n } from '@/composables/useI18n'
 import * as adminService from '@/services/admin.service'
 
-const loading = ref(true)
+const isFetchingDashboard = ref(true)
 const error = ref('')
 const dashboard = ref(null)
 const { t } = useI18n()
@@ -51,7 +52,7 @@ const stats = computed(() => {
 })
 
 async function loadDashboard() {
-  loading.value = true
+  isFetchingDashboard.value = true
   error.value = ''
 
   try {
@@ -63,7 +64,7 @@ async function loadDashboard() {
 
     error.value = t('admin.loadDashboardError')
   } finally {
-    loading.value = false
+    isFetchingDashboard.value = false
   }
 }
 
@@ -86,10 +87,10 @@ onMounted(loadDashboard)
       <button
         type="button"
         class="inline-flex h-10 items-center justify-center gap-2 self-start rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm font-medium text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
-        :disabled="loading"
+        :disabled="isFetchingDashboard"
         @click="loadDashboard"
       >
-        <RefreshCw :size="16" :class="{ 'animate-spin': loading }" />
+        <RefreshCw :size="16" :class="{ 'animate-spin': isFetchingDashboard }" />
 
         {{ t('admin.refresh') }}
       </button>
@@ -113,12 +114,8 @@ onMounted(loadDashboard)
     </div>
 
     <section class="mt-8">
-      <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div
-          v-for="item in 4"
-          :key="item"
-          class="h-40 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/50"
-        ></div>
+      <div v-if="isFetchingDashboard" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <DashboardStatSkeleton v-for="item in 4" :key="item" />
       </div>
 
       <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

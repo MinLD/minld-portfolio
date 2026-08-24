@@ -6,12 +6,12 @@ const hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined'
 const mediaQuery = hasDOM ? window.matchMedia('(prefers-color-scheme: dark)') : null
 
 function storedTheme() {
-  if (!hasDOM) return 'system'
+  if (!hasDOM) return 'dark'
   try {
     const value = localStorage.getItem(storageKey)
-    return modes.has(value) ? value : 'system'
+    return modes.has(value) ? value : 'dark'
   } catch {
-    return 'system'
+    return 'dark'
   }
 }
 

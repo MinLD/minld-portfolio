@@ -5,6 +5,7 @@ import { Building2, Mail, MessageSquare, Phone, Send, Tag, User } from 'lucide-v
 
 import { sendContactMessageApi } from '@/api/contact'
 import { useI18n } from '@/composables/useI18n'
+import LoadingButton from '@/components/loading/LoadingButton.vue'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import LayoutContainer from '@/layouts/LayoutContainer.vue'
 
@@ -22,7 +23,7 @@ const form = reactive({
   message: '',
 })
 
-const loading = ref(false)
+const isSendingContact = ref(false)
 const error = ref('')
 
 function resetForm() {
@@ -39,7 +40,7 @@ function resetForm() {
 
 async function submitContact() {
   error.value = ''
-  loading.value = true
+  isSendingContact.value = true
 
   try {
     await sendContactMessageApi({ ...form })
@@ -48,7 +49,7 @@ async function submitContact() {
   } catch (err) {
     error.value = err.response?.data?.error?.message || t('contact.error')
   } finally {
-    loading.value = false
+    isSendingContact.value = false
   }
 }
 </script>
@@ -189,14 +190,14 @@ async function submitContact() {
 
           <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
 
-          <button
+          <LoadingButton
             type="submit"
-            :disabled="loading"
+            :loading="isSendingContact"
             class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-[var(--action-bg)] text-base font-medium text-[var(--action-fg)] transition hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Send :size="16" />
-            {{ loading ? t('contact.sending') : t('contact.send') }}
-          </button>
+            <Send v-if="!isSendingContact" :size="16" />
+            <span>{{ isSendingContact ? t('contact.sending') : t('contact.send') }}</span>
+          </LoadingButton>
         </form>
       </section>
     </LayoutContainer>
