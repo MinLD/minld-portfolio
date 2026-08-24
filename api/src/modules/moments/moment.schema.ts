@@ -5,7 +5,7 @@ const tagIdsSchema = z.array(z.uuid()).default([])
 const uploadedImagesSchema = z.array(z.object({
   url: z.url(),
   publicId: z.string().trim().min(1),
-})).max(10).default([])
+})).max(10)
 const listMomentsQuerySchema = z.object({
   search: z.string().trim().min(1).optional(),
   status: z.enum(MomentStatus).optional(),
@@ -19,7 +19,7 @@ export const createMomentSchema = z.object({
     status: z.enum(MomentStatus).default('DRAFT'),
     publishedAt: z.iso.datetime().optional(),
     tagIds: tagIdsSchema,
-    images: uploadedImagesSchema,
+    images: uploadedImagesSchema.default([]),
   }),
 })
 
