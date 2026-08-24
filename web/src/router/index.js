@@ -18,6 +18,12 @@ const router = createRouter({
       component: () => import('@/views/AboutView.vue'),
     },
     {
+      path: '/resume',
+      name: 'resume',
+      meta: { layout: 'user' },
+      component: () => import('@/views/ResumeView.vue'),
+    },
+    {
       path: '/projects',
       name: 'projects',
       meta: { layout: 'user' },

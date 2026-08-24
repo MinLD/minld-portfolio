@@ -1,6 +1,7 @@
 export const mainNavigation = [
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
+  { label: 'Resume', to: '/resume' },
   { label: 'Projects', to: '/projects' },
   {
     label: 'Gallery',
@@ -12,6 +13,7 @@ export const mainNavigation = [
 export const footerNavigation = [
   { label: 'Home', to: '/' },
   { label: 'About Me', to: '/about' },
+  { label: 'Resume', to: '/resume' },
   { label: 'Projects', to: '/projects' },
   {
     label: 'Gallery',

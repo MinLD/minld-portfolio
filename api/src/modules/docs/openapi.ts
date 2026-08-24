@@ -11,6 +11,7 @@ const projectStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
 const commentStatuses = ['VISIBLE', 'HIDDEN']
 const userRoles = ['USER', 'ADMIN']
 const userStatuses = ['ACTIVE', 'BANNED']
+const contactCategories = ['GENERAL_INQUIRY', 'BUSINESS_OPPORTUNITY', 'TECHNICAL_SUPPORT', 'FEEDBACK']
 
 const schema = {
   string: (extra: Schema = {}) => ({ type: 'string', ...extra }),
@@ -106,6 +107,7 @@ const components = {
     LoginRequest: schema.object({ email: schema.string({ format: 'email' }), password: schema.string({ minLength: 1 }) }),
     TokenRequest: schema.object({ token: schema.string({ minLength: 32 }) }),
     EmailRequest: schema.object({ email: schema.string({ format: 'email' }) }),
+    ContactRequest: schema.object({ name: schema.string({ minLength: 1, maxLength: 80 }), email: schema.string({ format: 'email', maxLength: 120 }), phone: schema.string({ maxLength: 30 }), company: schema.string({ maxLength: 120 }), category: schema.string({ enum: contactCategories, default: 'GENERAL_INQUIRY' }), subject: schema.string({ minLength: 1, maxLength: 160 }), message: schema.string({ minLength: 10, maxLength: 3000 }) }, ['name', 'email', 'category', 'subject', 'message']),
     ResetPasswordRequest: schema.object({ token: schema.string({ minLength: 32 }), newPassword: schema.string({ minLength: 8 }) }),
     ChangePasswordRequest: schema.object({ currentPassword: schema.string({ minLength: 1 }), newPassword: schema.string({ minLength: 8 }) }),
     UpdateProfileRequest: schema.object({ displayName: schema.string({ minLength: 1 }) }),
@@ -140,6 +142,7 @@ export const runtimeEndpoints = [
   'GET /api/v1/moment-tags', 'POST /api/v1/admin/moment-tags', 'GET /api/v1/admin/moment-tags', 'GET /api/v1/admin/moment-tags/{id}', 'PATCH /api/v1/admin/moment-tags/{id}', 'DELETE /api/v1/admin/moment-tags/{id}',
   'GET /api/v1/moments', 'POST /api/v1/moments/{id}/like', 'GET /api/v1/moments/{id}/comments', 'POST /api/v1/moments/{id}/comments', 'PATCH /api/v1/moment-comments/{id}', 'DELETE /api/v1/moment-comments/{id}', 'GET /api/v1/moments/{id}', 'POST /api/v1/admin/moments', 'GET /api/v1/admin/moments', 'GET /api/v1/admin/moment-comments', 'PATCH /api/v1/admin/moment-comments/{id}/status', 'DELETE /api/v1/admin/moment-comments/{id}', 'POST /api/v1/admin/moments/{id}/images', 'PATCH /api/v1/admin/moments/{id}/images/reorder', 'DELETE /api/v1/admin/moment-images/{id}', 'GET /api/v1/admin/moments/{id}', 'PATCH /api/v1/admin/moments/{id}', 'DELETE /api/v1/admin/moments/{id}',
   'GET /api/v1/projects/{slug}/comments', 'POST /api/v1/projects/{slug}/comments', 'PATCH /api/v1/project-comments/{id}', 'DELETE /api/v1/project-comments/{id}', 'GET /api/v1/admin/project-comments', 'PATCH /api/v1/admin/project-comments/{id}/status', 'DELETE /api/v1/admin/project-comments/{id}',
+  'POST /api/v1/contact',
   'GET /api/v1/admin/dashboard', 'GET /api/v1/admin/users', 'PATCH /api/v1/admin/users/{id}/status', 'POST /api/v1/admin/uploads/images',
   'GET /api/v1/docs', 'GET /api/v1/docs/openapi.json',
 ]
@@ -151,6 +154,7 @@ export function buildOpenApiDocument() {
     op('get', '/api/v1/ready', 'Health', 'readinessCheck', 'Check API readiness', 'Checks database readiness.', { responses: { 200: response('API and database are ready.', ok(schema.ref('Ready')), { success: true, data: { status: 'ok', database: 'ok' } }), ...errors([500]) } }),
     op('get', '/api/v1/docs', 'Docs', 'docsSwaggerUi', 'Open Swagger UI', 'Serves the single full API Swagger UI page.', { responses: { 200: response('Swagger UI HTML.') } }),
     op('get', '/api/v1/docs/openapi.json', 'Docs', 'docsOpenApiJson', 'Get full OpenAPI document', 'Returns the full OpenAPI JSON used by Swagger UI.', { responses: { 200: response('OpenAPI JSON document.') } }),
+    op('post', '/api/v1/contact', 'Contact', 'contactSendMessage', 'Send contact message', 'Public contact form endpoint. Sends the message to the configured contact email. If SMTP is not configured, runtime stores the email in the development/test mail outbox.', { rateLimit: '10 per default window.', body: jsonBody('ContactRequest', { name: 'Luan Do', email: 'luan@example.com', phone: '+84 123 456 789', company: 'MinLD', category: 'GENERAL_INQUIRY', subject: 'Project collaboration', message: 'Hi, I would like to discuss a portfolio project with you.' }), responses: { 201: response('Message accepted.', ok(schema.ref('Message')), { success: true, data: { message: 'Message sent.' } }), ...errors([400, 403, 429, 500]) } }),
   ])
 
   add(paths, [
@@ -202,7 +206,7 @@ export function buildOpenApiDocument() {
     openapi: '3.0.3',
     info: { title: 'MinLD Portfolio API Docs', version: '1.0.0', description: `Full OpenAPI contract for MinLD Portfolio backend. Authentication uses HttpOnly cookies, not Bearer tokens. Login/refresh set ${env.ACCESS_TOKEN_COOKIE_NAME} and ${env.REFRESH_TOKEN_COOKIE_NAME}. Swagger UI sends requests with credentials included.` },
     servers: [{ url: `http://localhost:${env.PORT}`, description: 'Local API server' }, { url: '/', description: 'Same-origin server' }],
-    tags: ['Auth', 'Users', 'Projects - Public', 'Projects - Admin', 'Categories - Public', 'Categories - Admin', 'Project Tags - Public', 'Project Tags - Admin', 'Technologies - Public', 'Technologies - Admin', 'Moments - Public', 'Moments - Admin', 'Moment Tags - Public', 'Moment Tags - Admin', 'Project Comments', 'Admin', 'Uploads', 'Health', 'Docs'].map((name) => ({ name })),
+    tags: ['Auth', 'Users', 'Projects - Public', 'Projects - Admin', 'Categories - Public', 'Categories - Admin', 'Project Tags - Public', 'Project Tags - Admin', 'Technologies - Public', 'Technologies - Admin', 'Moments - Public', 'Moments - Admin', 'Moment Tags - Public', 'Moment Tags - Admin', 'Project Comments', 'Contact', 'Admin', 'Uploads', 'Health', 'Docs'].map((name) => ({ name })),
     paths,
     components,
   }

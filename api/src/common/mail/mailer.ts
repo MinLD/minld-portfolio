@@ -22,6 +22,15 @@ async function sendMail(message: MailMessage) {
   await transporter.sendMail({ from: env.MAIL_FROM, ...message })
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
+
 export function verificationUrl(token: string) {
   return `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`
 }
@@ -38,4 +47,36 @@ export async function sendVerificationEmail(to: string, token: string) {
 export async function sendPasswordResetEmail(to: string, token: string) {
   const url = passwordResetUrl(token)
   await sendMail({ to, subject: 'Reset your password', html: resetPasswordTemplate(url) })
+}
+
+export async function sendContactEmail(input: {
+  name: string
+  email: string
+  phone?: string
+  company?: string
+  category: string
+  subject: string
+  message: string
+}) {
+  const rows = [
+    ['Name', input.name],
+    ['Email', input.email],
+    ['Phone', input.phone || '-'],
+    ['Company', input.company || '-'],
+    ['Category', input.category],
+    ['Subject', input.subject],
+  ]
+
+  const html = `
+    <h2>New portfolio contact message</h2>
+    ${rows.map(([label, value]) => `<p><strong>${label}:</strong> ${escapeHtml(value)}</p>`).join('')}
+    <hr />
+    <p>${escapeHtml(input.message).replaceAll('\n', '<br />')}</p>
+  `
+
+  await sendMail({
+    to: env.CONTACT_TO_EMAIL,
+    subject: `[Portfolio Contact] ${input.subject}`,
+    html,
+  })
 }
