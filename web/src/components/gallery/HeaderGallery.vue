@@ -20,13 +20,13 @@ function updateSearch(patch) {
 <template>
   <div class="relative mt-20 mb-8 flex flex-col items-center space-y-7 pb-8 text-center">
     <div class="space-y-5">
-      <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-zinc-500">
+      <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
         Gallery
       </p>
-      <h1 class="font-serif text-6xl font-semibold leading-none text-white sm:text-7xl lg:text-8xl">
+      <h1 class="font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl">
         Locket Library
       </h1>
-      <p class="mx-auto max-w-3xl text-lg text-zinc-500 sm:text-xl">
+      <p class="mx-auto max-w-3xl text-lg text-[var(--muted)] sm:text-xl">
         A collection of memories, places, and little things that inspire me.
       </p>
     </div>
@@ -61,8 +61,8 @@ function updateSearch(patch) {
         class="rounded-full border px-5 py-2 text-sm font-semibold leading-none transition"
         :class="
           !search.keyTags
-            ? 'border-white bg-white text-zinc-950'
-            : 'border-zinc-800 bg-zinc-900/70 text-zinc-200 hover:border-zinc-600 hover:bg-zinc-800'
+            ? 'border-[var(--action-bg)] bg-[var(--action-bg)] text-[var(--action-fg)]'
+            : 'border-[var(--border)] bg-[var(--panel)]/70 text-[var(--fg)] hover:bg-[var(--surface)]'
         "
         @click="updateSearch({ keyTags: '' })"
       >
@@ -75,8 +75,8 @@ function updateSearch(patch) {
         class="rounded-full border px-5 py-2 text-sm font-semibold leading-none transition"
         :class="
           search.keyTags === tag.slug
-            ? 'border-white bg-white text-zinc-950'
-            : 'border-zinc-800 bg-zinc-900/70 text-zinc-200 hover:border-zinc-600 hover:bg-zinc-800'
+            ? 'border-[var(--action-bg)] bg-[var(--action-bg)] text-[var(--action-fg)]'
+            : 'border-[var(--border)] bg-[var(--panel)]/70 text-[var(--fg)] hover:bg-[var(--surface)]'
         "
         @click="updateSearch({ keyTags: search.keyTags === tag.slug ? '' : tag.slug })"
       >

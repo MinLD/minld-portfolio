@@ -37,6 +37,22 @@
     />
     <meta name="twitter:image" content="https://yunkhngn.dev/og-image.svg" />
 
+    <script>
+      ;(() => {
+        try {
+          const key = 'minld-theme'
+          const saved = localStorage.getItem(key) || 'system'
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const theme = saved === 'system' ? (systemDark ? 'dark' : 'light') : saved
+          document.documentElement.dataset.theme = theme
+          document.documentElement.dataset.themePreference = saved
+          document.documentElement.style.colorScheme = theme
+        } catch {
+          document.documentElement.dataset.theme = 'dark'
+        }
+      })()
+    </script>
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",

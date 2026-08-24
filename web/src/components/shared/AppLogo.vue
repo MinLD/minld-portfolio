@@ -1,7 +1,7 @@
 <template>
   <RouterLink
     to="/"
-    class="inline-flex items-center gap-1 font-mono text-[20px] font-semibold tracking-tight text-zinc-100 transition hover:text-white"
+    class="inline-flex items-center gap-1 font-mono text-[20px] font-semibold tracking-tight text-[var(--fg)] transition hover:opacity-80"
     aria-label="Go to homepage"
   >
     <span> ~/minld </span>

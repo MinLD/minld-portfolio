@@ -56,87 +56,87 @@ async function submitContact() {
 </script>
 
 <template>
-  <main class="relative min-h-[calc(100dvh-4rem)] overflow-hidden bg-[#151515] text-zinc-100">
+  <main class="relative min-h-[calc(100dvh-4rem)] overflow-hidden bg-[var(--page)] text-[var(--fg)]">
     <InteractiveNetwork :density="1.15" />
 
     <LayoutContainer>
       <section class="relative z-10 py-16 sm:py-24">
         <div class="mx-auto max-w-4xl text-center">
-          <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-zinc-500">
+          <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
             Get in touch
           </p>
-          <h1 class="mt-6 font-serif text-6xl font-semibold leading-none text-white sm:text-7xl lg:text-8xl">
+          <h1 class="mt-6 font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl">
             Contact Me
           </h1>
-          <p class="mt-6 text-lg text-zinc-500 sm:text-xl">
+          <p class="mt-6 text-lg text-[var(--muted)] sm:text-xl">
             Have a question or want to work together? I’d love to hear from you.
           </p>
         </div>
 
         <form class="mx-auto mt-20 max-w-3xl space-y-6" @submit.prevent="submitContact">
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Your name</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Your name</span>
             <span class="relative block">
-              <User class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" :size="20" />
+              <User class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
                 v-model.trim="form.name"
                 required
                 placeholder="Your Name"
-                class="h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+                class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Email</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Email</span>
             <span class="relative block">
-              <Mail class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" :size="20" />
+              <Mail class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
                 v-model.trim="form.email"
                 required
                 type="email"
                 placeholder="example@abc.com"
-                class="h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+                class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Phone (Optional)</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Phone (Optional)</span>
             <span class="relative block">
-              <Phone class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" :size="20" />
+              <Phone class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
                 v-model.trim="form.phone"
                 placeholder="+84 123 456 789"
-                class="h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+                class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200"
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]"
               >Company (Optional)</span
             >
             <span class="relative block">
               <Building2
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]"
                 :size="20"
               />
               <input
                 v-model.trim="form.company"
                 placeholder="Your company name"
-                class="h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+                class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Category</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Category</span>
             <span class="relative block">
-              <Tag class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" :size="20" />
+              <Tag class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <select
                 v-model="form.category"
-                class="h-14 w-full appearance-none rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition focus:border-zinc-600"
+                class="h-14 w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition focus:border-[var(--muted)]"
               >
                 <option
                   v-for="category in categories"
@@ -150,30 +150,30 @@ async function submitContact() {
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Subject</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Subject</span>
             <span class="relative block">
               <MessageSquare
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]"
                 :size="20"
               />
               <input
                 v-model.trim="form.subject"
                 required
                 placeholder="Subject"
-                class="h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 pl-12 pr-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+                class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-zinc-200">Message</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Message</span>
             <textarea
               v-model.trim="form.message"
               required
               rows="8"
               minlength="10"
               placeholder="Your message..."
-              class="w-full resize-y rounded-lg border border-zinc-800 bg-[#151515]/75 px-4 py-4 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600"
+              class="w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--page)]/75 px-4 py-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
             ></textarea>
           </label>
 
@@ -182,7 +182,7 @@ async function submitContact() {
           <button
             type="submit"
             :disabled="loading"
-            class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-white text-base font-medium text-zinc-950 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
+            class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-[var(--action-bg)] text-base font-medium text-[var(--action-fg)] transition hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send :size="16" />
             {{ loading ? 'Sending...' : 'Send Message' }}

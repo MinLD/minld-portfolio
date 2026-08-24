@@ -28,8 +28,8 @@ function resetTilt(event) {
 
 <template>
   <article class="group project-card" @pointermove="updateTilt" @pointerleave="resetTilt">
-    <div class="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
-      <div class="relative aspect-[16/9] overflow-hidden bg-zinc-900">
+    <div class="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      <div class="relative aspect-[16/9] overflow-hidden bg-[var(--surface)]">
         <img
           v-if="project.thumbnailUrl"
           :src="project.thumbnailUrl"
@@ -47,10 +47,10 @@ function resetTilt(event) {
     </div>
 
     <div class="mt-5">
-      <h2 class="text-2xl font-bold leading-tight text-zinc-100">
+      <h2 class="text-2xl font-bold leading-tight text-[var(--fg)]">
         {{ project.title }}
       </h2>
-      <p class="mt-3 line-clamp-2 text-base leading-7 text-zinc-500">
+      <p class="mt-3 line-clamp-2 text-base leading-7 text-[var(--muted)]">
         {{ project.summary || project.content }}
       </p>
 

@@ -63,7 +63,7 @@ onMounted(() => {
         <div class="w-full flex justify-end mb-5">
           <div class="flex items-center justify-center gap-3">
             <div class="w-px h-7 bg-zinc-700 mx-1" />
-            <div class="flex shrink-0 items-center gap-1 rounded-lg bg-zinc-900/80 p-1">
+            <div class="flex shrink-0 items-center gap-1 rounded-lg bg-[var(--panel)]/80 p-1">
               <button
                 v-for="option in viewOptions"
                 :key="option.value"
@@ -71,8 +71,8 @@ onMounted(() => {
                 class="flex size-9 items-center justify-center rounded-md transition"
                 :class="
                   viewMode === option.value
-                    ? 'bg-white text-zinc-950'
-                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                    ? 'bg-[var(--action-bg)] text-[var(--action-fg)]'
+                    : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]'
                 "
                 :aria-label="option.label"
                 @click="viewMode = option.value"

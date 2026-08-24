@@ -11,7 +11,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <main class="relative min-h-[calc(100dvh-4rem)] overflow-hidden bg-[#151515] text-zinc-100">
+  <main class="relative min-h-[calc(100dvh-4rem)] overflow-hidden bg-[var(--page)] text-[var(--fg)]">
     <InteractiveNetwork :density="1.1" />
 
     <LayoutContainer>
@@ -20,7 +20,7 @@ const router = useRouter()
         <div class="flex items-center gap-4">
           <button
             type="button"
-            class="inline-flex size-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            class="inline-flex size-10 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             aria-label="Go back"
             @click="router.back()"
           >
@@ -32,7 +32,7 @@ const router = useRouter()
         <a
           :href="resumeUrl"
           download="CV_Do_Dang_Minh_Luan_Frontend.pdf"
-          class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-200"
+          class="inline-flex items-center gap-2 rounded-lg bg-[var(--action-bg)] px-4 py-2 text-sm font-medium text-[var(--action-fg)] transition hover:bg-[var(--action-hover)]"
         >
           <Download :size="16" />
           Download CV

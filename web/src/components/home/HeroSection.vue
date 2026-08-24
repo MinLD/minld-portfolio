@@ -12,7 +12,7 @@ const roles = ['Software Engineer', 'Automation Tester']
       class="pointer-events-none relative z-10 flex w-full max-w-4xl flex-col items-center text-c enter"
     >
       <h1
-        class="font-serif text-7xl font-bold leading-none tracking-[-0.06em] text-zinc-100 sm:text-8xl md:text-9xl lg:text-[130px]"
+        class="font-serif text-7xl font-bold leading-none tracking-[-0.06em] text-[var(--fg)] sm:text-8xl md:text-9xl lg:text-[130px]"
       >
         Luân Đỗ
       </h1>
@@ -21,7 +21,7 @@ const roles = ['Software Engineer', 'Automation Tester']
         <span
           v-for="role in roles"
           :key="role"
-          class="rounded-full border border-zinc-800 bg-zinc-900/60 px-4 py-2 font-mono text-[11px] tracking-wide text-zinc-500 backdrop-blur-sm"
+          class="rounded-full border border-[var(--border)] bg-[var(--panel)]/60 px-4 py-2 font-mono text-[11px] tracking-wide text-[var(--muted)] backdrop-blur-sm"
         >
           {{ role }}
         </span>
@@ -29,7 +29,7 @@ const roles = ['Software Engineer', 'Automation Tester']
 
       <!-- Description -->
       <p
-        class="mt-10 max-w-2xl text-sm text-center leading-7 text-zinc-500 sm:text-lg sm:leading-8"
+        class="mt-10 max-w-2xl text-center text-sm leading-7 text-[var(--muted)] sm:text-lg sm:leading-8"
       >
         I’m Luan Do (MinLD). I enjoy building things with code, experimenting with new ideas, and
         continuously improving my skills. This is where I keep track of my projects, experiences,
@@ -40,7 +40,7 @@ const roles = ['Software Engineer', 'Automation Tester']
       <div class="pointer-events-auto mt-10 flex flex-col items-center gap-7 sm:flex-row">
         <a
           href="/resume"
-          class="flex h-12 min-w-[125px] items-center justify-center rounded-full bg-white px-7 text-sm font-medium text-zinc-900 transition duration-300 hover:scale-105 hover:bg-zinc-200"
+          class="flex h-12 min-w-[125px] items-center justify-center rounded-full bg-[var(--action-bg)] px-7 text-sm font-medium text-[var(--action-fg)] transition duration-300 hover:scale-105 hover:bg-[var(--action-hover)]"
         >
           Resume
         </a>

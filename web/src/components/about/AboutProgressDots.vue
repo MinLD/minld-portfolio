@@ -22,7 +22,7 @@ defineEmits(['select'])
       :key="section.id"
       :href="`#${section.id}`"
       class="group flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.18em] transition"
-      :class="activeId === section.id ? 'text-zinc-100' : 'text-transparent hover:text-zinc-500'"
+      :class="activeId === section.id ? 'text-[var(--fg)]' : 'text-transparent hover:text-[var(--muted)]'"
       :aria-label="section.label"
       @click.prevent="$emit('select', section.id)"
     >
@@ -31,8 +31,8 @@ defineEmits(['select'])
         class="size-2 rounded-full transition"
         :class="
           activeId === section.id
-            ? 'bg-white ring-4 ring-white/15'
-            : 'bg-zinc-700 group-hover:bg-zinc-400'
+            ? 'bg-[var(--fg)] ring-4 ring-[color-mix(in_srgb,var(--fg)_18%,transparent)]'
+            : 'bg-[var(--muted)] group-hover:bg-[var(--soft)]'
         "
       ></span>
     </a>

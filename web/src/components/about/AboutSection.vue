@@ -99,13 +99,13 @@ function getActionIcon(action) {
         class="mb-8 aspect-[4/3] w-full object-cover lg:hidden"
       />
 
-      <h2 class="mt-4 font-serif text-5xl font-semibold leading-none text-zinc-100 sm:text-6xl">
+      <h2 class="mt-4 font-serif text-5xl font-semibold leading-none text-[var(--fg)] sm:text-6xl">
         {{ section.title }}
       </h2>
 
       <div
         v-if="section.body?.length"
-        class="mt-8 max-w-3xl space-y-5 text-xl leading-9 text-zinc-500 text-justify"
+        class="mt-8 max-w-3xl space-y-5 text-justify text-xl leading-9 text-[var(--muted)]"
       >
         <p>
           {{ section.body[0] }}
@@ -117,13 +117,13 @@ function getActionIcon(action) {
 
       <blockquote
         v-if="section.quote"
-        class="mt-7 border-l-4 border-zinc-200 pl-7 font-serif text-2xl italic leading-9 text-zinc-200"
+        class="mt-7 border-l-4 border-[var(--fg)] pl-7 font-serif text-2xl italic leading-9 text-[var(--fg)]"
       >
         {{ section.quote }}
       </blockquote>
       <div
         v-if="section.body?.length"
-        class="mt-8 max-w-3xl space-y-5 text-xl leading-9 text-zinc-500 text-justify"
+        class="mt-8 max-w-3xl space-y-5 text-justify text-xl leading-9 text-[var(--muted)]"
       >
         <p>
           {{ section.body[2] }}
@@ -148,30 +148,30 @@ function getActionIcon(action) {
         </p>
       </div>
 
-      <div v-if="section.timeline" class="mt-7 ml-4 border-l border-zinc-800">
+      <div v-if="section.timeline" class="mt-7 ml-4 border-l border-[var(--border)]">
         <div
           v-for="item in section.timeline"
           :key="item.title"
           class="relative pb-12 pl-12 last:pb-0"
         >
           <span
-            class="absolute -left-4 top-0 flex size-8 items-center justify-center rounded-full border border-zinc-700 bg-[#181818] text-zinc-300 shadow-[0_0_0_8px_#121212]"
+            class="absolute -left-4 top-0 flex size-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--panel)] text-[var(--soft)] shadow-[0_0_0_8px_var(--page)]"
           >
             <component :is="getTimelineIcon(item)" :size="16" stroke-width="1.8" />
           </span>
-          <p class="font-mono text-sm text-zinc-500">{{ item.period }}</p>
-          <h3 class="mt-4 text-2xl font-semibold text-zinc-100">{{ item.title }}</h3>
-          <p class="mt-2 text-lg font-medium text-zinc-200">{{ item.role }}</p>
+          <p class="font-mono text-sm text-[var(--muted)]">{{ item.period }}</p>
+          <h3 class="mt-4 text-2xl font-semibold text-[var(--fg)]">{{ item.title }}</h3>
+          <p class="mt-2 text-lg font-medium text-[var(--soft)]">{{ item.role }}</p>
           <template v-if="Array.isArray(item.text)">
             <p
               v-for="paragraph in item.text"
               :key="paragraph"
-              class="mt-4 max-w-3xl text-lg leading-8 text-zinc-500"
+              class="mt-4 max-w-3xl text-lg leading-8 text-[var(--muted)]"
             >
               {{ paragraph }}
             </p>
           </template>
-          <p v-else class="mt-4 max-w-3xl text-lg leading-8 text-zinc-500">
+          <p v-else class="mt-4 max-w-3xl text-lg leading-8 text-[var(--muted)]">
             {{ item.text }}
           </p>
         </div>
@@ -180,19 +180,19 @@ function getActionIcon(action) {
       <div v-if="section.groups" class="mt-5 space-y-7">
         <div v-for="group in section.groups" :key="group.name">
           <div class="flex items-center gap-5">
-            <span class="h-px w-12 bg-zinc-300"></span>
+            <span class="h-px w-12 bg-[var(--fg)]"></span>
             <span
-              class="flex size-10 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900/80 text-zinc-300"
+              class="flex size-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--panel)]/80 text-[var(--soft)]"
             >
               <component :is="getGroupIcon(group.name)" :size="18" stroke-width="1.8" />
             </span>
-            <h3 class="font-serif text-3xl text-zinc-100">{{ group.name }}</h3>
+            <h3 class="font-serif text-3xl text-[var(--fg)]">{{ group.name }}</h3>
           </div>
           <div class="mt-5 flex flex-wrap gap-3 pl-16">
             <span
               v-for="item in group.items"
               :key="item"
-              class="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/70 px-4 py-2 text-base text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200"
+              class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)]/70 px-4 py-2 text-base text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             >
               <img
                 v-if="getSkillIcon(item)"
@@ -215,7 +215,7 @@ function getActionIcon(action) {
           :href="action.href"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-4 text-sm font-medium text-zinc-950 transition hover:bg-zinc-200"
+          class="inline-flex items-center gap-2 rounded-xl bg-[var(--action-bg)] px-6 py-4 text-sm font-medium text-[var(--action-fg)] transition hover:bg-[var(--action-hover)]"
         >
           <component :is="getActionIcon(action)" :size="16" stroke-width="2" />
           {{ action.label }}

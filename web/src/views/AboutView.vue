@@ -60,7 +60,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="scrollArea"
-    class="relative h-[calc(100dvh-4rem)] overflow-y-auto scroll-smooth bg-[#121212] [scroll-snap-type:y_proximity]"
+    class="relative h-[calc(100dvh-4rem)] overflow-y-auto scroll-smooth bg-[var(--page)] text-[var(--fg)] [scroll-snap-type:y_proximity]"
   >
     <InteractiveNetwork :density="1.6" />
 
