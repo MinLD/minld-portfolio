@@ -4,15 +4,13 @@ import { toast } from 'vue3-toastify'
 import { Building2, Mail, MessageSquare, Phone, Send, Tag, User } from 'lucide-vue-next'
 
 import { sendContactMessageApi } from '@/api/contact'
+import { useI18n } from '@/composables/useI18n'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import LayoutContainer from '@/layouts/LayoutContainer.vue'
 
-const categories = [
-  { label: 'General Inquiry', value: 'GENERAL_INQUIRY' },
-  { label: 'Business Opportunity', value: 'BUSINESS_OPPORTUNITY' },
-  { label: 'Technical Support', value: 'TECHNICAL_SUPPORT' },
-  { label: 'Feedback', value: 'FEEDBACK' },
-]
+const { t } = useI18n()
+
+const categories = ['GENERAL_INQUIRY', 'BUSINESS_OPPORTUNITY', 'TECHNICAL_SUPPORT', 'FEEDBACK']
 
 const form = reactive({
   name: '',
@@ -45,10 +43,10 @@ async function submitContact() {
 
   try {
     await sendContactMessageApi({ ...form })
-    toast.success('Message sent successfully.')
+    toast.success(t('contact.success'))
     resetForm()
   } catch (err) {
-    error.value = err.response?.data?.error?.message || 'Unable to send message.'
+    error.value = err.response?.data?.error?.message || t('contact.error')
   } finally {
     loading.value = false
   }
@@ -63,32 +61,36 @@ async function submitContact() {
       <section class="relative z-10 py-16 sm:py-24">
         <div class="mx-auto max-w-4xl text-center">
           <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
-            Get in touch
+            {{ t('contact.eyebrow') }}
           </p>
           <h1 class="mt-6 font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl">
-            Contact Me
+            {{ t('contact.title') }}
           </h1>
           <p class="mt-6 text-lg text-[var(--muted)] sm:text-xl">
-            Have a question or want to work together? I’d love to hear from you.
+            {{ t('contact.description') }}
           </p>
         </div>
 
         <form class="mx-auto mt-20 max-w-3xl space-y-6" @submit.prevent="submitContact">
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Your name</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('contact.name')
+            }}</span>
             <span class="relative block">
               <User class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
                 v-model.trim="form.name"
                 required
-                placeholder="Your Name"
+                :placeholder="t('contact.namePlaceholder')"
                 class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Email</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('common.email')
+            }}</span>
             <span class="relative block">
               <Mail class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
@@ -102,7 +104,9 @@ async function submitContact() {
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Phone (Optional)</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('contact.phone')
+            }}</span>
             <span class="relative block">
               <Phone class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <input
@@ -115,7 +119,7 @@ async function submitContact() {
 
           <label class="block">
             <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]"
-              >Company (Optional)</span
+              >{{ t('contact.company') }}</span
             >
             <span class="relative block">
               <Building2
@@ -124,14 +128,16 @@ async function submitContact() {
               />
               <input
                 v-model.trim="form.company"
-                placeholder="Your company name"
+                :placeholder="t('contact.companyPlaceholder')"
                 class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Category</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('contact.category')
+            }}</span>
             <span class="relative block">
               <Tag class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]" :size="20" />
               <select
@@ -140,17 +146,19 @@ async function submitContact() {
               >
                 <option
                   v-for="category in categories"
-                  :key="category.value"
-                  :value="category.value"
+                  :key="category"
+                  :value="category"
                 >
-                  {{ category.label }}
+                  {{ t(`contact.categories.${category}`) }}
                 </option>
               </select>
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Subject</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('contact.subject')
+            }}</span>
             <span class="relative block">
               <MessageSquare
                 class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)]"
@@ -159,20 +167,22 @@ async function submitContact() {
               <input
                 v-model.trim="form.subject"
                 required
-                placeholder="Subject"
+                :placeholder="t('contact.subjectPlaceholder')"
                 class="h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 pl-12 pr-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
               />
             </span>
           </label>
 
           <label class="block">
-            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">Message</span>
+            <span class="mb-2.5 block text-base font-semibold text-[var(--fg)]">{{
+              t('contact.message')
+            }}</span>
             <textarea
               v-model.trim="form.message"
               required
               rows="8"
               minlength="10"
-              placeholder="Your message..."
+              :placeholder="t('contact.messagePlaceholder')"
               class="w-full resize-y rounded-lg border border-[var(--border)] bg-[var(--page)]/75 px-4 py-4 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
             ></textarea>
           </label>
@@ -185,7 +195,7 @@ async function submitContact() {
             class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-[var(--action-bg)] text-base font-medium text-[var(--action-fg)] transition hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send :size="16" />
-            {{ loading ? 'Sending...' : 'Send Message' }}
+            {{ loading ? t('contact.sending') : t('contact.send') }}
           </button>
         </form>
       </section>

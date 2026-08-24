@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps({
   page: { type: Number, default: 1 },
@@ -11,6 +12,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['change'])
+const { t } = useI18n()
 
 const pages = computed(() => {
   if (props.totalPages <= 1) return []
@@ -40,9 +42,9 @@ const goToPage = (page) => {
     class="sticky bottom-0 z-10 mt-10 flex flex-col gap-3 rounded-lg border border-zinc-800 bg-[#18181b] px-4 py-3 shadow-lg sm:flex-row sm:items-center sm:justify-between"
   >
     <p class="text-sm text-zinc-500">
-      Page
+      {{ t('admin.pagination.page') }}
       <span class="font-medium text-zinc-300">{{ page }}</span>
-      of
+      {{ t('admin.pagination.of') }}
       <span class="font-medium text-zinc-300">{{ totalPages }}</span>
       <span class="mx-1">•</span>
       {{ total }} {{ itemLabel }}
@@ -55,7 +57,7 @@ const goToPage = (page) => {
         class="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
         @click="goToPage(page - 1)"
       >
-        Previous
+        {{ t('admin.pagination.previous') }}
       </button>
 
       <button
@@ -80,7 +82,7 @@ const goToPage = (page) => {
         class="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
         @click="goToPage(page + 1)"
       >
-        Next
+        {{ t('admin.pagination.next') }}
       </button>
     </div>
   </div>

@@ -4,7 +4,9 @@ import { Menu, Search, X } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
 import AppLogo from '@/components/shared/AppLogo.vue'
+import LanguageToggle from '@/components/shared/LanguageToggle.vue'
 import ThemeToggle from '@/components/shared/ThemeToggle.vue'
+import { useI18n } from '@/composables/useI18n'
 import { mainNavigation } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import LayoutContainer from '../../layouts/LayoutContainer.vue'
@@ -12,6 +14,7 @@ import LayoutContainer from '../../layouts/LayoutContainer.vue'
 const route = useRoute()
 const authStore = useAuthStore()
 const mobileMenuOpen = ref(false)
+const { t } = useI18n()
 
 function closeMobileMenu() {
   mobileMenuOpen.value = false
@@ -23,7 +26,9 @@ function isActive(path) {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--page)]/95 backdrop-blur">
+  <header
+    class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--page)]/95 backdrop-blur"
+  >
     <LayoutContainer>
       <div class="flex h-16 items-center gap-6">
         <AppLogo />
@@ -40,7 +45,7 @@ function isActive(path) {
                 : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]'
             "
           >
-            {{ item.label }}
+            {{ t(item.labelKey) }}
           </RouterLink>
         </nav>
 
@@ -52,7 +57,7 @@ function isActive(path) {
             />
             <input
               type="search"
-              placeholder="Search..."
+              :placeholder="t('common.search')"
               class="h-10 w-52 rounded-lg border border-[var(--border)] bg-[var(--bg)] pl-9 pr-3 text-sm text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
             />
           </label>
@@ -68,7 +73,7 @@ function isActive(path) {
             to="/login"
             class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
           >
-            Log in
+            {{ t('auth.login') }}
           </RouterLink>
 
           <RouterLink
@@ -76,10 +81,10 @@ function isActive(path) {
             to="/admin"
             class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
           >
-            Admin
+            {{ t('common.admin') }}
           </RouterLink>
 
-          <a
+          <!-- <a
             href="https://www.buymeacoffee.com/minld"
             target="_blank"
             rel="noopener noreferrer"
@@ -93,7 +98,8 @@ function isActive(path) {
               class="h-full w-auto max-h-9"
               style="color: transparent; width: auto; height: 100%"
               src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-          /></a>
+          /></a> -->
+          <LanguageToggle />
           <ThemeToggle />
         </div>
 
@@ -123,7 +129,7 @@ function isActive(path) {
             "
             @click="closeMobileMenu"
           >
-            {{ item.label }}
+            {{ t(item.labelKey) }}
           </RouterLink>
 
           <RouterLink
@@ -132,7 +138,7 @@ function isActive(path) {
             class="rounded-lg px-3 py-2.5 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             @click="closeMobileMenu"
           >
-            Login
+            {{ t('auth.login') }}
           </RouterLink>
 
           <RouterLink
@@ -141,11 +147,14 @@ function isActive(path) {
             class="rounded-lg px-3 py-2.5 text-left text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             @click="closeMobileMenu"
           >
-            Admin
+            {{ t('common.admin') }}
           </RouterLink>
 
           <div class="mt-2 border-t border-[var(--border)] pt-3">
-            <ThemeToggle />
+            <div class="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
           </div>
         </nav>
       </div>

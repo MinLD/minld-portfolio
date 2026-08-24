@@ -1,9 +1,11 @@
 <script setup>
-import { aboutSections } from '@/config/about/content'
-
 defineProps({
   section: {
     type: Object,
+    required: true,
+  },
+  sections: {
+    type: Array,
     required: true,
   },
 })
@@ -14,7 +16,7 @@ defineProps({
     class="pointer-events-none sticky left-0 top-0 z-10 -mb-[calc(100dvh-4rem)] hidden h-[calc(100dvh-4rem)] w-[39.5vw] overflow-hidden bg-[var(--bg)] lg:block"
   >
     <img
-      v-for="item in aboutSections"
+      v-for="item in sections"
       :key="item.id"
       :src="item.image"
       :alt="item.alt"

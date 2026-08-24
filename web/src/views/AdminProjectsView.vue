@@ -12,6 +12,7 @@ import DeleteProjectModal from '@/components/admin/projects/DeleteProjectModal.v
 
 import { useDebouncedValue } from '@/composables/useDebouncedValue'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
+import { useI18n } from '@/composables/useI18n'
 
 import { useProjectRelationsQuery, useProjectsQuery } from '@/queries/admin-project.query'
 
@@ -43,6 +44,7 @@ const newTechnologyName = ref('')
 const newTechnologyType = ref('FRAMEWORK')
 
 const actionError = ref('')
+const { t } = useI18n()
 
 const projectQuery = useProjectsQuery({
   page,
@@ -307,12 +309,12 @@ async function removeProject() {
     <!-- Page heading -->
     <section class="mb-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div>
-        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">Overview</p>
+        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">{{ t('admin.overview') }}</p>
 
-        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Projects</h1>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{{ t('admin.projects') }}</h1>
 
         <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
-          Create projects, upload thumbnails, select tags and technologies.
+          {{ t('admin.createProject') }}
         </p>
       </div>
     </section>
@@ -326,7 +328,13 @@ async function removeProject() {
     </p>
 
     <!-- Toolbar -->
-    <ProjectToolbar v-model:search="search" v-model:status="status" @create="openCreate" />
+    <ProjectToolbar
+      v-model:search="search"
+      v-model:status="status"
+      :search-placeholder="t('admin.searchProjects')"
+      :create-label="t('admin.newProject')"
+      @create="openCreate"
+    />
 
     <!-- Relations -->
     <div class="mb-4 grid gap-3 rounded-lg border border-zinc-800 bg-[#18181b] p-4 lg:grid-cols-2">
@@ -408,6 +416,7 @@ async function removeProject() {
         :total-pages="pagination.totalPages"
         :total="pagination.total"
         :loading="isProjectsFetching"
+        :item-label="t('admin.projects').toLowerCase()"
         @change="changePage"
       />
     </div>

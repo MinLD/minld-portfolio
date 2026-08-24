@@ -1,5 +1,6 @@
 <script setup>
 import ProjectStatusBadge from '../projects/ProjectStatusBadge.vue'
+import { useI18n } from '@/composables/useI18n'
 
 defineProps({
   moments: { type: Array, default: () => [] },
@@ -7,6 +8,7 @@ defineProps({
 })
 
 const emit = defineEmits(['edit', 'delete', 'detail'])
+const { t } = useI18n()
 </script>
 
 <template>
@@ -15,16 +17,16 @@ const emit = defineEmits(['edit', 'delete', 'detail'])
       <table class="w-full min-w-[900px]">
         <thead>
           <tr class="border-b border-zinc-800 bg-[#111111]">
-            <th class="w-[40%] px-4 py-3 text-left text-xs font-medium text-zinc-400">Moment</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400">Status</th>
-            <th class="px-4 py-3 text-right text-xs font-medium text-zinc-400">Actions</th>
+            <th class="w-[40%] px-4 py-3 text-left text-xs font-medium text-zinc-400">{{ t('admin.table.moment') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400">{{ t('admin.table.status') }}</th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-zinc-400">{{ t('admin.table.actions') }}</th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-if="loading">
             <td colspan="5" class="px-4 py-14 text-center text-sm text-zinc-500">
-              Loading moments...
+              {{ t('admin.table.loadingMoments') }}
             </td>
           </tr>
 
@@ -61,19 +63,19 @@ const emit = defineEmits(['edit', 'delete', 'detail'])
                 <div class="flex items-center justify-end gap-1">
                   <button
                     type="button"
-                    title="Edit project"
+                    :title="t('admin.table.edit')"
                     class="rounded-md px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-white"
                     @click="emit('edit', moment)"
                   >
-                    Edit
+                    {{ t('admin.table.edit') }}
                   </button>
                   <button
                     type="button"
-                    title="Delete project"
+                    :title="t('admin.table.delete')"
                     class="rounded-md px-3 py-1.5 text-xs text-red-400 hover:bg-red-950/40"
                     @click="emit('delete', moment)"
                   >
-                    Delete
+                    {{ t('admin.table.delete') }}
                   </button>
                 </div>
               </td>
@@ -82,8 +84,8 @@ const emit = defineEmits(['edit', 'delete', 'detail'])
 
           <tr v-if="!loading && moments.length === 0">
             <td colspan="5" class="px-4 py-14 text-center">
-              <p class="text-sm text-zinc-400">No moments found</p>
-              <p class="mt-1 text-xs text-zinc-600">Create your first moment.</p>
+              <p class="text-sm text-zinc-400">{{ t('admin.table.noMoments') }}</p>
+              <p class="mt-1 text-xs text-zinc-600">{{ t('admin.table.createFirstMoment') }}</p>
             </td>
           </tr>
         </tbody>

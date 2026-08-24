@@ -3,11 +3,13 @@ import { LogOut, Menu } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth.store'
+import { useI18n } from '@/composables/useI18n'
 
 const emit = defineEmits(['open-sidebar'])
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 async function logout() {
   await authStore.logout()
@@ -23,16 +25,16 @@ async function logout() {
     <button
       type="button"
       class="mr-3 flex size-10 items-center justify-center rounded-xl border border-zinc-800 text-zinc-400 transition hover:bg-zinc-900 hover:text-white lg:hidden"
-      aria-label="Open sidebar"
+      :aria-label="t('admin.openSidebar')"
       @click="emit('open-sidebar')"
     >
       <Menu :size="20" />
     </button>
 
     <div>
-      <p class="text-sm font-medium text-white">Admin Panel</p>
+      <p class="text-sm font-medium text-white">{{ t('admin.panel') }}</p>
 
-      <p class="hidden text-xs text-zinc-500 sm:block">Manage your portfolio content</p>
+      <p class="hidden text-xs text-zinc-500 sm:block">{{ t('admin.panelDescription') }}</p>
     </div>
 
     <div class="ml-auto flex items-center gap-3">
@@ -65,8 +67,8 @@ async function logout() {
       <button
         type="button"
         class="flex size-9 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-900 hover:text-red-400"
-        title="Logout"
-        aria-label="Logout"
+        :title="t('admin.logout')"
+        :aria-label="t('admin.logout')"
         @click="logout"
       >
         <LogOut :size="18" />

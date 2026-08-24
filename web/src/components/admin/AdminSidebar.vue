@@ -3,6 +3,7 @@ import { ExternalLink, X } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { adminNavigation } from '@/config/admin/navigation'
+import { useI18n } from '@/composables/useI18n'
 
 defineProps({
   open: {
@@ -14,6 +15,7 @@ defineProps({
 const emit = defineEmits(['close'])
 
 const route = useRoute()
+const { t } = useI18n()
 
 function isActive(path) {
   if (path === '/admin') {
@@ -40,14 +42,14 @@ function isActive(path) {
         <div class="min-w-0">
           <p class="truncate text-sm font-semibold text-white">MinLD</p>
 
-          <p class="truncate text-xs text-zinc-500">Administration</p>
+          <p class="truncate text-xs text-zinc-500">{{ t('admin.administration') }}</p>
         </div>
       </RouterLink>
 
       <button
         type="button"
         class="ml-auto flex size-9 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-900 hover:text-white lg:hidden"
-        aria-label="Close sidebar"
+        :aria-label="t('admin.closeSidebar')"
         @click="emit('close')"
       >
         <X :size="19" />
@@ -56,7 +58,7 @@ function isActive(path) {
 
     <nav class="flex-1 overflow-y-auto px-3 py-5">
       <p class="mb-2 px-3 text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">
-        Workspace
+        {{ t('admin.workspace') }}
       </p>
 
       <div class="space-y-1">
@@ -75,7 +77,7 @@ function isActive(path) {
             <component :is="item.icon" :size="18" />
 
             <span>
-              {{ item.label }}
+              {{ t(item.labelKey) }}
             </span>
           </RouterLink>
 
@@ -86,7 +88,7 @@ function isActive(path) {
             <component :is="item.icon" :size="18" />
 
             <span>
-              {{ item.label }}
+              {{ t(item.labelKey) }}
             </span>
 
             <span
@@ -106,7 +108,7 @@ function isActive(path) {
         rel="noopener noreferrer"
         class="flex items-center justify-center gap-2 rounded-xl border border-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-400 transition hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
       >
-        View portfolio
+        {{ t('admin.viewPortfolio') }}
 
         <ExternalLink :size="15" />
       </a>

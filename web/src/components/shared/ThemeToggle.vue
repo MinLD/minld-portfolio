@@ -1,16 +1,18 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Check, Monitor, Moon, Sun } from 'lucide-vue-next'
+import { useI18n } from '@/composables/useI18n'
 import { useTheme } from '@/composables/useTheme'
 
 const { theme, resolvedTheme, setTheme } = useTheme()
+const { t } = useI18n()
 const open = ref(false)
 const rootRef = ref(null)
 
 const options = [
-  { value: 'system', label: 'System', icon: Monitor },
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', labelKey: 'theme.system', icon: Monitor },
+  { value: 'light', labelKey: 'theme.light', icon: Sun },
+  { value: 'dark', labelKey: 'theme.dark', icon: Moon },
 ]
 
 const activeIcon = computed(() => (resolvedTheme.value === 'light' ? Sun : Moon))
@@ -34,7 +36,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
       type="button"
       class="inline-flex size-10 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
       :aria-expanded="open"
-      aria-label="Theme"
+      :aria-label="t('theme.label')"
       @click="open = !open"
     >
       <component :is="activeIcon" :size="20" />
@@ -53,7 +55,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', closeOnOutside
         @click="choose(option.value)"
       >
         <component :is="option.icon" :size="16" />
-        <span class="flex-1">{{ option.label }}</span>
+        <span class="flex-1">{{ t(option.labelKey) }}</span>
         <Check v-if="theme === option.value" :size="15" />
       </button>
     </div>

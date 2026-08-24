@@ -16,12 +16,14 @@ import {
 import ProjectPagination from '../components/admin/projects/ProjectPagination.vue'
 import { useDelayedLoading } from '../composables/useDelayedLoading.js'
 import ProjectTableSkeleton from '../components/admin/skeleton/ProjectTableSkeleton.vue'
+import { useI18n } from '@/composables/useI18n'
 const search = ref('')
 const status = ref('all')
 const page = ref(1)
 const limit = ref(10)
 const debouncedSearch = useDebouncedValue(search, 400)
 const actionError = ref('')
+const { t } = useI18n()
 const isOpenCreate = ref(false)
 const isOpenDelete = ref(false)
 const editingMoment = ref(null)
@@ -164,10 +166,10 @@ const confirmDelete = async () => {
   <div class="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1600px] flex-col">
     <section class="mb-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div>
-        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">Overview</p>
-        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Moments</h1>
+        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">{{ t('admin.overview') }}</p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{{ t('admin.moments') }}</h1>
         <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
-          Create moments, manage status and select tags.
+          {{ t('admin.createMoment') }}
         </p>
       </div>
     </section>
@@ -182,8 +184,8 @@ const confirmDelete = async () => {
     <ProjectToolbar
       v-model:search="search"
       v-model:status="status"
-      search-placeholder="Search moments..."
-      create-label="New Moment"
+      :search-placeholder="t('admin.searchMoments')"
+      :create-label="t('admin.newMoment')"
       @create="openCreate"
     />
 
@@ -203,7 +205,7 @@ const confirmDelete = async () => {
         :limit="limit"
         :total-pages="pagination.totalPages"
         :total="pagination.total"
-        item-label="moments"
+        :item-label="t('admin.moments').toLowerCase()"
         :loading="isMomentsFetching"
         @change="changePage"
       />

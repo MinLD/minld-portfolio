@@ -72,9 +72,9 @@ function getGroupIcon(groupName) {
   const normalized = groupName.toLowerCase()
   if (normalized.includes('frontend')) return MonitorCog
   if (normalized.includes('backend')) return Server
-  if (normalized.includes('database')) return Database
-  if (normalized.includes('devops')) return Workflow
-  if (normalized.includes('testing')) return ShieldCheck
+  if (normalized.includes('database') || normalized.includes('cơ sở')) return Database
+  if (normalized.includes('devops') || normalized.includes('công cụ')) return Workflow
+  if (normalized.includes('testing') || normalized.includes('kiểm thử')) return ShieldCheck
   return Dumbbell
 }
 

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '@/composables/useI18n'
+
 const props = defineProps({
   tags: {
     type: Array,
@@ -11,6 +13,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:search'])
+const { t } = useI18n()
 
 function updateSearch(patch) {
   emit('update:search', { ...props.search, ...patch })
@@ -20,13 +23,13 @@ function updateSearch(patch) {
   <div class="relative mt-20 mb-20 flex flex-col items-center space-y-7 pb-20 text-center">
     <div class="space-y-5">
       <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
-        Hard-working Developer
+        {{ t('projects.eyebrow') }}
       </p>
       <h1 class="font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl">
-        Projects &amp; Open Source
+        {{ t('projects.title') }}
       </h1>
       <p class="mx-auto max-w-3xl text-lg text-[var(--muted)] sm:text-xl">
-        A collection of my work, side projects, and open source contributions.
+        {{ t('projects.description') }}
       </p>
     </div>
     <div class="mt-5 flex w-full max-w-xl gap-2">
@@ -48,7 +51,7 @@ function updateSearch(patch) {
           <circle cx="11" cy="11" r="8"></circle></svg
         ><input
           class="flex h-14 w-full rounded-lg border border-[var(--border)] bg-[var(--page)]/75 px-4 py-2 pl-12 text-base text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)] disabled:cursor-not-allowed disabled:opacity-50"
-          placeholder="Search projects and repos..."
+          :placeholder="t('projects.searchPlaceholder')"
           :value="search.keyword"
           @input="updateSearch({ keyword: $event.target.value || undefined })"
         />
@@ -65,7 +68,7 @@ function updateSearch(patch) {
         "
         @click="updateSearch({ keyTags: '' })"
       >
-        All
+        {{ t('projects.all') }}
       </button>
       <button
         v-for="tag in tags"
