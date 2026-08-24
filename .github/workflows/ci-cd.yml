@@ -1,0 +1,84 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: minld-portfolio-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: minld
+          POSTGRES_PASSWORD: ci-password
+          POSTGRES_DB: minld_pfl_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U minld -d minld_pfl_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: api
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://minld:ci-password@localhost:5432/minld_pfl_test?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  web:
+    name: Web build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  deploy:
+    name: Deploy to EC2
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [api, web]
+    runs-on: [self-hosted, Linux, X64, minld-portfolio]
+    timeout-minutes: 20
+    steps:
+      - name: Pull and deploy
+        run: |
+          set -euo pipefail
+          cd /opt/minld-portfolio
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          docker compose --env-file .env -f docker-compose.prod.yml up -d --build --remove-orphans
+          docker compose --env-file .env -f docker-compose.prod.yml ps
+          curl --fail --retry 12 --retry-delay 5 http://127.0.0.1/api/v1/health
+          docker image prune -f
