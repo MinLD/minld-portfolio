@@ -12,7 +12,7 @@ import { createMomentCommentSchema, createMomentSchema, listMomentsSchema, momen
 export const adminMomentRouter = Router()
 export const publicMomentRouter = Router()
 
-publicMomentRouter.get('/moments', listPublishedMomentsController)
+publicMomentRouter.get('/moments', validateRequest(listMomentsSchema), listPublishedMomentsController)
 publicMomentRouter.post('/moments/:id/like', momentLikeRateLimit, requireAuth, requireActiveUser, validateRequest(momentIdSchema), toggleMomentLikeController)
 publicMomentRouter.get('/moments/:id/comments', validateRequest(momentIdSchema), listMomentCommentsController)
 publicMomentRouter.post('/moments/:id/comments', momentCommentCreateRateLimit, validateRequest(createMomentCommentSchema), createMomentCommentController)

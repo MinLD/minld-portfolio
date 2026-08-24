@@ -15,6 +15,7 @@ export type MomentWriteInput = {
 
 export type MomentListFilter = {
   search?: string
+  tag?: string
   status?: MomentStatus
   page: number
   limit: number
@@ -24,6 +25,7 @@ function momentWhere(filter: MomentListFilter): Prisma.MomentWhereInput {
   return {
     status: filter.status,
     content: filter.search ? { contains: filter.search, mode: 'insensitive' } : undefined,
+    tags: filter.tag ? { some: { slug: filter.tag } } : undefined,
   }
 }
 

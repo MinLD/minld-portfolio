@@ -28,9 +28,10 @@ export const getMomentController: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const listPublishedMomentsController: RequestHandler = async (_req, res, next) => {
+export const listPublishedMomentsController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await listPublishedMoments())
+    const { moments, meta } = await listPublishedMoments(req.query as unknown as MomentListFilter)
+    sendPaginated(res, { moments }, meta)
   } catch (error) {
     next(error)
   }

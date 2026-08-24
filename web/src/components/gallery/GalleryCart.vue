@@ -13,8 +13,8 @@ defineProps({
 
 <template>
   <article
-    class="group overflow-hidden rounded-lg bg-zinc-950"
-    :class="viewMode === 'locket' ? 'mb-2 break-inside-avoid' : ''"
+    class="group overflow-hidden rounded-sm bg-zinc-950"
+    :class="viewMode === 'locket' ? ' break-inside-avoid' : ''"
   >
     <img
       :src="item.url"
@@ -22,6 +22,7 @@ defineProps({
       class="w-full transition duration-500 group-hover:scale-105"
       :class="viewMode === 'grid-2' ? 'object-contain' : 'aspect-[4/3] object-cover'"
       loading="lazy"
+      decoding="async"
     />
   </article>
 </template>

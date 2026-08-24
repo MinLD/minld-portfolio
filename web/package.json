@@ -13,9 +13,11 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/vue-query": "^5.101.4",
     "@tsparticles/vue3": "^4.3.2",
+    "ant-design-vue": "^4.2.6",
     "axios": "^1.19.0",
     "lucide-vue-next": "latest",
     "pinia": "^4.0.2",

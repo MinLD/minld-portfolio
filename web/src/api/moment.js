@@ -1,9 +1,9 @@
 import { http } from '@/api/http'
 
-export async function listMomentsApi() {
-  const response = await http.get('/moments')
+export async function listMomentsApi(params = {}) {
+  const response = await http.get('/moments', { params })
 
-  return response.data.data.moments
+  return response.data
 }
 
 export async function listMomentTagsApi() {

@@ -39,8 +39,18 @@ export async function getMoment(id: string) {
   return { moment: toMomentDto(await findMomentOrThrow(id)) }
 }
 
-export async function listPublishedMoments() {
-  return { moments: (await momentRepository.findPublished()).map(toMomentDto) }
+export async function listPublishedMoments(filter: MomentListFilter) {
+  const publishedFilter = { ...filter, status: 'PUBLISHED' as MomentStatus }
+  const { moments, total } = await momentRepository.findMany(publishedFilter)
+  return {
+    moments: moments.map(toMomentDto),
+    meta: {
+      page: publishedFilter.page,
+      limit: publishedFilter.limit,
+      total,
+      totalPages: Math.ceil(total / publishedFilter.limit),
+    },
+  }
 }
 
 export async function getPublishedMoment(id: string) {
