@@ -17,33 +17,19 @@ function updateSearch(patch) {
 }
 </script>
 <template>
-  <div class="mt-20 relative flex flex-col items-center text-center pb-20 space-y-6 mb-20">
-    <div class="fixed inset-0 w-full h-screen overflow-hidden -z-10 pointer-events-none">
-      <div
-        class="absolute rounded-full blur-[120px] w-96 h-96 top-[-10%] left-[-5%] bg-primary/10"
-        style="transform: translateX(-12.738px) translateY(12.738px)"
-      ></div>
-      <div
-        class="absolute rounded-full blur-[120px] w-80 h-80 top-[20%] right-[-5%] bg-secondary/10"
-        style="transform: translateX(1.5375px) translateY(-0.3075px)"
-      ></div>
-      <div
-        class="absolute rounded-full blur-[120px] w-64 h-64 bottom-[10%] left-[30%] bg-primary/5"
-        style="transform: translateX(-1.845px) translateY(1.38375px)"
-      ></div>
-    </div>
-    <div class="space-y-4">
-      <p class="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase">
+  <div class="relative mt-20 mb-20 flex flex-col items-center space-y-7 pb-20 text-center">
+    <div class="space-y-5">
+      <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-zinc-500">
         Hard-working Developer
       </p>
-      <h1 class="text-4xl md:text-6xl font-bold tracking-tight font-serif">
+      <h1 class="font-serif text-6xl font-semibold leading-none text-white sm:text-7xl lg:text-8xl">
         Projects &amp; Open Source
       </h1>
-      <p class="text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl">
+      <p class="mx-auto max-w-3xl text-lg text-zinc-500 sm:text-xl">
         A collection of my work, side projects, and open source contributions.
       </p>
     </div>
-    <div class="w-full max-w-md flex gap-2 mt-4">
+    <div class="mt-5 flex w-full max-w-xl gap-2">
       <div class="relative flex-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -55,13 +41,13 @@ function updateSearch(patch) {
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="lucide lucide-search absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10 pointer-events-none"
+          class="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-zinc-500"
           aria-hidden="true"
         >
           <path d="m21 21-4.34-4.34"></path>
           <circle cx="11" cy="11" r="8"></circle></svg
         ><input
-          class="flex w-full rounded-md border border-input bg-background backdrop-blur-sm px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 pl-10 h-10"
+          class="flex h-14 w-full rounded-lg border border-zinc-800 bg-[#151515]/75 px-4 py-2 pl-12 text-base text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Search projects and repos..."
           :value="search.keyword"
           @input="updateSearch({ keyword: $event.target.value || undefined })"

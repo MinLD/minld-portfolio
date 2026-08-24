@@ -18,6 +18,7 @@ import { adminTechnologyRouter, publicTechnologyRouter } from './modules/technol
 import { userRouter } from './modules/users/user.routes.js'
 import { adminUploadRouter } from './modules/uploads/upload.routes.js'
 import { docsRouter } from './modules/docs/docs.routes.js'
+import { contactRouter } from './modules/contact/contact.routes.js'
 
 export const app = express()
 
@@ -42,6 +43,7 @@ app.use('/api/v1', publicProjectRouter)
 app.use('/api/v1', publicMomentTagRouter)
 app.use('/api/v1', publicMomentRouter)
 app.use('/api/v1', projectCommentRouter)
+app.use('/api/v1', contactRouter)
 app.use('/api/v1/admin', adminCategoryRouter)
 app.use('/api/v1/admin', adminProjectTagRouter)
 app.use('/api/v1/admin', adminRouter)

@@ -39,8 +39,7 @@ const roles = ['Software Engineer', 'Automation Tester']
       <!-- Actions -->
       <div class="pointer-events-auto mt-10 flex flex-col items-center gap-7 sm:flex-row">
         <a
-          href="/resume.pdf"
-          target="_blank"
+          href="/resume"
           class="flex h-12 min-w-[125px] items-center justify-center rounded-full bg-white px-7 text-sm font-medium text-zinc-900 transition duration-300 hover:scale-105 hover:bg-zinc-200"
         >
           Resume
@@ -48,7 +47,7 @@ const roles = ['Software Engineer', 'Automation Tester']
 
         <div class="flex gap-6">
           <a
-            href="https://www.facebook.com/minld/"
+            href="https://www.facebook.com/LuanDo2208"
             target="_blank"
             rel="noopener noreferrer"
             class="text-muted-foreground hover:text-foreground transition-colors p-1 hover:scale-120 hover:rotate-6 transition-transform duration-300"
@@ -70,7 +69,7 @@ const roles = ['Software Engineer', 'Automation Tester']
                 d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
               ></path></svg></a
           ><a
-            href="https://www.instagram.com/yun.khngn/"
+            href="https://www.instagram.com/"
             target="_blank"
             rel="noopener noreferrer"
             class="text-muted-foreground hover:text-foreground p-1 hover:scale-120 hover:rotate-6 transition-transform duration-300"
@@ -92,7 +91,7 @@ const roles = ['Software Engineer', 'Automation Tester']
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
               <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg></a
           ><a
-            href="https://tiktok.com/@minld"
+            href="https://tiktok.com/"
             target="_blank"
             rel="noopener noreferrer"
             class="text-muted-foreground hover:text-foreground transition-colors p-1 hover:scale-120 hover:rotate-6 transition-transform duration-300"
@@ -133,7 +132,7 @@ const roles = ['Software Engineer', 'Automation Tester']
               ></path>
               <path d="M9 18c-4.51 2-5-2-7-2"></path></svg></a
           ><a
-            href="https://www.linkedin.com/in/minld/"
+            href="https://www.linkedin.com/"
             target="_blank"
             rel="noopener noreferrer"
             class="text-muted-foreground hover:text-foreground transition-colors p-1 hover:scale-120 hover:rotate-6 transition-transform duration-300"

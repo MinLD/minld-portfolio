@@ -65,15 +65,15 @@ function isActive(path) {
           <RouterLink
             v-else-if="!authStore.isAuthenticated"
             to="/login"
-            class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2 text-sm font-bold text-zinc-100 transition hover:bg-zinc-900 hover:text-white"
           >
-            Login
+            Log in
           </RouterLink>
 
           <RouterLink
             v-else
             to="/admin"
-            class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2 text-sm font-bold text-zinc-100 transition hover:bg-zinc-900 hover:text-white"
           >
             Admin
           </RouterLink>

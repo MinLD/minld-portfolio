@@ -92,7 +92,7 @@ function scrollToTop() {
               LinkedIn
             </a>
             <a
-              href="mailto:hello@example.com"
+              href="dodangminhluan@gmail.com"
               class="w-fit text-sm text-zinc-500 transition hover:text-zinc-100"
             >
               Email me

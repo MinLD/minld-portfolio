@@ -20,7 +20,7 @@ defineProps({
       :src="item.url"
       :alt="item.altText || item.content"
       class="w-full transition duration-500 group-hover:scale-105"
-      :class="viewMode === 'locket' ? 'object-contain' : 'aspect-square object-cover'"
+      :class="viewMode === 'grid-2' ? 'object-contain' : 'aspect-[4/3] object-cover'"
       loading="lazy"
     />
   </article>
