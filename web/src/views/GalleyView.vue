@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 
 import { listMomentsApi, listMomentTagsApi } from '@/api/moment'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
@@ -33,6 +33,13 @@ const pagination = reactive({
 })
 
 let galleriesRequestId = 0
+const previewVisible = ref(false)
+const previewIndex = ref(0)
+
+function openPreview(index) {
+  previewIndex.value = index
+  previewVisible.value = true
+}
 
 const viewOptions = [
   {
@@ -147,6 +154,7 @@ onMounted(async () => {
   await getGalleries({
     reset: true,
   })
+  await nextTick()
 
   observer = new IntersectionObserver(
     ([entry]) => {
@@ -229,10 +237,12 @@ onUnmounted(() => {
             ]"
           >
             <GalleryCart
-              v-for="item in galleryItems"
+              v-for="(item, index) in galleryItems"
               :key="item.id"
               :item="item"
               :view-mode="viewMode"
+              class="cursor-pointer"
+              @click="openPreview(index)"
             />
           </div>
 
@@ -256,6 +266,25 @@ onUnmounted(() => {
             <p class="text-sm text-[var(--muted)]">No photos found</p>
           </div>
         </template>
+
+        <div class="hidden">
+          <a-image-preview-group
+            :preview="{
+              visible: previewVisible,
+              current: previewIndex,
+
+              onVisibleChange: (visible) => {
+                previewVisible = visible
+              },
+
+              onChange: (current) => {
+                previewIndex = current
+              },
+            }"
+          >
+            <a-image v-for="item in galleryItems" :key="item.id" :src="item.url" />
+          </a-image-preview-group>
+        </div>
       </section>
     </LayoutContainer>
   </div>

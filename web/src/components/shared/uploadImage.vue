@@ -16,6 +16,7 @@ const emit = defineEmits(['update:modelValue', 'uploaded', 'error', 'clear'])
 const error = ref('')
 const fileInput = ref(null)
 const isUploading = ref(false)
+const previewVisible = ref(false)
 
 const uploadFile = async (file) => {
   if (!file || isUploading.value || props.disabled) return
@@ -71,7 +72,7 @@ const clear = () => {
 }
 
 const preview = () => {
-  if (props.modelValue) window.open(props.modelValue, '_blank', 'noopener,noreferrer')
+  if (props.modelValue) previewVisible.value = true
 }
 </script>
 
@@ -120,6 +121,17 @@ const preview = () => {
         >
           <Eye class="size-4" aria-hidden="true" />
         </button>
+        <a-image
+          v-if="modelValue"
+          :src="modelValue"
+          :preview="{
+            visible: previewVisible,
+            onVisibleChange: (visible) => {
+              previewVisible = visible
+            },
+          }"
+          class="hidden"
+        />
 
         <button
           type="button"

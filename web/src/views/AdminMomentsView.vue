@@ -166,8 +166,12 @@ const confirmDelete = async () => {
   <div class="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1600px] flex-col">
     <section class="mb-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div>
-        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">{{ t('admin.overview') }}</p>
-        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{{ t('admin.moments') }}</h1>
+        <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">
+          {{ t('admin.overview') }}
+        </p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          {{ t('admin.moments') }}
+        </h1>
         <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">
           {{ t('admin.createMoment') }}
         </p>
