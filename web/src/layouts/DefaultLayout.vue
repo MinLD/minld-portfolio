@@ -4,7 +4,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#111111] text-zinc-100">
+  <div class="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
     <AppHeader />
     <main class="min-h-[55vh]">
       <slot />

@@ -81,7 +81,7 @@ onMounted(() => {
 
       <section class="relative z-10 pb-24">
         <p class="mb-4 font-mono text-xs tracking-[0.24em] text-zinc-600">01</p>
-        <h2 class="mb-6 text-3xl font-bold text-zinc-100">Featured Projects</h2>
+        <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">Featured Projects</h2>
 
         <div class="grid w-full gap-x-8 gap-y-12 md:grid-cols-2">
           <ProjectCard v-for="project in projects" :key="project.id" :project="project" />

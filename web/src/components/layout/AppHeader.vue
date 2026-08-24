@@ -4,6 +4,7 @@ import { Menu, Search, X } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
 import AppLogo from '@/components/shared/AppLogo.vue'
+import ThemeToggle from '@/components/shared/ThemeToggle.vue'
 import { mainNavigation } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import LayoutContainer from '../../layouts/LayoutContainer.vue'
@@ -22,7 +23,7 @@ function isActive(path) {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-[#151515]/95 backdrop-blur">
+  <header class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--page)]/95 backdrop-blur">
     <LayoutContainer>
       <div class="flex h-16 items-center gap-6">
         <AppLogo />
@@ -35,8 +36,8 @@ function isActive(path) {
             class="rounded-full px-3.5 py-2 text-sm transition"
             :class="
               isActive(item.to)
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
+                ? 'bg-[var(--surface)] text-[var(--fg)]'
+                : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]'
             "
           >
             {{ item.label }}
@@ -47,12 +48,12 @@ function isActive(path) {
           <label class="relative block">
             <Search
               :size="16"
-              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]"
             />
             <input
               type="search"
               placeholder="Search..."
-              class="h-10 w-52 rounded-lg border border-zinc-800 bg-[#121212] pl-9 pr-3 text-sm text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700"
+              class="h-10 w-52 rounded-lg border border-[var(--border)] bg-[var(--bg)] pl-9 pr-3 text-sm text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--muted)]"
             />
           </label>
 
@@ -65,7 +66,7 @@ function isActive(path) {
           <RouterLink
             v-else-if="!authStore.isAuthenticated"
             to="/login"
-            class="rounded-lg px-3 py-2 text-sm font-bold text-zinc-100 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
           >
             Log in
           </RouterLink>
@@ -73,7 +74,7 @@ function isActive(path) {
           <RouterLink
             v-else
             to="/admin"
-            class="rounded-lg px-3 py-2 text-sm font-bold text-zinc-100 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
           >
             Admin
           </RouterLink>
@@ -93,11 +94,12 @@ function isActive(path) {
               style="color: transparent; width: auto; height: 100%"
               src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
           /></a>
+          <ThemeToggle />
         </div>
 
         <button
           type="button"
-          class="ml-auto inline-flex size-10 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition hover:bg-zinc-900 hover:text-white md:hidden"
+          class="ml-auto inline-flex size-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)] md:hidden"
           :aria-expanded="mobileMenuOpen"
           aria-label="Toggle navigation"
           @click="mobileMenuOpen = !mobileMenuOpen"
@@ -107,7 +109,7 @@ function isActive(path) {
         </button>
       </div>
 
-      <div v-if="mobileMenuOpen" class="border-t border-zinc-800 py-3 md:hidden">
+      <div v-if="mobileMenuOpen" class="border-t border-[var(--border)] py-3 md:hidden">
         <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
           <RouterLink
             v-for="item in mainNavigation"
@@ -116,8 +118,8 @@ function isActive(path) {
             class="rounded-lg px-3 py-2.5 text-sm transition"
             :class="
               isActive(item.to)
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                ? 'bg-[var(--surface)] text-[var(--fg)]'
+                : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--fg)]'
             "
             @click="closeMobileMenu"
           >
@@ -127,7 +129,7 @@ function isActive(path) {
           <RouterLink
             v-if="authStore.initialized && !authStore.isAuthenticated"
             to="/login"
-            class="rounded-lg px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2.5 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             @click="closeMobileMenu"
           >
             Login
@@ -136,11 +138,15 @@ function isActive(path) {
           <RouterLink
             v-else-if="authStore.initialized"
             to="/admin"
-            class="rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            class="rounded-lg px-3 py-2.5 text-left text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
             @click="closeMobileMenu"
           >
             Admin
           </RouterLink>
+
+          <div class="mt-2 border-t border-[var(--border)] pt-3">
+            <ThemeToggle />
+          </div>
         </nav>
       </div>
     </LayoutContainer>
