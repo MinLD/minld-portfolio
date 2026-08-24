@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '@/composables/useI18n'
+
 defineProps({
   search: { type: String, default: '' },
   status: { type: String, default: null },
@@ -6,6 +8,7 @@ defineProps({
   createLabel: { type: String, default: 'New Project' },
 })
 const emit = defineEmits(['create', 'update:search', 'update:status'])
+const { t } = useI18n()
 </script>
 <template>
   <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -51,13 +54,13 @@ const emit = defineEmits(['create', 'update:search', 'update:status'])
           class="h-10 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-[#171717] py-0 pl-9 pr-8 text-sm text-zinc-300 outline-none transition hover:bg-zinc-800"
           @change="emit('update:status', $event.target.value)"
         >
-          <option value="all">All status</option>
+          <option value="all">{{ t('admin.allStatus') }}</option>
 
-          <option value="PUBLISHED">Published</option>
+          <option value="PUBLISHED">{{ t('admin.status.PUBLISHED') }}</option>
 
-          <option value="DRAFT">Draft</option>
+          <option value="DRAFT">{{ t('admin.status.DRAFT') }}</option>
 
-          <option value="ARCHIVED">Archived</option>
+          <option value="ARCHIVED">{{ t('admin.status.ARCHIVED') }}</option>
         </select>
 
         <svg

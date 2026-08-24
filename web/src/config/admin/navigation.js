@@ -2,13 +2,13 @@ import { Boxes, FolderKanban, LayoutDashboard, MessageSquareText, Tags, Zap } fr
 
 export const adminNavigation = [
   {
-    label: 'Dashboard',
+    labelKey: 'admin.dashboard',
     to: '/admin',
     icon: LayoutDashboard,
     enabled: true,
   },
   {
-    label: 'Projects',
+    labelKey: 'admin.projects',
     to: '/admin/projects',
     icon: FolderKanban,
     enabled: true,
@@ -26,7 +26,7 @@ export const adminNavigation = [
   //   enabled: false,
   // },
   {
-    label: 'Moments',
+    labelKey: 'admin.moments',
     to: '/admin/moments',
     icon: Zap,
     enabled: true,

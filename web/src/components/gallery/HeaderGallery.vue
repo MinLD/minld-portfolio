@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '@/composables/useI18n'
+
 const props = defineProps({
   tags: {
     type: Array,
@@ -12,6 +14,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:search'])
+const { t } = useI18n()
 
 function updateSearch(patch) {
   emit('update:search', { ...props.search, ...patch })
@@ -21,13 +24,13 @@ function updateSearch(patch) {
   <div class="relative mt-20 mb-8 flex flex-col items-center space-y-7 pb-8 text-center">
     <div class="space-y-5">
       <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
-        Gallery
+        {{ t('gallery.eyebrow') }}
       </p>
       <h1 class="font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl">
-        Locket Library
+        {{ t('gallery.title') }}
       </h1>
       <p class="mx-auto max-w-3xl text-lg text-[var(--muted)] sm:text-xl">
-        A collection of memories, places, and little things that inspire me.
+        {{ t('gallery.description') }}
       </p>
     </div>
     <!-- <div class="w-full max-w-md flex gap-2 mt-4">
@@ -66,7 +69,7 @@ function updateSearch(patch) {
         "
         @click="updateSearch({ keyTags: '' })"
       >
-        All
+        {{ t('gallery.all') }}
       </button>
       <button
         v-for="tag in tags"

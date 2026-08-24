@@ -8,6 +8,7 @@ import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import HeaderProject from '../components/project/HeaderProject.vue'
 import LayoutContainer from '../layouts/LayoutContainer.vue'
 import { useDebouncedValue } from '../composables/useDebouncedValue.js'
+import { useI18n } from '@/composables/useI18n'
 import PaginationComponent from '../components/about/PaginationComponent.vue'
 
 const tags = ref([])
@@ -18,6 +19,7 @@ const search = reactive({
 const keyWordRef = computed(() => search.keyword)
 const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
 const projects = ref([])
+const { t } = useI18n()
 async function getTags() {
   tags.value = await listProjectTagsApi()
 }
@@ -81,7 +83,7 @@ onMounted(() => {
 
       <section class="relative z-10 pb-24">
         <p class="mb-4 font-mono text-xs tracking-[0.24em] text-zinc-600">01</p>
-        <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">Featured Projects</h2>
+        <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">{{ t('projects.featured') }}</h2>
 
         <div class="grid w-full gap-x-8 gap-y-12 md:grid-cols-2">
           <ProjectCard v-for="project in projects" :key="project.id" :project="project" />

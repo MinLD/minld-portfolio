@@ -1,23 +1,23 @@
 export const mainNavigation = [
-  { label: 'Home', to: '/' },
-  { label: 'About', to: '/about' },
-  { label: 'Resume', to: '/resume' },
-  { label: 'Projects', to: '/projects' },
+  { labelKey: 'nav.home', to: '/' },
+  { labelKey: 'nav.about', to: '/about' },
+  { labelKey: 'nav.resume', to: '/resume' },
+  { labelKey: 'nav.projects', to: '/projects' },
   {
-    label: 'Gallery',
+    labelKey: 'nav.gallery',
     to: '/photo',
   },
-  { label: 'Contact', to: '/contact' },
+  { labelKey: 'nav.contact', to: '/contact' },
 ]
 
 export const footerNavigation = [
-  { label: 'Home', to: '/' },
-  { label: 'About Me', to: '/about' },
-  { label: 'Resume', to: '/resume' },
-  { label: 'Projects', to: '/projects' },
+  { labelKey: 'nav.home', to: '/' },
+  { labelKey: 'nav.aboutMe', to: '/about' },
+  { labelKey: 'nav.resume', to: '/resume' },
+  { labelKey: 'nav.projects', to: '/projects' },
   {
-    label: 'Gallery',
+    labelKey: 'nav.gallery',
     to: '/photo',
   },
-  { label: 'Contact', to: '/contact' },
+  { labelKey: 'nav.contact', to: '/contact' },
 ]

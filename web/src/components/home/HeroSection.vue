@@ -1,7 +1,9 @@
 <script setup>
 import InteractiveNetwork from '../shared/InteractiveNetwork.vue'
+import { useI18n } from '@/composables/useI18n'
 
 const roles = ['Software Engineer', 'Automation Tester']
+const { t } = useI18n()
 </script>
 
 <template>
@@ -31,9 +33,7 @@ const roles = ['Software Engineer', 'Automation Tester']
       <p
         class="mt-10 max-w-2xl text-center text-sm leading-7 text-[var(--muted)] sm:text-lg sm:leading-8"
       >
-        I’m Luan Do (MinLD). I enjoy building things with code, experimenting with new ideas, and
-        continuously improving my skills. This is where I keep track of my projects, experiences,
-        and everything I learn throughout my journey as a developer.
+        {{ t('home.description') }}
       </p>
 
       <!-- Actions -->
@@ -42,7 +42,7 @@ const roles = ['Software Engineer', 'Automation Tester']
           href="/resume"
           class="flex h-12 min-w-[125px] items-center justify-center rounded-full bg-[var(--action-bg)] px-7 text-sm font-medium text-[var(--action-fg)] transition duration-300 hover:scale-105 hover:bg-[var(--action-hover)]"
         >
-          Resume
+          {{ t('home.resume') }}
         </a>
 
         <div class="flex gap-6">

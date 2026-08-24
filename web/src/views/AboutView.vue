@@ -1,18 +1,22 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import AboutProgressDots from '@/components/about/AboutProgressDots.vue'
 import AboutSection from '@/components/about/AboutSection.vue'
 import AboutVisualRail from '@/components/about/AboutVisualRail.vue'
+import { useI18n } from '@/composables/useI18n'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
-import { aboutSections } from '@/config/about/content'
+import { aboutContent } from '@/config/about/content'
 
-const activeId = ref(aboutSections[0].id)
+const { locale } = useI18n()
+const aboutSections = computed(() => aboutContent[locale.value] ?? aboutContent.en)
+const activeId = ref(aboutSections.value[0].id)
 const scrollArea = ref(null)
 let frameId = 0
 
 const activeSection = computed(
-  () => aboutSections.find((section) => section.id === activeId.value) || aboutSections[0],
+  () =>
+    aboutSections.value.find((section) => section.id === activeId.value) || aboutSections.value[0],
 )
 
 function updateActiveSection() {
@@ -22,7 +26,7 @@ function updateActiveSection() {
   if (!area) return
 
   const scrollTarget = area.scrollTop + area.clientHeight * 0.38
-  const current = [...aboutSections].reverse().find((section) => {
+  const current = [...aboutSections.value].reverse().find((section) => {
     const element = document.getElementById(section.id)
     return element && element.offsetTop <= scrollTarget
   })
@@ -51,6 +55,12 @@ onMounted(() => {
   scrollArea.value?.addEventListener('scroll', requestActiveSectionUpdate, { passive: true })
 })
 
+watch(locale, () => {
+  if (!aboutSections.value.some((section) => section.id === activeId.value)) {
+    activeId.value = aboutSections.value[0].id
+  }
+})
+
 onBeforeUnmount(() => {
   if (frameId) cancelAnimationFrame(frameId)
   scrollArea.value?.removeEventListener('scroll', requestActiveSectionUpdate)
@@ -64,7 +74,7 @@ onBeforeUnmount(() => {
   >
     <InteractiveNetwork :density="1.6" />
 
-    <AboutVisualRail :section="activeSection" />
+    <AboutVisualRail :section="activeSection" :sections="aboutSections" />
 
     <AboutProgressDots :sections="aboutSections" :active-id="activeId" @select="scrollToSection" />
 
