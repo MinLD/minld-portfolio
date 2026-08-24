@@ -10,6 +10,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  loadingTags: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:search'])
@@ -57,7 +61,13 @@ function updateSearch(patch) {
         />
       </div>
     </div>
-    <div v-if="tags.length" class="mt-3 flex max-w-5xl flex-wrap justify-center gap-2.5">
+    <div
+      v-if="loadingTags"
+      class="mt-3 flex max-w-5xl animate-pulse flex-wrap justify-center gap-2.5"
+    >
+      <span v-for="index in 5" :key="index" class="h-9 w-20 rounded-full bg-[var(--surface)]"></span>
+    </div>
+    <div v-else-if="tags.length" class="mt-3 flex max-w-5xl flex-wrap justify-center gap-2.5">
       <button
         type="button"
         class="rounded-full border px-5 py-2 text-sm font-semibold leading-none transition"

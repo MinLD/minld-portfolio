@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loginSchema } from '../../schemas/auth.schema'
 import { useAuthStore } from '@/stores/auth.store'
+import LoadingButton from '@/components/loading/LoadingButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -69,14 +70,14 @@ async function submitLogin() {
   <div class="mx-auto flex w-full max-w-sm flex-col gap-6">
     <form class="flex w-full flex-col gap-4" @submit.prevent="submitLogin" novalidate>
       <div>
-        <label class="mb-1 block text-sm text-zinc-300" for="email">Email</label>
+        <label class="mb-1 block text-sm text-[var(--soft)]" for="email">Email</label>
         <input
           id="email"
           v-model.trim="form.email"
-          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
+          class="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-3 text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--focus)]"
           :class="{
             'border-red-500': errors.email,
-            'focus:border-white': !errors.email,
+            'focus:border-[var(--focus)]': !errors.email,
           }"
           placeholder="you@example.com"
           type="email"
@@ -92,14 +93,14 @@ async function submitLogin() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm text-zinc-300" for="password">Password</label>
+        <label class="mb-1 block text-sm text-[var(--soft)]" for="password">Password</label>
         <input
           id="password"
           v-model="form.password"
-          class="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
+          class="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-3 text-[var(--fg)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--focus)]"
           :class="{
             'border-red-500': errors.password,
-            'focus:border-white': !errors.password,
+            'focus:border-[var(--focus)]': !errors.password,
           }"
           placeholder="••••••••"
           type="password"
@@ -114,31 +115,31 @@ async function submitLogin() {
         </div>
       </div>
 
-      <button
-        class="rounded-xl bg-white px-4 py-3 font-semibold text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+      <LoadingButton
+        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[var(--action-bg)] px-4 py-3 font-semibold text-[var(--action-fg)] transition hover:bg-[var(--action-hover)] disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
-        :disabled="authStore.loading"
+        :loading="authStore.loading"
       >
-        {{ authStore.loading ? '...' : 'Login' }}
-      </button>
+        <span>{{ authStore.loading ? 'Logging in...' : 'Login' }}</span>
+      </LoadingButton>
       <p class="min-h-2 text-sm text-red-400" role="alert">
         {{ authStore.error }}
       </p>
     </form>
 
     <div class="flex items-center gap-3">
-      <div class="h-px flex-1 bg-zinc-700"></div>
+      <div class="h-px flex-1 bg-[var(--border)]"></div>
 
-      <span class="whitespace-nowrap text-sm text-zinc-400"> or login account </span>
+      <span class="whitespace-nowrap text-sm text-[var(--muted)]"> or login account </span>
 
-      <div class="h-px flex-1 bg-zinc-700"></div>
+      <div class="h-px flex-1 bg-[var(--border)]"></div>
     </div>
 
     <!-- Social login -->
     <div class="grid grid-cols-2 gap-4">
       <button
         data-slot="button"
-        class="backdrop-blur-sm inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive shadow-xs hover:text-accent-foreground dark:border-input h-9 px-4 py-2 has-[&gt;svg]:px-3 w-full bg-white text-black hover:bg-gray-50 border border-gray-200 dark:bg-white dark:text-black dark:hover:bg-gray-100"
+        class="inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm font-medium text-[var(--fg)] shadow-sm transition hover:bg-[var(--surface)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0"
       >
         <svg
           class="mr-2 h-4 w-4"
@@ -169,7 +170,7 @@ async function submitLogin() {
         >Google</button
       ><button
         data-slot="button"
-        class="backdrop-blur-sm inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border shadow-xs dark:border-input h-9 px-4 py-2 has-[&gt;svg]:px-3 w-full bg-[#24292e] text-white hover:bg-[#24292e]/90 border-transparent dark:bg-white dark:text-black dark:hover:bg-gray-100"
+        class="inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm font-medium text-[var(--fg)] shadow-sm transition hover:bg-[var(--surface)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

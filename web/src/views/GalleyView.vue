@@ -6,12 +6,15 @@ import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import HeaderGallery from '../components/gallery/HeaderGallery.vue'
 import LayoutContainer from '../layouts/LayoutContainer.vue'
 import GalleryCart from '../components/gallery/GalleryCart.vue'
+import GallerySkeleton from '@/components/gallery/GallerySkeleton.vue'
 import { Grid2x2, Grid3x3, TableOfContents } from 'lucide-vue-next'
 
 const tags = ref([])
 const galleries = ref([])
 const search = reactive({ keyTags: '' })
 const viewMode = ref('locket')
+const isFetchingMomentTags = ref(false)
+const isFetchingGalleries = ref(false)
 
 const viewOptions = [
   { value: 'locket', icon: Grid2x2, label: 'Locket' },
@@ -38,11 +41,27 @@ const galleryItems = computed(() =>
 )
 
 async function getTags() {
-  tags.value = await listMomentTagsApi()
+  isFetchingMomentTags.value = true
+
+  try {
+    tags.value = await listMomentTagsApi()
+  } catch (error) {
+    console.error('moment tags api error:', error)
+  } finally {
+    isFetchingMomentTags.value = false
+  }
 }
 
 async function getGalleries() {
-  galleries.value = await listMomentsApi()
+  isFetchingGalleries.value = true
+
+  try {
+    galleries.value = await listMomentsApi()
+  } catch (error) {
+    console.error('moments api error:', error)
+  } finally {
+    isFetchingGalleries.value = false
+  }
 }
 function updateSearch(nextSearch) {
   Object.assign(search, nextSearch)
@@ -59,7 +78,12 @@ onMounted(() => {
     <LayoutContainer>
       <InteractiveNetwork :density="2.6" />
       <div class="relative z-10">
-        <HeaderGallery :search="search" :tags="tags" @update:search="updateSearch" />
+        <HeaderGallery
+          :search="search"
+          :tags="tags"
+          :loading-tags="isFetchingMomentTags"
+          @update:search="updateSearch"
+        />
         <div class="w-full flex justify-end mb-5">
           <div class="flex items-center justify-center gap-3">
             <div class="w-px h-7 bg-zinc-700 mx-1" />
@@ -84,8 +108,15 @@ onMounted(() => {
         </div>
       </div>
       <section class="relative z-10 mx-auto pb-24">
+        <GallerySkeleton
+          v-if="isFetchingGalleries && galleryItems.length === 0"
+          :view-mode="viewMode"
+        />
         <div
+          v-else
+          class="transition-opacity duration-200"
           :class="[
+            isFetchingGalleries && 'opacity-60',
             viewMode === 'grid-2' && 'columns-2 gap-2 sm:columns-3',
             viewMode === 'grid-3' && 'grid grid-cols-4 gap-2',
             viewMode === 'locket' && 'grid grid-cols-2 gap-2',

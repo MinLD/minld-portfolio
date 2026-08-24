@@ -62,27 +62,29 @@ function isActive(path) {
             />
           </label>
 
-          <span
-            v-if="!authStore.initialized"
-            class="h-9 w-16 rounded-lg bg-zinc-800"
-            aria-label="Loading auth state"
-          ></span>
+          <div class="flex w-20 justify-center">
+            <span
+              v-if="!authStore.initialized"
+              class="h-9 w-16 rounded-lg bg-[var(--surface)]"
+              aria-label="Loading auth state"
+            ></span>
 
-          <RouterLink
-            v-else-if="!authStore.isAuthenticated"
-            to="/login"
-            class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
-          >
-            {{ t('auth.login') }}
-          </RouterLink>
+            <RouterLink
+              v-else-if="!authStore.isAuthenticated"
+              to="/login"
+              class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
+            >
+              {{ t('auth.login') }}
+            </RouterLink>
 
-          <RouterLink
-            v-else
-            to="/admin"
-            class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
-          >
-            {{ t('common.admin') }}
-          </RouterLink>
+            <RouterLink
+              v-else
+              to="/admin"
+              class="rounded-lg px-3 py-2 text-sm font-bold text-[var(--fg)] transition hover:bg-[var(--surface)]"
+            >
+              {{ t('common.admin') }}
+            </RouterLink>
+          </div>
 
           <!-- <a
             href="https://www.buymeacoffee.com/minld"

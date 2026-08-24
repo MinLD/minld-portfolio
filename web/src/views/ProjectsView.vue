@@ -4,6 +4,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { listProjectsApi } from '@/api/project'
 import { listProjectTagsApi } from '@/api/project-tag'
 import ProjectCard from '@/components/project/ProjectCard.vue'
+import ProjectCardSkeleton from '@/components/project/ProjectCardSkeleton.vue'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import HeaderProject from '../components/project/HeaderProject.vue'
 import LayoutContainer from '../layouts/LayoutContainer.vue'
@@ -20,22 +21,32 @@ const keyWordRef = computed(() => search.keyword)
 const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
 const projects = ref([])
 const { t } = useI18n()
+const isFetchingProjectTags = ref(false)
 async function getTags() {
-  tags.value = await listProjectTagsApi()
+  isFetchingProjectTags.value = true
+
+  try {
+    tags.value = await listProjectTagsApi()
+  } catch (error) {
+    console.error('project tags api error:', error)
+  } finally {
+    isFetchingProjectTags.value = false
+  }
 }
-const isLoadingLoadData = ref(false)
+const isFetchingProjects = ref(false)
 const pagination = reactive({
   page: 1,
   limit: 5,
   total: undefined,
 })
-async function fetchProject(payload) {
-  isLoadingLoadData.value = true
+const showProjectSkeleton = computed(() => isFetchingProjects.value && projects.value.length === 0)
+async function fetchProjects() {
+  isFetchingProjects.value = true
 
   try {
     const response = await listProjectsApi({
-      search: payload.keyword || undefined,
-      tag: payload.keyTags || undefined,
+      search: debouncedKeyword.value || undefined,
+      tag: search.keyTags || undefined,
       page: pagination.page,
       limit: pagination.limit,
     })
@@ -45,25 +56,27 @@ async function fetchProject(payload) {
   } catch (error) {
     console.error('projects api error:', error)
   } finally {
-    isLoadingLoadData.value = false
+    isFetchingProjects.value = false
   }
 }
 function handlePageChange(page) {
   pagination.page = page
 }
-watch(() => pagination.page, fetchProject, { immediate: true })
 function updateSearch(nextSearch) {
   Object.assign(search, nextSearch)
 }
 watch(
   [debouncedKeyword, () => search.keyTags],
-  () => {
-    console.log('call api với 2 thuộc tính: ', debouncedKeyword.value, search.keyTags)
-    const payload = {
-      keyword: debouncedKeyword.value,
-      keyTags: search.keyTags,
+  ([nextKeyword, nextTag], [oldKeyword, oldTag] = []) => {
+    if (nextKeyword !== oldKeyword || nextTag !== oldTag) {
+      pagination.page = 1
     }
-    fetchProject(payload)
+  },
+)
+watch(
+  [debouncedKeyword, () => search.keyTags, () => pagination.page],
+  () => {
+    fetchProjects()
   },
   { immediate: true },
 )
@@ -78,14 +91,25 @@ onMounted(() => {
 
     <LayoutContainer>
       <div class="relative z-10">
-        <HeaderProject :tags="tags" :search="search" @update:search="updateSearch" />
+        <HeaderProject
+          :tags="tags"
+          :search="search"
+          :loading-tags="isFetchingProjectTags"
+          @update:search="updateSearch"
+        />
       </div>
 
       <section class="relative z-10 pb-24">
         <p class="mb-4 font-mono text-xs tracking-[0.24em] text-zinc-600">01</p>
         <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">{{ t('projects.featured') }}</h2>
 
-        <div class="grid w-full gap-x-8 gap-y-12 md:grid-cols-2">
+        <div
+          class="grid w-full gap-x-8 gap-y-12 transition-opacity duration-200 md:grid-cols-2"
+          :class="{ 'opacity-60': isFetchingProjects && projects.length }"
+        >
+          <template v-if="showProjectSkeleton">
+            <ProjectCardSkeleton v-for="index in 4" :key="`project-skeleton-${index}`" />
+          </template>
           <ProjectCard v-for="project in projects" :key="project.id" :project="project" />
         </div>
 
