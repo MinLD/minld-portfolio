@@ -3,25 +3,22 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 import { listProjectsApi } from '@/api/project'
 import { listProjectTagsApi } from '@/api/project-tag'
+
 import ProjectCard from '@/components/project/ProjectCard.vue'
 import ProjectCardSkeleton from '@/components/project/ProjectCardSkeleton.vue'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
+
 import HeaderProject from '../components/project/HeaderProject.vue'
 import LayoutContainer from '../layouts/LayoutContainer.vue'
+
 import { useDebouncedValue } from '../composables/useDebouncedValue.js'
 import { useI18n } from '@/composables/useI18n'
-import PaginationComponent from '../components/about/PaginationComponent.vue'
+
+const { t } = useI18n()
 
 const tags = ref([])
-const search = reactive({
-  keyword: undefined,
-  keyTags: '',
-})
-const keyWordRef = computed(() => search.keyword)
-const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
-const projects = ref([])
-const { t } = useI18n()
 const isFetchingProjectTags = ref(false)
+
 async function getTags() {
   isFetchingProjectTags.value = true
 
@@ -33,53 +30,96 @@ async function getTags() {
     isFetchingProjectTags.value = false
   }
 }
+
+const search = reactive({
+  keyword: undefined,
+  keyTags: '',
+})
+
+const keyWordRef = computed(() => search.keyword)
+
+const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
+
+function updateSearch(nextSearch) {
+  Object.assign(search, nextSearch)
+}
+
+const projects = ref([])
+
 const isFetchingProjects = ref(false)
+
+const showProjectSkeleton = computed(() => {
+  return isFetchingProjects.value && projects.value.length === 0
+})
+
 const pagination = reactive({
   page: 1,
-  limit: 5,
-  total: undefined,
+
+  limit: 10,
+
+  total: 0,
 })
-const showProjectSkeleton = computed(() => isFetchingProjects.value && projects.value.length === 0)
+
 async function fetchProjects() {
   isFetchingProjects.value = true
 
   try {
     const response = await listProjectsApi({
       search: debouncedKeyword.value || undefined,
+
       tag: search.keyTags || undefined,
+
       page: pagination.page,
+
       limit: pagination.limit,
     })
+
     projects.value = response.data.projects
-    pagination.total = response.meta.totalPages
-    console.log('projects api response:', response)
+
+    pagination.total = response.meta.total
   } catch (error) {
     console.error('projects api error:', error)
   } finally {
     isFetchingProjects.value = false
   }
 }
-function handlePageChange(page) {
-  pagination.page = page
-}
-function updateSearch(nextSearch) {
-  Object.assign(search, nextSearch)
-}
+
 watch(
   [debouncedKeyword, () => search.keyTags],
+
   ([nextKeyword, nextTag], [oldKeyword, oldTag] = []) => {
-    if (nextKeyword !== oldKeyword || nextTag !== oldTag) {
+    const searchChanged = nextKeyword !== oldKeyword
+
+    const tagChanged = nextTag !== oldTag
+
+    if (searchChanged || tagChanged) {
       pagination.page = 1
     }
   },
 )
+
 watch(
-  [debouncedKeyword, () => search.keyTags, () => pagination.page],
+  () => pagination.limit,
+
+  (nextLimit, oldLimit) => {
+    if (nextLimit !== oldLimit) {
+      pagination.page = 1
+    }
+  },
+)
+
+watch(
+  [debouncedKeyword, () => search.keyTags, () => pagination.page, () => pagination.limit],
+
   () => {
     fetchProjects()
   },
-  { immediate: true },
+
+  {
+    immediate: true,
+  },
 )
+
 onMounted(() => {
   getTags()
 })
@@ -87,6 +127,7 @@ onMounted(() => {
 
 <template>
   <div class="relative">
+    <!-- Background -->
     <InteractiveNetwork :density="2.6" />
 
     <LayoutContainer>
@@ -100,25 +141,39 @@ onMounted(() => {
       </div>
 
       <section class="relative z-10 pb-24">
-        <p class="mb-4 font-mono text-xs tracking-[0.24em] text-zinc-600">01</p>
-        <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">{{ t('projects.featured') }}</h2>
+        <h2 class="mb-6 text-3xl font-bold text-[var(--fg)]">
+          {{ t('projects.featured') }}
+        </h2>
 
         <div
-          class="grid w-full gap-x-8 gap-y-12 transition-opacity duration-200 md:grid-cols-2"
-          :class="{ 'opacity-60': isFetchingProjects && projects.length }"
+          class="mb-10 grid w-full gap-x-8 gap-y-12 transition-opacity duration-200 md:grid-cols-2"
+          :class="{
+            'opacity-60': isFetchingProjects && projects.length,
+          }"
         >
+          <!-- Initial loading -->
           <template v-if="showProjectSkeleton">
             <ProjectCardSkeleton v-for="index in 4" :key="`project-skeleton-${index}`" />
           </template>
+
+          <!-- Projects -->
           <ProjectCard v-for="project in projects" :key="project.id" :project="project" />
         </div>
 
-        <PaginationComponent
-          :page="pagination.page"
-          :limit="pagination.limit"
-          :total-pages="pagination.total"
-          @change="handlePageChange"
+        <a-empty
+          v-if="!isFetchingProjects && projects.length === 0"
+          description="No projects found"
         />
+
+        <div v-if="pagination.total > 0" class="flex justify-center md:justify-end">
+          <a-pagination
+            v-model:current="pagination.page"
+            v-model:page-size="pagination.limit"
+            :total="pagination.total"
+            :page-size-options="['10', '20', '50']"
+            show-size-changer
+          />
+        </div>
       </section>
     </LayoutContainer>
   </div>

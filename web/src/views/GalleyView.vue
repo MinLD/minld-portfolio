@@ -262,9 +262,10 @@ onUnmounted(() => {
             No more photos
           </div>
 
-          <div v-if="!isFetchingGalleries && galleryItems.length === 0" class="py-20 text-center">
-            <p class="text-sm text-[var(--muted)]">No photos found</p>
-          </div>
+          <a-empty
+            v-if="!isFetchingGalleries && galleryItems.length === 0"
+            description="No Galleries found"
+          />
         </template>
 
         <div class="hidden">

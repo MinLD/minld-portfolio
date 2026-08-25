@@ -24,7 +24,7 @@ function updateSearch(patch) {
 }
 </script>
 <template>
-  <div class="relative mt-20 mb-20 flex flex-col items-center space-y-7 pb-20 text-center">
+  <div class="relative mt-20 mb-10 flex flex-col items-center space-y-7 pb-5 text-center">
     <div class="space-y-5">
       <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
         {{ t('projects.eyebrow') }}
@@ -75,7 +75,7 @@ function updateSearch(patch) {
     </div>
     <div
       v-else-if="tags.length"
-      class="mt-3 flex w-full flex-nowrap gap-2.5 overflow-x-scroll pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
+      class="items-center justify-center px-5 mt-3 flex w-full flex-nowrap gap-2.5 overflow-x-scroll pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
     >
       <button
         type="button"

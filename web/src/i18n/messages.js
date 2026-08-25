@@ -191,7 +191,7 @@ export const messages = {
       title: 'Projects & Open Source',
       description: 'A collection of my work, side projects, and open source contributions.',
       searchPlaceholder: 'Search projects...',
-      featured: 'Featured Projects',
+      featured: '',
       all: 'All',
     },
     gallery: {
