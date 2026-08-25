@@ -102,21 +102,21 @@ const technologies = [
 ] as const
 
 const momentTags = [
-  ['Acoustic', 'acoustic'],
-  ['Anime', 'anime'],
-  ['Artist Life', 'artistlife'],
-  ['Band', 'band'],
-  ['Coding', 'coding'],
-  ['Coffee', 'coffee'],
-  ['Cooking', 'cooking'],
-  ['Flower', 'flower'],
-  ['Guitar', 'guitar'],
-  ['Keyboard', 'keyboard'],
-  ['Me', 'me'],
-  ['Music', 'music'],
-  ['Pet', 'pet'],
-  ['Piano', 'piano'],
-  ['Show', 'show'],
+  ['#GoldenHour', 'goldenhour'],
+  ['#QuietCorners', 'quietcorners'],
+  ['#DeskLife', 'desklife'],
+  ['#SoundCheck', 'soundcheck'],
+  ['#FrameDump', 'framedump'],
+  ['#LateNightBuild', 'latenightbuild'],
+  ['#SoftFocus', 'softfocus'],
+  ['#TinyWins', 'tinywins'],
+  ['#WeekendNotes', 'weekendnotes'],
+  ['#BackstageMood', 'backstagemood'],
+  ['#CafeSession', 'cafesession'],
+  ['#PracticeRoom', 'practiceroom'],
+  ['#DailyArchive', 'dailyarchive'],
+  ['#RawSnapshot', 'rawsnapshot'],
+  ['#MoodBoard', 'moodboard'],
 ] as const
 
 const momentCategories = [
@@ -134,7 +134,6 @@ const moments = [
     status: 'PUBLISHED',
     publishedAt: '2026-08-16T03:00:00.000Z',
     categories: ['random-stuff'],
-    tags: ['coding', 'coffee'],
     images: ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&auto=format&fit=crop'],
   },
   {
@@ -142,7 +141,6 @@ const moments = [
     status: 'PUBLISHED',
     publishedAt: '2026-08-15T10:30:00.000Z',
     categories: ['music'],
-    tags: ['music', 'keyboard'],
     images: ['https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&auto=format&fit=crop'],
   },
   {
@@ -150,7 +148,6 @@ const moments = [
     status: 'PUBLISHED',
     publishedAt: '2026-08-14T08:00:00.000Z',
     categories: ['photography'],
-    tags: ['flower', 'me'],
     images: ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop'],
   },
   {
@@ -158,7 +155,6 @@ const moments = [
     status: 'PUBLISHED',
     publishedAt: '2026-08-13T14:15:00.000Z',
     categories: ['daily-life'],
-    tags: ['coffee', 'pet'],
     images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop'],
   },
   {
@@ -166,7 +162,6 @@ const moments = [
     status: 'PUBLISHED',
     publishedAt: '2026-08-12T09:45:00.000Z',
     categories: ['myself'],
-    tags: ['me', 'artistlife'],
     images: ['https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=1200&auto=format&fit=crop'],
   },
   {
@@ -174,7 +169,6 @@ const moments = [
     status: 'DRAFT',
     publishedAt: null,
     categories: ['bui-rock'],
-    tags: ['band', 'guitar'],
     images: [],
   },
 ] as const
@@ -408,14 +402,6 @@ const seedMoments = [
     content,
     status: (index % 10 === 0 ? 'DRAFT' : index % 17 === 0 ? 'ARCHIVED' : 'PUBLISHED') as const,
     publishedAt: index % 10 === 0 ? null : new Date(Date.UTC(2026, 7, 1 + (index % 20), 2 + (index % 12), 15)).toISOString(),
-    tags: [
-      ['coding', 'coffee'],
-      ['music', 'piano'],
-      ['photography', 'flower'],
-      ['artistlife', 'me'],
-      ['band', 'guitar'],
-      ['cooking', 'show'],
-    ][index % 6],
     categories: [momentCategories[index % momentCategories.length][1]],
     images: index % 5 === 0 ? [] : [`https://images.unsplash.com/photo-${[
       '1515879218367-8466d910aaa4',
@@ -471,15 +457,16 @@ await runTransaction(async (tx) => {
     })
   }
 
-  for (const [name, slug] of momentTags) {
-    await tx.momentTag.upsert({ where: { slug }, update: { name }, create: { name, slug } })
-  }
-
   for (const [name, slug] of momentCategories) {
     await tx.momentCategory.upsert({ where: { slug }, update: { name }, create: { name, slug } })
   }
 
   await tx.moment.deleteMany({ where: { OR: [{ content: { startsWith: '[seed]' } }, { content: { in: seedMoments.map((moment) => moment.content) } }] } })
+  await tx.momentTag.deleteMany()
+  for (const [name, slug] of momentTags) {
+    await tx.momentTag.create({ data: { name, slug } })
+  }
+
   for (const moment of seedMoments) {
     await tx.moment.create({
       data: {
@@ -487,7 +474,6 @@ await runTransaction(async (tx) => {
         status: moment.status,
         publishedAt: moment.publishedAt ? new Date(moment.publishedAt) : null,
         categories: { connect: moment.categories.map((slug) => ({ slug })) },
-        tags: { connect: moment.tags.map((slug) => ({ slug })) },
         images: { create: moment.images.map((url, sortOrder) => ({ url, publicId: `seed/${sortOrder}-${url.split('/').at(-1)}`, sortOrder })) },
       },
     })

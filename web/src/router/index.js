@@ -92,6 +92,16 @@ const router = createRouter({
         layout: 'admin',
       },
     },
+    {
+      path: '/admin/moments/hagtag',
+      name: 'admin-moments/hagtag',
+      component: () => import('@/views/AdminMomentsHagtags.vue'),
+      meta: {
+        requiresAuth: true,
+        roles: ['admin'],
+        layout: 'admin',
+      },
+    },
 
     {
       path: '/:pathMatch(.*)*',

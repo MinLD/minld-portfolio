@@ -1,6 +1,34 @@
 import { AppError } from '../../common/errors/AppError.js'
 import { toMomentTagDto } from './moment-tag.mapper.js'
-import { momentTagRepository } from './moment-tag.repository.js'
+import { momentTagRepository, type MomentTagListFilter } from './moment-tag.repository.js'
+
+function slugifyName(name: string) {
+  return name
+    .normalize('NFD')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'tag'
+}
+
+function normalizeHashtagName(name: string) {
+  const value = name.trim()
+  return value.startsWith('#') ? value : `#${value}`
+}
+
+async function uniqueSlugFromName(name: string) {
+  const base = slugifyName(name)
+  let slug = base
+  let suffix = 2
+
+  while (await momentTagRepository.findByNameOrSlug(undefined, slug)) {
+    slug = `${base}-${suffix}`
+    suffix += 1
+  }
+
+  return slug
+}
 
 async function ensureUnique(name: string | undefined, slug: string | undefined, excludeId?: string) {
   const existing = await momentTagRepository.findByNameOrSlug(name, slug, excludeId)
@@ -13,13 +41,19 @@ async function findMomentTagOrThrow(id: string) {
   return tag
 }
 
-export async function createMomentTag(input: { name: string; slug: string }) {
-  await ensureUnique(input.name, input.slug)
-  return { tag: toMomentTagDto(await momentTagRepository.create(input)) }
+export async function createMomentTag(input: { name: string; slug?: string }) {
+  const name = normalizeHashtagName(input.name)
+  const slug = input.slug ?? (await uniqueSlugFromName(name))
+  await ensureUnique(name, input.slug)
+  return { tag: toMomentTagDto(await momentTagRepository.create({ name, slug })) }
 }
 
-export async function listMomentTags() {
-  return { tags: (await momentTagRepository.findMany()).map(toMomentTagDto) }
+export async function listMomentTags(filter: MomentTagListFilter) {
+  const { tags, total } = await momentTagRepository.findMany(filter)
+  return {
+    tags: tags.map(toMomentTagDto),
+    meta: { page: filter.page, limit: filter.limit, total, totalPages: Math.ceil(total / filter.limit) },
+  }
 }
 
 export async function getMomentTag(id: string) {
@@ -28,8 +62,9 @@ export async function getMomentTag(id: string) {
 
 export async function updateMomentTag(id: string, input: { name?: string; slug?: string }) {
   await findMomentTagOrThrow(id)
-  await ensureUnique(input.name, input.slug, id)
-  return { tag: toMomentTagDto(await momentTagRepository.update(id, input)) }
+  const data = { ...input, name: input.name ? normalizeHashtagName(input.name) : undefined }
+  await ensureUnique(data.name, data.slug, id)
+  return { tag: toMomentTagDto(await momentTagRepository.update(id, data)) }
 }
 
 export async function deleteMomentTag(id: string) {

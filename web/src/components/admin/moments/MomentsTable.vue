@@ -61,7 +61,7 @@ const { t } = useI18n()
                       }}
                     </p>
                     <p class="text-xs text-zinc-600">
-                      {{ moment.tags?.map((tag) => `#${tag.name}`).join(', ') }}
+                      {{ moment.tags?.map((tag) => tag.name).join(', ') }}
                     </p>
                   </div>
                 </div>

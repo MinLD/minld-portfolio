@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
+import { sendCreated, sendNoContent, sendPaginated, sendSuccess } from '../../common/responses/api-response.js'
 import { createMomentCategory, deleteMomentCategory, getMomentCategory, listMomentCategories, updateMomentCategory } from './moment-category.service.js'
 
 export const createMomentCategoryController: RequestHandler = async (req, res, next) => {
@@ -10,9 +10,10 @@ export const createMomentCategoryController: RequestHandler = async (req, res, n
   }
 }
 
-export const listMomentCategoriesController: RequestHandler = async (_req, res, next) => {
+export const listMomentCategoriesController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await listMomentCategories())
+    const { categories, meta } = await listMomentCategories(req.query as unknown as { search?: string; page: number; limit: number })
+    sendPaginated(res, { categories }, meta)
   } catch (error) {
     next(error)
   }

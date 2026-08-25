@@ -1,12 +1,41 @@
 import { prisma } from '../../database/prisma.js'
+import type { Prisma } from '@prisma/client'
+
+export type MomentCategoryListFilter = {
+  search?: string
+  page: number
+  limit: number
+}
+
+function where(filter: MomentCategoryListFilter): Prisma.MomentCategoryWhereInput {
+  return filter.search
+    ? {
+        OR: [
+          { name: { contains: filter.search, mode: 'insensitive' } },
+          { slug: { contains: filter.search, mode: 'insensitive' } },
+        ],
+      }
+    : {}
+}
 
 export const momentCategoryRepository = {
   create(data: { name: string; slug: string }) {
     return prisma.momentCategory.create({ data, include: { _count: { select: { moments: true } } } })
   },
 
-  findMany() {
-    return prisma.momentCategory.findMany({ orderBy: { name: 'asc' }, include: { _count: { select: { moments: true } } } })
+  async findMany(filter: MomentCategoryListFilter) {
+    const categoryWhere = where(filter)
+    const [categories, total] = await prisma.$transaction([
+      prisma.momentCategory.findMany({
+        where: categoryWhere,
+        orderBy: { name: 'asc' },
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+        include: { _count: { select: { moments: true } } },
+      }),
+      prisma.momentCategory.count({ where: categoryWhere }),
+    ])
+    return { categories, total }
   },
 
   findById(id: string) {
