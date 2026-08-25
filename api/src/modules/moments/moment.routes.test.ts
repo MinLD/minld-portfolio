@@ -21,9 +21,11 @@ const password = 'valid-password'
 let app: Express
 let prisma: typeof prismaType
 let tagId: string
+let categoryId: string
 
 async function cleanup() {
   await prisma.moment.deleteMany({ where: { content: { startsWith: 'Test Moment' } } })
+  await prisma.momentCategory.deleteMany({ where: { slug: { startsWith: 'test-moment-admin-category' } } })
   await prisma.momentTag.deleteMany({ where: { slug: { startsWith: 'test-moment-admin-tag' } } })
   await prisma.authSession.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
   await prisma.accountToken.deleteMany({ where: { user: { email: { in: [adminEmail, userEmail] } } } })
@@ -44,8 +46,13 @@ async function seedTag() {
   tagId = tag.id
 }
 
+async function seedCategory() {
+  const category = await prisma.momentCategory.create({ data: { name: 'Test Moment Admin Category', slug: 'test-moment-admin-category' } })
+  categoryId = category.id
+}
+
 function momentBody() {
-  return { content: 'Test Moment One', status: 'PUBLISHED', publishedAt: '2026-08-12T00:00:00.000Z', tagIds: [tagId] }
+  return { content: 'Test Moment One', status: 'PUBLISHED', publishedAt: '2026-08-12T00:00:00.000Z', categoryIds: [categoryId], tagIds: [tagId] }
 }
 
 beforeAll(async () => {
@@ -60,6 +67,7 @@ beforeEach(async () => {
   await cleanup()
   await createUser(adminEmail, 'ADMIN')
   await createUser(userEmail, 'USER')
+  await seedCategory()
   await seedTag()
 })
 
@@ -74,7 +82,10 @@ test('ADMIN can create list get update delete moment', async () => {
   const created = await request(app).post('/api/v1/admin/moments').set('Cookie', cookie).send(momentBody())
   expect(created.status).toBe(201)
   expect(created.body.data.moment.content).toBe('Test Moment One')
+  expect(created.body.data.moment.categories).toHaveLength(1)
+  expect(created.body.data.moment.categories[0].count).toBe(1)
   expect(created.body.data.moment.tags).toHaveLength(1)
+  expect(created.body.data.moment.tags[0].count).toBe(1)
 
   const listed = await request(app).get('/api/v1/admin/moments').set('Cookie', cookie)
   expect(listed.status).toBe(200)
@@ -83,10 +94,11 @@ test('ADMIN can create list get update delete moment', async () => {
   const id = created.body.data.moment.id as string
   expect((await request(app).get(`/api/v1/admin/moments/${id}`).set('Cookie', cookie)).status).toBe(200)
 
-  const updated = await request(app).patch(`/api/v1/admin/moments/${id}`).set('Cookie', cookie).send({ content: 'Test Moment Updated', status: 'ARCHIVED', tagIds: [] })
+  const updated = await request(app).patch(`/api/v1/admin/moments/${id}`).set('Cookie', cookie).send({ content: 'Test Moment Updated', status: 'ARCHIVED', categoryIds: [], tagIds: [] })
   expect(updated.status).toBe(200)
   expect(updated.body.data.moment.content).toBe('Test Moment Updated')
   expect(updated.body.data.moment.status).toBe('ARCHIVED')
+  expect(updated.body.data.moment.categories).toHaveLength(0)
   expect(updated.body.data.moment.tags).toHaveLength(0)
 
   expect((await request(app).delete(`/api/v1/admin/moments/${id}`).set('Cookie', cookie)).status).toBe(204)
@@ -143,13 +155,17 @@ test('moment image upload validates auth type and image limit', async () => {
 })
 
 test('public moment routes expose only published moments', async () => {
-  const published = await prisma.moment.create({ data: { content: 'Test Moment Public', status: 'PUBLISHED', publishedAt: new Date(), tags: { connect: [{ id: tagId }] }, images: { create: { url: 'https://cdn/image.png', publicId: 'public-id', sortOrder: 0 } } } })
+  const published = await prisma.moment.create({ data: { content: 'Test Moment Public', status: 'PUBLISHED', publishedAt: new Date(), categories: { connect: [{ id: categoryId }] }, tags: { connect: [{ id: tagId }] }, images: { create: { url: 'https://cdn/image.png', publicId: 'public-id', sortOrder: 0 } } } })
   const draft = await prisma.moment.create({ data: { content: 'Test Moment Draft', status: 'DRAFT' } })
 
   const listed = await request(app).get('/api/v1/moments')
   expect(listed.status).toBe(200)
   expect(listed.body.data.moments.some((moment: { id: string }) => moment.id === published.id)).toBe(true)
   expect(listed.body.data.moments.some((moment: { id: string }) => moment.id === draft.id)).toBe(false)
+
+  const filtered = await request(app).get('/api/v1/moments').query({ category: 'test-moment-admin-category' })
+  expect(filtered.status).toBe(200)
+  expect(filtered.body.data.moments.every((moment: { categories: { slug: string }[] }) => moment.categories.some((category) => category.slug === 'test-moment-admin-category'))).toBe(true)
 
   const detail = await request(app).get(`/api/v1/moments/${published.id}`)
   expect(detail.status).toBe(200)

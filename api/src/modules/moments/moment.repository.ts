@@ -15,6 +15,7 @@ export type MomentWriteInput = {
 
 export type MomentListFilter = {
   search?: string
+  category?: string
   tag?: string
   status?: MomentStatus
   page: number
@@ -25,17 +26,19 @@ function momentWhere(filter: MomentListFilter): Prisma.MomentWhereInput {
   return {
     status: filter.status,
     content: filter.search ? { contains: filter.search, mode: 'insensitive' } : undefined,
+    categories: filter.category ? { some: { slug: filter.category } } : undefined,
     tags: filter.tag ? { some: { slug: filter.tag } } : undefined,
   }
 }
 
 export const momentRepository = {
-  create(data: MomentWriteInput & { content: string; tagIds: string[]; images?: { url: string; publicId: string }[] }, tx?: TxClient) {
+  create(data: MomentWriteInput & { content: string; categoryIds: string[]; tagIds: string[]; images?: { url: string; publicId: string }[] }, tx?: TxClient) {
     return db(tx).moment.create({
       data: {
         content: data.content,
         status: data.status,
         publishedAt: data.publishedAt,
+        categories: { connect: connect(data.categoryIds) },
         tags: { connect: connect(data.tagIds) },
         images: data.images?.length ? { create: data.images.map((image, index) => ({ ...image, sortOrder: index })) } : undefined,
       },
@@ -112,11 +115,16 @@ export const momentRepository = {
     return ids.length ? db(tx).momentTag.count({ where: { id: { in: ids } } }) : 0
   },
 
-  update(id: string, data: MomentWriteInput & { tagIds?: string[]; images?: { url: string; publicId: string; sortOrder: number }[] }, tx?: TxClient) {
+  countCategories(ids: string[], tx?: TxClient) {
+    return ids.length ? db(tx).momentCategory.count({ where: { id: { in: ids } } }) : 0
+  },
+
+  update(id: string, data: MomentWriteInput & { categoryIds?: string[]; tagIds?: string[]; images?: { url: string; publicId: string; sortOrder: number }[] }, tx?: TxClient) {
     const updateData: Prisma.MomentUpdateInput = {
       content: data.content,
       status: data.status,
       publishedAt: data.publishedAt,
+      categories: data.categoryIds ? { set: connect(data.categoryIds) } : undefined,
       tags: data.tagIds ? { set: connect(data.tagIds) } : undefined,
       images: data.images ? { deleteMany: {}, create: data.images } : undefined,
     }

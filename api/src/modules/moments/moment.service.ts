@@ -7,8 +7,8 @@ import { toMomentDto } from './moment.mapper.js'
 import { momentRepository, type MomentListFilter, type MomentWriteInput } from './moment.repository.js'
 
 type UploadedMomentImage = { url: string; publicId: string }
-type CreateMomentInput = MomentWriteInput & { content: string; publishedAt?: string; status?: MomentStatus; tagIds: string[]; images?: UploadedMomentImage[] }
-type UpdateMomentInput = MomentWriteInput & { publishedAt?: string | null; status?: MomentStatus; tagIds?: string[]; images?: UploadedMomentImage[] }
+type CreateMomentInput = MomentWriteInput & { content: string; publishedAt?: string; status?: MomentStatus; categoryIds: string[]; tagIds: string[]; images?: UploadedMomentImage[] }
+type UpdateMomentInput = MomentWriteInput & { publishedAt?: string | null; status?: MomentStatus; categoryIds?: string[]; tagIds?: string[]; images?: UploadedMomentImage[] }
 
 async function findMomentOrThrow(id: string) {
   const moment = await momentRepository.findById(id)
@@ -20,12 +20,17 @@ async function ensureTags(tagIds: string[] | undefined) {
   if (tagIds && (await momentRepository.countTags(tagIds)) !== new Set(tagIds).size) throw new AppError(400, 'MOMENT_TAG_NOT_FOUND', 'One or more moment tags do not exist')
 }
 
+async function ensureCategories(categoryIds: string[] | undefined) {
+  if (categoryIds && (await momentRepository.countCategories(categoryIds)) !== new Set(categoryIds).size) throw new AppError(400, 'MOMENT_CATEGORY_NOT_FOUND', 'One or more moment categories do not exist')
+}
+
 function normalize(input: CreateMomentInput | UpdateMomentInput) {
   const { images: _images, ...data } = input
   return { ...data, publishedAt: input.publishedAt === undefined ? undefined : input.publishedAt ? new Date(input.publishedAt) : null }
 }
 
 export async function createMoment(input: CreateMomentInput) {
+  await ensureCategories(input.categoryIds)
   await ensureTags(input.tagIds)
   return { moment: toMomentDto(await runTransaction((tx) => momentRepository.create({ ...normalize(input), images: input.images ?? [] } as CreateMomentInput & { publishedAt?: Date | null; images: UploadedMomentImage[] }, tx))) }
 }
@@ -122,6 +127,7 @@ export async function deleteAdminMomentComment(id: string) {
 
 export async function updateMoment(id: string, input: UpdateMomentInput) {
   const existing = await findMomentOrThrow(id)
+  await ensureCategories(input.categoryIds)
   await ensureTags(input.tagIds)
   if (input.images && input.images.length > 10) throw new AppError(400, 'MOMENT_IMAGE_LIMIT_EXCEEDED', 'Moment can have at most 10 images')
   const nextImages = input.images?.map((image, index) => ({ ...image, sortOrder: index }))

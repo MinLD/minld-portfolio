@@ -2,12 +2,14 @@ import { MomentStatus } from '@prisma/client'
 import { z } from 'zod'
 
 const tagIdsSchema = z.array(z.uuid()).default([])
+const categoryIdsSchema = z.array(z.uuid()).default([])
 const uploadedImagesSchema = z.array(z.object({
   url: z.url(),
   publicId: z.string().trim().min(1),
 })).max(10)
 const listMomentsQuerySchema = z.object({
   search: z.string().trim().min(1).optional(),
+  category: z.string().trim().min(1).optional(),
   tag: z.string().trim().min(1).optional(),
   status: z.enum(MomentStatus).optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -19,6 +21,7 @@ export const createMomentSchema = z.object({
     content: z.string().trim().min(1),
     status: z.enum(MomentStatus).default('DRAFT'),
     publishedAt: z.iso.datetime().optional(),
+    categoryIds: categoryIdsSchema,
     tagIds: tagIdsSchema,
     images: uploadedImagesSchema.default([]),
   }),
@@ -31,6 +34,7 @@ export const updateMomentSchema = z.object({
       content: z.string().trim().min(1).optional(),
       status: z.enum(MomentStatus).optional(),
       publishedAt: z.iso.datetime().nullable().optional(),
+      categoryIds: z.array(z.uuid()).optional(),
       tagIds: z.array(z.uuid()).optional(),
       images: uploadedImagesSchema.optional(),
     })

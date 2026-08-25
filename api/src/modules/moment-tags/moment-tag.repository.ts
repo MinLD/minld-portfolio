@@ -2,15 +2,15 @@ import { prisma } from '../../database/prisma.js'
 
 export const momentTagRepository = {
   create(data: { name: string; slug: string }) {
-    return prisma.momentTag.create({ data })
+    return prisma.momentTag.create({ data, include: { _count: { select: { moments: true } } } })
   },
 
   findMany() {
-    return prisma.momentTag.findMany({ orderBy: { name: 'asc' } })
+    return prisma.momentTag.findMany({ orderBy: { name: 'asc' }, include: { _count: { select: { moments: true } } } })
   },
 
   findById(id: string) {
-    return prisma.momentTag.findUnique({ where: { id } })
+    return prisma.momentTag.findUnique({ where: { id }, include: { _count: { select: { moments: true } } } })
   },
 
   findByNameOrSlug(name: string | undefined, slug: string | undefined, excludeId?: string) {
@@ -23,7 +23,7 @@ export const momentTagRepository = {
   },
 
   update(id: string, data: { name?: string; slug?: string }) {
-    return prisma.momentTag.update({ where: { id }, data })
+    return prisma.momentTag.update({ where: { id }, data, include: { _count: { select: { moments: true } } } })
   },
 
   delete(id: string) {

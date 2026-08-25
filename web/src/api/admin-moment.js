@@ -26,3 +26,9 @@ export async function getAdminMomentTagsApi() {
 
   return response.data.data.tags
 }
+
+export async function getAdminMomentCategoriesApi() {
+  const response = await http.get('/admin/moment-categories')
+
+  return response.data.data.categories
+}

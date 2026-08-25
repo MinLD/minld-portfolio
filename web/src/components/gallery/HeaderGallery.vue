@@ -2,9 +2,13 @@
 import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps({
+  categories: {
+    type: Array,
+    default: () => [],
+  },
   tags: {
     type: Array,
-    default: () => ['abc', 'xyz', 'bcc'],
+    default: () => [],
   },
   search: {
     type: Object,
@@ -12,6 +16,10 @@ const props = defineProps({
     default: undefined,
   },
   loadingTags: {
+    type: Boolean,
+    default: false,
+  },
+  loadingCategories: {
     type: Boolean,
     default: false,
   },
@@ -40,7 +48,7 @@ function updateSearch(patch) {
       </p>
     </div>
 
-    <div v-if="loadingTags" class="mt-3 flex animate-pulse flex-wrap justify-center gap-2.5">
+    <div v-if="loadingCategories" class="mt-3 flex animate-pulse flex-wrap justify-center gap-2.5">
       <span
         v-for="index in 5"
         :key="index"
@@ -49,39 +57,60 @@ function updateSearch(patch) {
     </div>
 
     <div
-      v-else-if="tags.length"
+      v-else-if="categories.length"
       class="items-center justify-center px-5 mt-3 flex w-full flex-nowrap gap-2.5 overflow-x-scroll pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
     >
       <button
         type="button"
         class="shrink-0 rounded-full border px-5 py-2 text-sm font-semibold leading-none transition"
         :class="
-          !search.keyTags
+          !search.keyCategory
             ? 'border-[var(--action-bg)] bg-[var(--action-bg)] text-[var(--action-fg)]'
             : 'border-[var(--border)] bg-[var(--panel)]/70 text-[var(--fg)] hover:bg-[var(--surface)]'
         "
-        @click="updateSearch({ keyTags: '' })"
+        @click="updateSearch({ keyCategory: '' })"
       >
         {{ t('gallery.all') }}
       </button>
 
       <button
-        v-for="tag in tags"
-        :key="tag.id"
+        v-for="category in categories"
+        :key="category.id"
         type="button"
         class="shrink-0 rounded-full border px-5 py-2 text-sm font-semibold leading-none transition"
         :class="
-          search.keyTags === tag.slug
+          search.keyCategory === category.slug
             ? 'border-[var(--action-bg)] bg-[var(--action-bg)] text-[var(--action-fg)]'
             : 'border-[var(--border)] bg-[var(--panel)]/70 text-[var(--fg)] hover:bg-[var(--surface)]'
         "
         @click="
           updateSearch({
-            keyTags: search.keyTags === tag.slug ? '' : tag.slug,
+            keyCategory: search.keyCategory === category.slug ? '' : category.slug,
           })
         "
       >
-        {{ tag.name }}
+        {{ category.name }} <span class="text-[var(--muted)]">{{ category.count ?? 0 }}</span>
+      </button>
+    </div>
+
+    <div v-if="loadingTags" class="flex items-center animate-pulse flex-wrap justify-center gap-2">
+      <span
+        v-for="index in 10"
+        :key="index"
+        class="h-7 w-20 rounded-full bg-[var(--surface)]"
+      ></span>
+    </div>
+
+    <div v-else-if="tags.length" class="flex flex-wrap justify-center gap-2 px-5">
+      <button
+        v-for="tag in tags"
+        :key="tag.id"
+        type="button"
+        class="rounded-full border border-[var(--border)] bg-[var(--panel)]/50 px-3 py-1 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
+        :class="search.keyTags === tag.slug && 'border-[var(--action-bg)] text-[var(--fg)]'"
+        @click="updateSearch({ keyTags: search.keyTags === tag.slug ? '' : tag.slug })"
+      >
+        #{{ tag.name }} <span class="text-[var(--muted)]">{{ tag.count ?? 0 }}</span>
       </button>
     </div>
   </div>

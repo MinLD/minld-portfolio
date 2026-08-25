@@ -1,4 +1,5 @@
 import type { MomentStatus } from '@prisma/client'
+import type { MomentCategoryDto } from '../moment-categories/moment-category.dto.js'
 import type { MomentTagDto } from '../moment-tags/moment-tag.dto.js'
 
 export type MomentImageDto = {
@@ -17,5 +18,6 @@ export type MomentDto = {
   createdAt: string
   updatedAt: string
   images: MomentImageDto[]
+  categories: MomentCategoryDto[]
   tags: MomentTagDto[]
 }

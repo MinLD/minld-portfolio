@@ -14,6 +14,8 @@ export const createMomentSchema = z.object({
 
   publishedAt: z.string().optional(),
 
+  categoryIds: z.array(z.string().uuid('Invalid category ID')).default([]),
+
   tagIds: z.array(z.string().uuid('Invalid tag ID')).default([]),
 
   images: z.array(uploadedImageSchema).max(MAX_IMAGES, `Maximum ${MAX_IMAGES} images`).default([]),

@@ -83,6 +83,17 @@ const router = createRouter({
       },
     },
     {
+      path: '/admin/moments/category',
+      name: 'admin-moments/categories',
+      component: () => import('@/views/AdminMomentsCategory.vue'),
+      meta: {
+        requiresAuth: true,
+        roles: ['admin'],
+        layout: 'admin',
+      },
+    },
+
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       meta: {

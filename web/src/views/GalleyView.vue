@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 
-import { listMomentsApi, listMomentTagsApi } from '@/api/moment'
+import { listMomentCategoriesApi, listMomentsApi, listMomentTagsApi } from '@/api/moment'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import HeaderGallery from '../components/gallery/HeaderGallery.vue'
 import LayoutContainer from '../layouts/LayoutContainer.vue'
@@ -10,15 +10,18 @@ import GallerySkeleton from '@/components/gallery/GallerySkeleton.vue'
 import { Grid2x2, Grid3x3, TableOfContents } from 'lucide-vue-next'
 
 const tags = ref([])
+const categories = ref([])
 const galleries = ref([])
 
 const search = reactive({
+  keyCategory: '',
   keyTags: '',
 })
 
 const viewMode = ref('locket')
 
 const isFetchingMomentTags = ref(false)
+const isFetchingMomentCategories = ref(false)
 const isFetchingGalleries = ref(false)
 
 const loadMoreTrigger = ref(null)
@@ -85,6 +88,18 @@ async function getTags() {
   }
 }
 
+async function getCategories() {
+  isFetchingMomentCategories.value = true
+
+  try {
+    categories.value = await listMomentCategoriesApi()
+  } catch (error) {
+    console.error('moment categories api error:', error)
+  } finally {
+    isFetchingMomentCategories.value = false
+  }
+}
+
 async function getGalleries({ reset = false } = {}) {
   if (isFetchingGalleries.value) return
 
@@ -96,6 +111,7 @@ async function getGalleries({ reset = false } = {}) {
     const response = await listMomentsApi({
       page: pagination.page,
       limit: pagination.limit,
+      category: search.keyCategory || undefined,
       tag: search.keyTags || undefined,
     })
 
@@ -148,7 +164,21 @@ watch(
   },
 )
 
+watch(
+  () => search.keyCategory,
+  async () => {
+    pagination.page = 1
+    pagination.total = 0
+    pagination.totalPages = 0
+
+    await getGalleries({
+      reset: true,
+    })
+  },
+)
+
 onMounted(async () => {
+  getCategories()
   getTags()
 
   await getGalleries({
@@ -187,7 +217,9 @@ onUnmounted(() => {
       <div class="relative z-10">
         <HeaderGallery
           :search="search"
+          :categories="categories"
           :tags="tags"
+          :loading-categories="isFetchingMomentCategories"
           :loading-tags="isFetchingMomentTags"
           @update:search="updateSearch"
         />

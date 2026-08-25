@@ -17,9 +17,15 @@ const { t } = useI18n()
       <table class="w-full min-w-[900px]">
         <thead>
           <tr class="border-b border-zinc-800 bg-[#111111]">
-            <th class="w-[40%] px-4 py-3 text-left text-xs font-medium text-zinc-400">{{ t('admin.table.moment') }}</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400">{{ t('admin.table.status') }}</th>
-            <th class="px-4 py-3 text-right text-xs font-medium text-zinc-400">{{ t('admin.table.actions') }}</th>
+            <th class="w-[40%] px-4 py-3 text-left text-xs font-medium text-zinc-400">
+              {{ t('admin.table.moment') }}
+            </th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400">
+              {{ t('admin.table.status') }}
+            </th>
+            <th class="px-4 py-3 text-right text-xs font-medium text-zinc-400">
+              {{ t('admin.table.actions') }}
+            </th>
           </tr>
         </thead>
 
@@ -49,7 +55,13 @@ const { t } = useI18n()
                       {{ moment.content }}
                     </p>
                     <p class="mt-1 text-xs text-zinc-500">
-                      {{ moment.tags?.map((tag) => tag.name).join(', ') }}
+                      {{
+                        moment.categories?.map((category) => category.name).join(', ') ||
+                        'No category'
+                      }}
+                    </p>
+                    <p class="text-xs text-zinc-600">
+                      {{ moment.tags?.map((tag) => `#${tag.name}`).join(', ') }}
                     </p>
                   </div>
                 </div>
@@ -84,8 +96,7 @@ const { t } = useI18n()
 
           <tr v-if="!loading && moments.length === 0">
             <td colspan="5" class="px-4 py-14 text-center">
-              <p class="text-sm text-zinc-400">{{ t('admin.table.noMoments') }}</p>
-              <p class="mt-1 text-xs text-zinc-600">{{ t('admin.table.createFirstMoment') }}</p>
+              <a-empty description="No Data not found" />
             </td>
           </tr>
         </tbody>

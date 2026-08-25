@@ -1,9 +1,10 @@
 <script setup>
-import { ExternalLink, X } from 'lucide-vue-next'
+import { ChevronDown, ExternalLink, X } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { adminNavigation } from '@/config/admin/navigation'
 import { useI18n } from '@/composables/useI18n'
+import { ref } from 'vue'
 
 defineProps({
   open: {
@@ -13,7 +14,7 @@ defineProps({
 })
 
 const emit = defineEmits(['close'])
-
+const openGroups = ref(new Set(adminNavigation.filter(hasChildren).map((item) => item.to)))
 const route = useRoute()
 const { t } = useI18n()
 
@@ -23,6 +24,25 @@ function isActive(path) {
   }
 
   return route.path.startsWith(path)
+}
+
+function isExactActive(path) {
+  return route.path === path
+}
+
+function hasChildren(item) {
+  return item.children?.some((child) => child.enabled)
+}
+
+function isGroupOpen(item) {
+  return openGroups.value.has(item.to) || item.children?.some((child) => isExactActive(child.to))
+}
+
+function toggleGroup(item) {
+  const next = new Set(openGroups.value)
+  if (next.has(item.to)) next.delete(item.to)
+  else next.add(item.to)
+  openGroups.value = next
 }
 </script>
 
@@ -63,23 +83,72 @@ function isActive(path) {
 
       <div class="space-y-1">
         <template v-for="item in adminNavigation" :key="item.to">
-          <RouterLink
-            v-if="item.enabled"
-            :to="item.to"
-            class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
-            :class="
-              isActive(item.to)
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
-            "
-            @click="emit('close')"
-          >
-            <component :is="item.icon" :size="18" />
+          <div v-if="item.enabled">
+            <button
+              v-if="hasChildren(item)"
+              type="button"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
+              :class="
+                item.children.some((child) => isExactActive(child.to))
+                  ? ''
+                  : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
+              "
+              :aria-expanded="isGroupOpen(item)"
+              @click="toggleGroup(item)"
+            >
+              <component :is="item.icon" :size="18" />
 
-            <span>
-              {{ t(item.labelKey) }}
-            </span>
-          </RouterLink>
+              <span class="truncate">
+                {{ t(item.labelKey) }}
+              </span>
+
+              <ChevronDown
+                :size="16"
+                class="ml-auto transition-transform"
+                :class="isGroupOpen(item) && 'rotate-180'"
+              />
+            </button>
+
+            <div v-else class="flex items-center gap-1">
+              <RouterLink
+                :to="item.to"
+                class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
+                :class="
+                  isActive(item.to)
+                    ? 'bg-zinc-800 text-white'
+                    : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
+                "
+                @click="emit('close')"
+              >
+                <component :is="item.icon" :size="18" />
+
+                <span class="truncate">
+                  {{ t(item.labelKey) }}
+                </span>
+              </RouterLink>
+            </div>
+
+            <div v-if="isGroupOpen(item)" class="ml-7 mt-1 space-y-1 border-l border-zinc-800 pl-3">
+              <RouterLink
+                v-for="child in item.children?.filter((child) => child.enabled)"
+                :key="child.labelKey"
+                :to="child.to"
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
+                :class="
+                  isExactActive(child.to)
+                    ? 'bg-zinc-900 text-white'
+                    : 'text-zinc-500 hover:bg-zinc-900/70 hover:text-zinc-200'
+                "
+                @click="emit('close')"
+              >
+                <component :is="item.icon" :size="18" />
+
+                <span class="truncate">
+                  {{ t(child.labelKey) }}
+                </span>
+              </RouterLink>
+            </div>
+          </div>
 
           <div
             v-else

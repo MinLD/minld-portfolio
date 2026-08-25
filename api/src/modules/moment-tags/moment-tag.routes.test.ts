@@ -69,6 +69,7 @@ test('ADMIN can create list get update delete moment tag', async () => {
   const publicList = await request(app).get('/api/v1/moment-tags')
   expect(publicList.status).toBe(200)
   expect(publicList.body.data.tags.some((tag: { slug: string }) => tag.slug === 'test-moment-tag-one')).toBe(true)
+  expect(publicList.body.data.tags.find((tag: { slug: string }) => tag.slug === 'test-moment-tag-one').count).toBe(0)
 
   const id = created.body.data.tag.id as string
   expect((await request(app).get(`/api/v1/admin/moment-tags/${id}`).set('Cookie', cookie)).status).toBe(200)

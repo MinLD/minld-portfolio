@@ -30,6 +30,23 @@ export const adminNavigation = [
     to: '/admin/moments',
     icon: Zap,
     enabled: true,
+    children: [
+      {
+        labelKey: 'admin.momentsManager',
+        to: '/admin/moments',
+        enabled: true,
+      },
+      {
+        labelKey: 'admin.momentCategories',
+        to: '/admin/moments/category',
+        enabled: true,
+      },
+      {
+        labelKey: 'admin.momentComments',
+        to: '/admin/moments/comment',
+        enabled: false,
+      },
+    ],
   },
   // {
   //   label: 'Comments',

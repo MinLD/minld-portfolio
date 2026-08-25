@@ -1,4 +1,4 @@
-export type MomentTagDto = {
+export type MomentCategoryDto = {
   id: string
   name: string
   slug: string

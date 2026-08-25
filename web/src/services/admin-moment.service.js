@@ -1,5 +1,6 @@
 import {
   createAdminMomentApi,
+  getAdminMomentCategoriesApi,
   getAdminMomentApi,
   getAdminMomentTagsApi,
   updateAdminMomentApi,
@@ -56,7 +57,7 @@ export async function updateMoment(id, payload) {
 }
 
 export async function getMomentRelations() {
-  const tags = await getAdminMomentTagsApi()
+  const [categories, tags] = await Promise.all([getAdminMomentCategoriesApi(), getAdminMomentTagsApi()])
 
-  return { tags }
+  return { categories, tags }
 }

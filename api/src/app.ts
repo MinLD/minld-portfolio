@@ -9,6 +9,7 @@ import { adminRouter } from './modules/admin/admin.routes.js'
 import { authRouter } from './modules/auth/auth.routes.js'
 import { adminCategoryRouter, publicCategoryRouter } from './modules/categories/category.routes.js'
 import { healthRouter } from './modules/health/health.routes.js'
+import { adminMomentCategoryRouter, publicMomentCategoryRouter } from './modules/moment-categories/moment-category.routes.js'
 import { adminMomentTagRouter, publicMomentTagRouter } from './modules/moment-tags/moment-tag.routes.js'
 import { adminMomentRouter, publicMomentRouter } from './modules/moments/moment.routes.js'
 import { adminProjectCommentRouter, projectCommentRouter } from './modules/project-comments/project-comment.routes.js'
@@ -40,6 +41,7 @@ app.use('/api/v1', publicCategoryRouter)
 app.use('/api/v1', publicProjectTagRouter)
 app.use('/api/v1', publicTechnologyRouter)
 app.use('/api/v1', publicProjectRouter)
+app.use('/api/v1', publicMomentCategoryRouter)
 app.use('/api/v1', publicMomentTagRouter)
 app.use('/api/v1', publicMomentRouter)
 app.use('/api/v1', projectCommentRouter)
@@ -50,6 +52,7 @@ app.use('/api/v1/admin', adminRouter)
 app.use('/api/v1/admin', adminTechnologyRouter)
 app.use('/api/v1/admin', adminProjectRouter)
 app.use('/api/v1/admin', adminProjectCommentRouter)
+app.use('/api/v1/admin', adminMomentCategoryRouter)
 app.use('/api/v1/admin', adminMomentTagRouter)
 app.use('/api/v1/admin', adminMomentRouter)
 app.use('/api/v1/admin', adminUploadRouter)

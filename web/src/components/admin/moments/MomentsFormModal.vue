@@ -20,6 +20,7 @@ const formatDateTimeLocal = (value) => {
 
 const props = defineProps({
   moment: { type: Object, default: null },
+  categories: { type: Array, default: () => [] },
   tags: { type: Array, default: () => [] },
   isLoading: { type: Boolean, default: false },
   error: { type: String, default: '' },
@@ -33,6 +34,7 @@ const form = reactive({
   content: props.moment?.content ?? '',
   status: props.moment?.status ?? 'DRAFT',
   publishedAt: formatDateTimeLocal(props.moment?.publishedAt),
+  categoryIds: props.moment?.categories?.map((category) => category.id) ?? [],
   tagIds: props.moment?.tags?.map((tag) => tag.id) ?? [],
   images: [],
 })
@@ -115,6 +117,7 @@ const submit = () => {
     content: result.data.content,
     status: result.data.status,
     publishedAt,
+    categoryIds: result.data.categoryIds,
     tagIds: result.data.tagIds,
   }
 
@@ -138,7 +141,7 @@ const submit = () => {
             <h2 class="font-semibold text-white">
               {{ isEditMode ? 'Edit Moment' : 'Create Moment' }}
             </h2>
-            <p class="mt-1 text-xs text-zinc-500">Fill moment content, status and tags.</p>
+            <p class="mt-1 text-xs text-zinc-500">Fill moment content, status, categories and hashtags.</p>
           </div>
 
           <button
@@ -175,7 +178,30 @@ const submit = () => {
               @clear="clearImage"
             />
             <div class="sm:col-span-2">
-              <p class="mb-2 text-sm text-zinc-300">Tags</p>
+              <p class="mb-2 text-sm text-zinc-300">Categories</p>
+
+              <div v-if="props.categories.length" class="flex flex-wrap gap-2">
+                <button
+                  v-for="category in props.categories"
+                  :key="category.id"
+                  type="button"
+                  class="rounded-full border px-3 py-1.5 text-xs transition"
+                  :class="
+                    form.categoryIds.includes(category.id)
+                      ? 'border-white bg-white text-black'
+                      : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                  "
+                  @click="toggleValue(form.categoryIds, category.id)"
+                >
+                  {{ category.name }}
+                </button>
+              </div>
+
+              <p v-else class="text-xs text-zinc-500">No categories available.</p>
+              <p class="mt-1 min-h-5 text-xs text-red-400">{{ errors.categoryIds }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="mb-2 text-sm text-zinc-300">Hashtags</p>
 
               <div v-if="props.tags.length" class="flex flex-wrap gap-2">
                 <button

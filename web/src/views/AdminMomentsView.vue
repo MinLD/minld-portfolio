@@ -67,6 +67,7 @@ const createMomentMutation = useCreateMomentMutation()
 const updateMomentMutation = useUpdateMomentMutation()
 const deleteMomentMutation = useDeleteMomentMutation()
 const Moments = computed(() => mommentQuery.data.value?.moments ?? [])
+const categories = computed(() => relationsQuery.data.value?.categories ?? [])
 const tags = computed(() => relationsQuery.data.value?.tags ?? [])
 const isLoading = computed(() => isMomentsPending.value || isMomentsFetching.value)
 const isSaving = computed(
@@ -218,6 +219,7 @@ const confirmDelete = async () => {
 
   <MomentsFormModal
     v-if="isOpenCreate"
+    :categories="categories"
     :tags="tags"
     :is-loading="isSaving"
     :error="actionError"
@@ -227,6 +229,7 @@ const confirmDelete = async () => {
   <MomentsFormModal
     v-if="isOpenUpdate"
     :moment="editingMoment"
+    :categories="categories"
     :tags="tags"
     :is-loading="isSaving"
     :error="actionError"

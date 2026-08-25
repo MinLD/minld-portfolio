@@ -102,16 +102,30 @@ const technologies = [
 ] as const
 
 const momentTags = [
-  ['Work', 'work'],
-  ['Learning', 'learning'],
-  ['Behind the Scenes', 'behind-the-scenes'],
-  ['Release Notes', 'release-notes'],
-  ['Bug Fix', 'bug-fix'],
-  ['Design', 'design'],
-  ['Architecture', 'architecture'],
-  ['Performance', 'performance'],
-  ['DevOps', 'devops'],
-  ['Personal', 'personal'],
+  ['Acoustic', 'acoustic'],
+  ['Anime', 'anime'],
+  ['Artist Life', 'artistlife'],
+  ['Band', 'band'],
+  ['Coding', 'coding'],
+  ['Coffee', 'coffee'],
+  ['Cooking', 'cooking'],
+  ['Flower', 'flower'],
+  ['Guitar', 'guitar'],
+  ['Keyboard', 'keyboard'],
+  ['Me', 'me'],
+  ['Music', 'music'],
+  ['Pet', 'pet'],
+  ['Piano', 'piano'],
+  ['Show', 'show'],
+] as const
+
+const momentCategories = [
+  ['Random stuff', 'random-stuff'],
+  ['Music', 'music'],
+  ['Photography', 'photography'],
+  ['Daily life', 'daily-life'],
+  ['Myself', 'myself'],
+  ['Bụi rock', 'bui-rock'],
 ] as const
 
 const moments = [
@@ -119,42 +133,48 @@ const moments = [
     content: '[seed] Shipped the admin project management flow with search, filters, pagination, image upload, and safer token refresh handling.',
     status: 'PUBLISHED',
     publishedAt: '2026-08-16T03:00:00.000Z',
-    tags: ['work', 'release-notes'],
+    categories: ['random-stuff'],
+    tags: ['coding', 'coffee'],
     images: ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&auto=format&fit=crop'],
   },
   {
     content: '[seed] Refined backend project APIs so the frontend can search with SQL LIKE semantics and receive pagination metadata in one response.',
     status: 'PUBLISHED',
     publishedAt: '2026-08-15T10:30:00.000Z',
-    tags: ['architecture', 'performance'],
+    categories: ['music'],
+    tags: ['music', 'keyboard'],
     images: ['https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&auto=format&fit=crop'],
   },
   {
     content: '[seed] Added real-world project tags and technologies to make admin forms useful immediately after a local database reset.',
     status: 'PUBLISHED',
     publishedAt: '2026-08-14T08:00:00.000Z',
-    tags: ['work', 'behind-the-scenes'],
+    categories: ['photography'],
+    tags: ['flower', 'me'],
     images: ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop'],
   },
   {
     content: '[seed] Debugged a refresh-token failure caused by a frontend request body mismatch and tightened the API client behavior.',
     status: 'PUBLISHED',
     publishedAt: '2026-08-13T14:15:00.000Z',
-    tags: ['bug-fix', 'learning'],
+    categories: ['daily-life'],
+    tags: ['coffee', 'pet'],
     images: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop'],
   },
   {
     content: '[seed] Designed the moments API contract for the frontend: public timeline, admin CRUD, image gallery, likes, and comments.',
     status: 'PUBLISHED',
     publishedAt: '2026-08-12T09:45:00.000Z',
-    tags: ['design', 'architecture'],
+    categories: ['myself'],
+    tags: ['me', 'artistlife'],
     images: ['https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=1200&auto=format&fit=crop'],
   },
   {
     content: '[seed] Draft note: explore richer moment pagination and tag filters when the frontend timeline needs infinite scroll.',
     status: 'DRAFT',
     publishedAt: null,
-    tags: ['learning', 'performance'],
+    categories: ['bui-rock'],
+    tags: ['band', 'guitar'],
     images: [],
   },
 ] as const
@@ -389,13 +409,14 @@ const seedMoments = [
     status: (index % 10 === 0 ? 'DRAFT' : index % 17 === 0 ? 'ARCHIVED' : 'PUBLISHED') as const,
     publishedAt: index % 10 === 0 ? null : new Date(Date.UTC(2026, 7, 1 + (index % 20), 2 + (index % 12), 15)).toISOString(),
     tags: [
-      ['work', 'release-notes'],
-      ['bug-fix', 'learning'],
-      ['design', 'behind-the-scenes'],
-      ['architecture', 'performance'],
-      ['devops', 'behind-the-scenes'],
-      ['personal', 'learning'],
+      ['coding', 'coffee'],
+      ['music', 'piano'],
+      ['photography', 'flower'],
+      ['artistlife', 'me'],
+      ['band', 'guitar'],
+      ['cooking', 'show'],
     ][index % 6],
+    categories: [momentCategories[index % momentCategories.length][1]],
     images: index % 5 === 0 ? [] : [`https://images.unsplash.com/photo-${[
       '1515879218367-8466d910aaa4',
       '1555066931-4365d14bab8c',
@@ -454,6 +475,10 @@ await runTransaction(async (tx) => {
     await tx.momentTag.upsert({ where: { slug }, update: { name }, create: { name, slug } })
   }
 
+  for (const [name, slug] of momentCategories) {
+    await tx.momentCategory.upsert({ where: { slug }, update: { name }, create: { name, slug } })
+  }
+
   await tx.moment.deleteMany({ where: { OR: [{ content: { startsWith: '[seed]' } }, { content: { in: seedMoments.map((moment) => moment.content) } }] } })
   for (const moment of seedMoments) {
     await tx.moment.create({
@@ -461,6 +486,7 @@ await runTransaction(async (tx) => {
         content: moment.content,
         status: moment.status,
         publishedAt: moment.publishedAt ? new Date(moment.publishedAt) : null,
+        categories: { connect: moment.categories.map((slug) => ({ slug })) },
         tags: { connect: moment.tags.map((slug) => ({ slug })) },
         images: { create: moment.images.map((url, sortOrder) => ({ url, publicId: `seed/${sortOrder}-${url.split('/').at(-1)}`, sortOrder })) },
       },

@@ -177,13 +177,14 @@ model ProjectComment {
 }
 
 model Moment {
-  id          String          @id @default(uuid()) @db.Uuid
+  id          String           @id @default(uuid()) @db.Uuid
   content     String
-  status      MomentStatus    @default(DRAFT)
+  status      MomentStatus     @default(DRAFT)
   publishedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   images      MomentImage[]
+  categories  MomentCategory[]
   tags        MomentTag[]
   likes       MomentLike[]
   comments    MomentComment[]
@@ -203,6 +204,15 @@ model MomentImage {
   moment    Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
 
   @@index([momentId, sortOrder])
+}
+
+model MomentCategory {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  moments   Moment[]
 }
 
 model MomentTag {
