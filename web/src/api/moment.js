@@ -7,7 +7,7 @@ export async function listMomentsApi(params = {}) {
 }
 
 export async function listMomentTagsApi() {
-  const response = await http.get('/moment-tags')
+  const response = await http.get('/moment-tags', { params: { limit: 100 } })
 
   return response.data.data.tags
 }

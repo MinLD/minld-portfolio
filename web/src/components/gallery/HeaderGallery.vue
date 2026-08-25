@@ -110,7 +110,7 @@ function updateSearch(patch) {
         :class="search.keyTags === tag.slug && 'border-[var(--action-bg)] text-[var(--fg)]'"
         @click="updateSearch({ keyTags: search.keyTags === tag.slug ? '' : tag.slug })"
       >
-        #{{ tag.name }} <span class="text-[var(--muted)]">{{ tag.count ?? 0 }}</span>
+        {{ tag.name }} <span class="text-[var(--muted)]">{{ tag.count ?? 0 }}</span>
       </button>
     </div>
   </div>

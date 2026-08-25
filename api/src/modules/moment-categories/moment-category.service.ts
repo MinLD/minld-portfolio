@@ -1,6 +1,29 @@
 import { AppError } from '../../common/errors/AppError.js'
 import { toMomentCategoryDto } from './moment-category.mapper.js'
-import { momentCategoryRepository } from './moment-category.repository.js'
+import { momentCategoryRepository, type MomentCategoryListFilter } from './moment-category.repository.js'
+
+function slugifyName(name: string) {
+  return name
+    .normalize('NFD')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'category'
+}
+
+async function uniqueSlugFromName(name: string) {
+  const base = slugifyName(name)
+  let slug = base
+  let suffix = 2
+
+  while (await momentCategoryRepository.findByNameOrSlug(undefined, slug)) {
+    slug = `${base}-${suffix}`
+    suffix += 1
+  }
+
+  return slug
+}
 
 async function ensureUnique(name: string | undefined, slug: string | undefined, excludeId?: string) {
   const existing = await momentCategoryRepository.findByNameOrSlug(name, slug, excludeId)
@@ -13,13 +36,18 @@ async function findMomentCategoryOrThrow(id: string) {
   return category
 }
 
-export async function createMomentCategory(input: { name: string; slug: string }) {
+export async function createMomentCategory(input: { name: string; slug?: string }) {
+  const slug = input.slug ?? (await uniqueSlugFromName(input.name))
   await ensureUnique(input.name, input.slug)
-  return { category: toMomentCategoryDto(await momentCategoryRepository.create(input)) }
+  return { category: toMomentCategoryDto(await momentCategoryRepository.create({ ...input, slug })) }
 }
 
-export async function listMomentCategories() {
-  return { categories: (await momentCategoryRepository.findMany()).map(toMomentCategoryDto) }
+export async function listMomentCategories(filter: MomentCategoryListFilter) {
+  const { categories, total } = await momentCategoryRepository.findMany(filter)
+  return {
+    categories: categories.map(toMomentCategoryDto),
+    meta: { page: filter.page, limit: filter.limit, total, totalPages: Math.ceil(total / filter.limit) },
+  }
 }
 
 export async function getMomentCategory(id: string) {

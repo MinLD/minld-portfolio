@@ -20,3 +20,10 @@ export const createMomentSchema = z.object({
 
   images: z.array(uploadedImageSchema).max(MAX_IMAGES, `Maximum ${MAX_IMAGES} images`).default([]),
 })
+export const categorySchema = z.object({
+  name: z.string().trim().min(1, 'Category name is required'),
+})
+
+export const momentTagSchema = z.object({
+  name: z.string().trim().min(1, 'Hashtag name is required'),
+})

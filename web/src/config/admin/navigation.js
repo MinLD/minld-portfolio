@@ -42,6 +42,11 @@ export const adminNavigation = [
         enabled: true,
       },
       {
+        labelKey: 'admin.momentHagtags',
+        to: '/admin/moments/hagtag',
+        enabled: true,
+      },
+      {
         labelKey: 'admin.momentComments',
         to: '/admin/moments/comment',
         enabled: false,

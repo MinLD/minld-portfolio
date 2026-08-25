@@ -1,32 +1,17 @@
 <script setup>
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined } from '@ant-design/icons-vue'
-import axios from 'axios'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import {
-  createAdminMomentCategoryApi,
-  deleteAdminMomentCategoryApi,
-  getAdminMomentCategoriesApi,
-  updateAdminMomentCategoryApi,
-} from '@/api/admin-moment'
+  createAdminMomentTagApi,
+  deleteAdminMomentTagApi,
+  getAdminMomentTagsApi,
+  updateAdminMomentTagApi,
+} from '../api/admin-moment'
 import { useDebouncedValue } from '../composables/useDebouncedValue'
 import MomentCategoriesTableSkeleton from '../components/admin/skeleton/MomentCategoriesTableSkeleton.vue'
 import ModalCustom from '../components/admin/moments/categories/ModalCustom.vue'
-
-const keyword = ref('')
-const loading = ref(false)
-const saving = ref(false)
-const deleting = ref(false)
-const categories = ref([])
-const isOpen = ref(false)
-const editingCategory = ref(null)
-const pagination = reactive({
-  page: 1,
-  limit: 10,
-  total: 0,
-})
-const keyWordRef = computed(() => keyword.value)
-const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
+import axios from 'axios'
 
 function formatDate(value) {
   if (!value) return '-'
@@ -35,64 +20,6 @@ function formatDate(value) {
     timeStyle: 'short',
   }).format(new Date(value))
 }
-const hasLoaded = ref(false)
-async function loadCategories() {
-  loading.value = true
-
-  try {
-    const response = await getAdminMomentCategoriesApi({
-      page: pagination.page,
-      limit: pagination.limit,
-      search: debouncedKeyword.value,
-    })
-    categories.value = response.data.categories
-    pagination.total = response.meta.total
-  } finally {
-    loading.value = false
-    hasLoaded.value = true
-  }
-}
-function messageFromError(err, fallback) {
-  if (!axios.isAxiosError(err)) return fallback
-  return err.response?.data?.error?.message || fallback
-}
-
-function openCreate() {
-  editingCategory.value = null
-  isOpen.value = true
-}
-
-function openEdit(record) {
-  editingCategory.value = record
-  isOpen.value = true
-}
-
-function closeModal() {
-  isOpen.value = false
-  editingCategory.value = null
-}
-
-const handleSubmit = async (form) => {
-  if (saving.value) return
-
-  saving.value = true
-  try {
-    if (editingCategory.value) {
-      await updateAdminMomentCategoryApi(editingCategory.value.id, form)
-      toast.success('Update category successfully!')
-    } else {
-      await createAdminMomentCategoryApi(form)
-      toast.success('Create category successfully!')
-    }
-    closeModal()
-    await loadCategories()
-  } catch (err) {
-    toast.error(messageFromError(err, 'Unable to save category.'))
-  } finally {
-    saving.value = false
-  }
-}
-
 const columns = ref([
   {
     title: 'Name',
@@ -129,39 +56,105 @@ const columns = ref([
     fixed: 'right',
   },
 ])
-function handleEdit(record) {
-  openEdit(record)
+const loading = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
+const hasLoaded = ref(false)
+const hashtags = ref([])
+const editingHashtag = ref(null)
+const pagination = reactive({
+  page: 1,
+  limit: 10,
+  total: 0,
+})
+const isOpen = ref(false)
+const search = ref('')
+const keyWordRef = computed(() => search.value)
+const debouncedKeyword = useDebouncedValue(keyWordRef, 400)
+
+const loadHashtags = async () => {
+  loading.value = true
+  try {
+    const response = await getAdminMomentTagsApi({
+      search: debouncedKeyword.value,
+      page: pagination.page,
+      limit: pagination.limit,
+    })
+    hashtags.value = response.data.tags
+    pagination.total = response.meta.total
+  } finally {
+    loading.value = false
+    hasLoaded.value = true
+  }
 }
 
-async function handleDelete(record) {
+const openCreate = () => {
+  editingHashtag.value = null
+  isOpen.value = true
+}
+function messageFromError(err, fallback) {
+  if (!axios.isAxiosError(err)) return fallback
+  return err.response?.data?.error?.message || fallback
+}
+const handleDelete = async (record) => {
   if (deleting.value) return
 
   deleting.value = true
   try {
-    await deleteAdminMomentCategoryApi(record.id)
-    toast.success('Delete category successfully!')
-    if (categories.value.length === 1 && pagination.page > 1) pagination.page -= 1
-    await loadCategories()
-  } catch (err) {
-    toast.error(messageFromError(err, 'Unable to delete category.'))
+    await deleteAdminMomentTagApi(record.id)
+    toast.success('Delete hashtag successfully!')
+    if (hashtags.value.length === 1 && pagination.page > 1) pagination.page -= 1
+    await loadHashtags()
+  } catch {
+    toast.error('Unable to delete hashtag.')
   } finally {
     deleting.value = false
   }
 }
 
+const handleEdit = (record) => {
+  editingHashtag.value = record
+  isOpen.value = true
+}
+
+const closeModal = () => {
+  isOpen.value = false
+  editingHashtag.value = null
+}
+
+const handleSubmit = async (form) => {
+  if (saving.value) return
+
+  saving.value = true
+  try {
+    if (editingHashtag.value) {
+      await updateAdminMomentTagApi(editingHashtag.value.id, form)
+      toast.success('Update hashtag successfully!')
+    } else {
+      await createAdminMomentTagApi(form)
+      toast.success('Create hashtag successfully!')
+    }
+    closeModal()
+    await loadHashtags()
+  } catch (err) {
+    toast.error(messageFromError(err, 'Unable to save hashtag.'))
+  } finally {
+    saving.value = false
+  }
+}
 function handleTableChange(nextPagination) {
   pagination.page = nextPagination.current
   pagination.limit = nextPagination.pageSize
-  loadCategories()
+  loadHashtags()
 }
 
 watch(debouncedKeyword, () => {
   pagination.page = 1
-  loadCategories()
+  loadHashtags()
 })
-onMounted(loadCategories)
-</script>
 
+onMounted(loadHashtags)
+</script>
 <template>
   <div class="mx-auto flex min-h-[calc(100vh-7rem)] max-w-[1600px] flex-col">
     <section class="mb-5 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -169,18 +162,18 @@ onMounted(loadCategories)
         <p class="text-xs font-medium uppercase tracking-[0.16em] text-zinc-600">Overview</p>
 
         <h1 class="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Moments categories
+          Moments Hashtags
         </h1>
 
-        <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Create categories</p>
+        <p class="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Create hashtags</p>
       </div>
     </section>
 
     <div class="flex items-center justify-between gap-4">
       <div class="w-[350px]">
         <a-input-search
-          v-model:value="keyword"
-          placeholder="Search categories..."
+          v-model:value="search"
+          placeholder="Search hashtags..."
           :loading="loading"
           enter-button
           allow-clear
@@ -195,7 +188,7 @@ onMounted(loadCategories)
           class="!flex !h-11 !items-center !justify-center !gap-2 !rounded-xl !bg-zinc-100 !px-6 !font-semibold !text-black"
         >
           <PlusCircleOutlined />
-          <span>New Categories</span>
+          <span>New Hashtag</span>
         </a-button>
       </div>
     </div>
@@ -206,7 +199,7 @@ onMounted(loadCategories)
       <a-table
         v-else
         row-key="id"
-        :data-source="categories"
+        :data-source="hashtags"
         :columns="columns"
         :loading="loading"
         :pagination="{
@@ -262,7 +255,7 @@ onMounted(loadCategories)
     </div>
     <ModalCustom
       v-model:open="isOpen"
-      :category="editingCategory"
+      :category="editingHashtag"
       :loading="saving"
       @closed="closeModal"
       @submit="handleSubmit"

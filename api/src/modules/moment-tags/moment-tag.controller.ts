@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { sendCreated, sendNoContent, sendSuccess } from '../../common/responses/api-response.js'
+import { sendCreated, sendNoContent, sendPaginated, sendSuccess } from '../../common/responses/api-response.js'
 import { createMomentTag, deleteMomentTag, getMomentTag, listMomentTags, updateMomentTag } from './moment-tag.service.js'
 
 export const createMomentTagController: RequestHandler = async (req, res, next) => {
@@ -10,9 +10,10 @@ export const createMomentTagController: RequestHandler = async (req, res, next) 
   }
 }
 
-export const listMomentTagsController: RequestHandler = async (_req, res, next) => {
+export const listMomentTagsController: RequestHandler = async (req, res, next) => {
   try {
-    sendSuccess(res, await listMomentTags())
+    const { tags, meta } = await listMomentTags(req.query as unknown as { search?: string; page: number; limit: number })
+    sendPaginated(res, { tags }, meta)
   } catch (error) {
     next(error)
   }

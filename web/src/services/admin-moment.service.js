@@ -57,7 +57,7 @@ export async function updateMoment(id, payload) {
 }
 
 export async function getMomentRelations() {
-  const [categories, tags] = await Promise.all([getAdminMomentCategoriesApi(), getAdminMomentTagsApi()])
+  const [categoryResponse, tagResponse] = await Promise.all([getAdminMomentCategoriesApi({ limit: 100 }), getAdminMomentTagsApi({ limit: 100 })])
 
-  return { categories, tags }
+  return { categories: categoryResponse.data.categories, tags: tagResponse.data.tags }
 }

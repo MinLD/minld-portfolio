@@ -1,12 +1,41 @@
+import type { Prisma } from '@prisma/client'
 import { prisma } from '../../database/prisma.js'
+
+export type MomentTagListFilter = {
+  search?: string
+  page: number
+  limit: number
+}
+
+function where(filter: MomentTagListFilter): Prisma.MomentTagWhereInput {
+  return filter.search
+    ? {
+        OR: [
+          { name: { contains: filter.search, mode: 'insensitive' } },
+          { slug: { contains: filter.search, mode: 'insensitive' } },
+        ],
+      }
+    : {}
+}
 
 export const momentTagRepository = {
   create(data: { name: string; slug: string }) {
     return prisma.momentTag.create({ data, include: { _count: { select: { moments: true } } } })
   },
 
-  findMany() {
-    return prisma.momentTag.findMany({ orderBy: { name: 'asc' }, include: { _count: { select: { moments: true } } } })
+  async findMany(filter: MomentTagListFilter) {
+    const tagWhere = where(filter)
+    const [tags, total] = await prisma.$transaction([
+      prisma.momentTag.findMany({
+        where: tagWhere,
+        orderBy: { name: 'asc' },
+        skip: (filter.page - 1) * filter.limit,
+        take: filter.limit,
+        include: { _count: { select: { moments: true } } },
+      }),
+      prisma.momentTag.count({ where: tagWhere }),
+    ])
+    return { tags, total }
   },
 
   findById(id: string) {
