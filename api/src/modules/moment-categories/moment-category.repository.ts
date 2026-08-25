@@ -3,24 +3,31 @@ import type { Prisma } from '@prisma/client'
 
 export type MomentCategoryListFilter = {
   search?: string
+  usedOnly?: boolean
+  publishedOnly?: boolean
   page: number
   limit: number
 }
 
 function where(filter: MomentCategoryListFilter): Prisma.MomentCategoryWhereInput {
-  return filter.search
-    ? {
-        OR: [
+  return {
+    OR: filter.search
+      ? [
           { name: { contains: filter.search, mode: 'insensitive' } },
           { slug: { contains: filter.search, mode: 'insensitive' } },
-        ],
-      }
-    : {}
+        ]
+      : undefined,
+    moments: filter.usedOnly ? { some: filter.publishedOnly ? { status: 'PUBLISHED' } : {} } : undefined,
+  }
+}
+
+function countInclude(filter?: Pick<MomentCategoryListFilter, 'publishedOnly'>) {
+  return { _count: { select: { moments: filter?.publishedOnly ? { where: { status: 'PUBLISHED' as const } } : true } } }
 }
 
 export const momentCategoryRepository = {
   create(data: { name: string; slug: string }) {
-    return prisma.momentCategory.create({ data, include: { _count: { select: { moments: true } } } })
+    return prisma.momentCategory.create({ data, include: countInclude() })
   },
 
   async findMany(filter: MomentCategoryListFilter) {
@@ -31,7 +38,7 @@ export const momentCategoryRepository = {
         orderBy: { name: 'asc' },
         skip: (filter.page - 1) * filter.limit,
         take: filter.limit,
-        include: { _count: { select: { moments: true } } },
+        include: countInclude(filter),
       }),
       prisma.momentCategory.count({ where: categoryWhere }),
     ])
@@ -39,7 +46,7 @@ export const momentCategoryRepository = {
   },
 
   findById(id: string) {
-    return prisma.momentCategory.findUnique({ where: { id }, include: { _count: { select: { moments: true } } } })
+    return prisma.momentCategory.findUnique({ where: { id }, include: countInclude() })
   },
 
   findByNameOrSlug(name: string | undefined, slug: string | undefined, excludeId?: string) {
@@ -52,7 +59,7 @@ export const momentCategoryRepository = {
   },
 
   update(id: string, data: { name?: string; slug?: string }) {
-    return prisma.momentCategory.update({ where: { id }, data, include: { _count: { select: { moments: true } } } })
+    return prisma.momentCategory.update({ where: { id }, data, include: countInclude() })
   },
 
   delete(id: string) {

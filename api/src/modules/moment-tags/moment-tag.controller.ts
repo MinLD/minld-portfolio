@@ -19,6 +19,15 @@ export const listMomentTagsController: RequestHandler = async (req, res, next) =
   }
 }
 
+export const listPublicMomentTagsController: RequestHandler = async (req, res, next) => {
+  try {
+    const { tags, meta } = await listMomentTags({ ...(req.query as unknown as { search?: string; page: number; limit: number }), usedOnly: true, publishedOnly: true })
+    sendPaginated(res, { tags }, meta)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const getMomentTagController: RequestHandler = async (req, res, next) => {
   try {
     sendSuccess(res, await getMomentTag(String(req.params.id)))

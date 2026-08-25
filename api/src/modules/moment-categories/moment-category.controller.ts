@@ -19,6 +19,15 @@ export const listMomentCategoriesController: RequestHandler = async (req, res, n
   }
 }
 
+export const listPublicMomentCategoriesController: RequestHandler = async (req, res, next) => {
+  try {
+    const { categories, meta } = await listMomentCategories({ ...(req.query as unknown as { search?: string; page: number; limit: number }), usedOnly: true, publishedOnly: true })
+    sendPaginated(res, { categories }, meta)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const getMomentCategoryController: RequestHandler = async (req, res, next) => {
   try {
     sendSuccess(res, await getMomentCategory(String(req.params.id)))

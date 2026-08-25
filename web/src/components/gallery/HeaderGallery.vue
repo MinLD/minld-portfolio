@@ -101,12 +101,15 @@ function updateSearch(patch) {
       ></span>
     </div>
 
-    <div v-else-if="tags.length" class="flex flex-wrap justify-center gap-2 px-5">
+    <div
+      v-else-if="tags.length"
+      class="flex w-full flex-nowrap justify-start gap-2 overflow-x-scroll px-5 pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:justify-center md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
+    >
       <button
         v-for="tag in tags"
         :key="tag.id"
         type="button"
-        class="rounded-full border border-[var(--border)] bg-[var(--panel)]/50 px-3 py-1 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
+        class="shrink-0 rounded-full border border-[var(--border)] bg-[var(--panel)]/50 px-3 py-1 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
         :class="search.keyTags === tag.slug && 'border-[var(--action-bg)] text-[var(--fg)]'"
         @click="updateSearch({ keyTags: search.keyTags === tag.slug ? '' : tag.slug })"
       >

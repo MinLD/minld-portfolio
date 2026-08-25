@@ -3,24 +3,31 @@ import { prisma } from '../../database/prisma.js'
 
 export type MomentTagListFilter = {
   search?: string
+  usedOnly?: boolean
+  publishedOnly?: boolean
   page: number
   limit: number
 }
 
 function where(filter: MomentTagListFilter): Prisma.MomentTagWhereInput {
-  return filter.search
-    ? {
-        OR: [
+  return {
+    OR: filter.search
+      ? [
           { name: { contains: filter.search, mode: 'insensitive' } },
           { slug: { contains: filter.search, mode: 'insensitive' } },
-        ],
-      }
-    : {}
+        ]
+      : undefined,
+    moments: filter.usedOnly ? { some: filter.publishedOnly ? { status: 'PUBLISHED' } : {} } : undefined,
+  }
+}
+
+function countInclude(filter?: Pick<MomentTagListFilter, 'publishedOnly'>) {
+  return { _count: { select: { moments: filter?.publishedOnly ? { where: { status: 'PUBLISHED' as const } } : true } } }
 }
 
 export const momentTagRepository = {
   create(data: { name: string; slug: string }) {
-    return prisma.momentTag.create({ data, include: { _count: { select: { moments: true } } } })
+    return prisma.momentTag.create({ data, include: countInclude() })
   },
 
   async findMany(filter: MomentTagListFilter) {
@@ -31,7 +38,7 @@ export const momentTagRepository = {
         orderBy: { name: 'asc' },
         skip: (filter.page - 1) * filter.limit,
         take: filter.limit,
-        include: { _count: { select: { moments: true } } },
+        include: countInclude(filter),
       }),
       prisma.momentTag.count({ where: tagWhere }),
     ])
@@ -39,7 +46,7 @@ export const momentTagRepository = {
   },
 
   findById(id: string) {
-    return prisma.momentTag.findUnique({ where: { id }, include: { _count: { select: { moments: true } } } })
+    return prisma.momentTag.findUnique({ where: { id }, include: countInclude() })
   },
 
   findByNameOrSlug(name: string | undefined, slug: string | undefined, excludeId?: string) {
@@ -52,7 +59,7 @@ export const momentTagRepository = {
   },
 
   update(id: string, data: { name?: string; slug?: string }) {
-    return prisma.momentTag.update({ where: { id }, data, include: { _count: { select: { moments: true } } } })
+    return prisma.momentTag.update({ where: { id }, data, include: countInclude() })
   },
 
   delete(id: string) {
