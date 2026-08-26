@@ -31,10 +31,11 @@ const antTheme = computed(() => ({
 </script>
 
 <template>
-  <a-config-provider :theme="antTheme"></a-config-provider>
-  <NProgressBar />
-  <AppLoader v-if="needsBootstrapLoader" />
-  <component v-else :is="currentLayout">
-    <RouterView />
-  </component>
+  <a-config-provider :theme="antTheme">
+    <NProgressBar />
+    <AppLoader v-if="needsBootstrapLoader" />
+    <component v-else :is="currentLayout">
+      <RouterView />
+    </component>
+  </a-config-provider>
 </template>

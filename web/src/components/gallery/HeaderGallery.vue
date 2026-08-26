@@ -33,17 +33,19 @@ function updateSearch(patch) {
 }
 </script>
 <template>
-  <div class="relative mt-20 mb-8 flex flex-col items-center space-y-7 pb-8 text-center">
-    <div class="space-y-5">
+  <div
+    class="relative mt-12 mb-8 flex flex-col items-center space-y-6 pb-8 text-center md:mt-20 md:space-y-7"
+  >
+    <div class="space-y-4 md:space-y-5">
       <p class="font-mono text-sm font-semibold uppercase tracking-[0.4em] text-[var(--muted)]">
         {{ t('gallery.eyebrow') }}
       </p>
       <h1
-        class="font-serif text-6xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl"
+        class="font-serif text-5xl font-semibold leading-none text-[var(--fg)] sm:text-7xl lg:text-8xl"
       >
         {{ t('gallery.title') }}
       </h1>
-      <p class="mx-auto max-w-3xl text-lg text-[var(--muted)] sm:text-xl">
+      <p class="mx-auto max-w-3xl px-3 text-base text-[var(--muted)] sm:text-xl">
         {{ t('gallery.description') }}
       </p>
     </div>
@@ -58,7 +60,7 @@ function updateSearch(patch) {
 
     <div
       v-else-if="categories.length"
-      class="items-center justify-center px-5 mt-3 flex w-full flex-nowrap gap-2.5 overflow-x-scroll pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
+      class="mt-3 flex w-full flex-nowrap items-center justify-start gap-2.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:justify-center md:overflow-x-visible"
     >
       <button
         type="button"
@@ -89,7 +91,7 @@ function updateSearch(patch) {
           })
         "
       >
-        {{ category.name }} <span class="text-[var(--muted)]">{{ category.count ?? 0 }}</span>
+        {{ category.name }} <span>({{ category.count ?? 0 }})</span>
       </button>
     </div>
 
@@ -103,17 +105,21 @@ function updateSearch(patch) {
 
     <div
       v-else-if="tags.length"
-      class="flex w-full flex-nowrap justify-start gap-2 overflow-x-scroll px-5 pb-2 [scrollbar-width:thin] [scrollbar-color:#888_#262626] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500 [&::-webkit-scrollbar-thumb:hover]:bg-zinc-400 md:flex-wrap md:justify-center md:overflow-x-visible md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden"
+      class="flex w-full flex-nowrap justify-start gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:justify-center md:overflow-x-visible"
     >
       <button
         v-for="tag in tags"
         :key="tag.id"
         type="button"
-        class="shrink-0 rounded-full border border-[var(--border)] bg-[var(--panel)]/50 px-3 py-1 text-sm text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--fg)]"
-        :class="search.keyTags === tag.slug && 'border-[var(--action-bg)] text-[var(--fg)]'"
+        class="shrink-0 rounded-full border px-3 py-1 text-sm transition"
+        :class="
+          search.keyTags === tag.slug
+            ? 'border-[var(--action-bg)] bg-[var(--action-bg)] text-[var(--action-fg)]'
+            : 'border-[var(--border)] bg-[var(--panel)]/70 text-[var(--fg)] hover:bg-[var(--surface)]'
+        "
         @click="updateSearch({ keyTags: search.keyTags === tag.slug ? '' : tag.slug })"
       >
-        {{ tag.name }} <span class="text-[var(--muted)]">{{ tag.count ?? 0 }}</span>
+        {{ tag.name }} <span>({{ tag.count ?? 0 }})</span>
       </button>
     </div>
   </div>

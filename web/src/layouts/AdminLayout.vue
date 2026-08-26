@@ -16,7 +16,7 @@ function closeSidebar() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#151515] text-white">
+  <div class="admin-shell min-h-screen bg-[var(--page)] text-[var(--fg)]">
     <AdminSidebar :open="sidebarOpen" @close="closeSidebar" />
 
     <div

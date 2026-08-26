@@ -87,3 +87,46 @@ a {
   color: #111111;
   background: #facc15;
 }
+
+.admin-shell .ant-table-wrapper,
+.admin-shell .ant-table,
+.admin-shell .ant-table-container,
+.admin-shell .ant-table-content,
+.admin-shell .ant-table-cell,
+.admin-shell .ant-table-thead > tr > th,
+.admin-shell .ant-table-tbody > tr > td,
+.admin-shell .ant-table-tbody > tr.ant-table-placeholder > td {
+  color: var(--fg);
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+.admin-shell .ant-table-thead > tr > th {
+  color: var(--fg);
+  background: var(--surface);
+}
+
+.admin-shell .ant-table-tbody > tr:hover > td,
+.admin-shell .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: var(--surface);
+}
+
+.admin-shell .ant-table-cell-fix-right,
+.admin-shell .ant-table-cell-fix-left {
+  background: inherit;
+}
+
+.admin-shell .ant-pagination,
+.admin-shell .ant-pagination-item a,
+.admin-shell .ant-pagination-prev button,
+.admin-shell .ant-pagination-next button,
+.admin-shell .ant-select-selector,
+.admin-shell .ant-select-selection-item {
+  color: var(--fg);
+}
+
+.admin-shell .ant-pagination-item,
+.admin-shell .ant-select-selector {
+  background: var(--panel);
+  border-color: var(--border);
+}

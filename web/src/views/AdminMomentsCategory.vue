@@ -12,6 +12,7 @@ import {
 import { useDebouncedValue } from '../composables/useDebouncedValue'
 import MomentCategoriesTableSkeleton from '../components/admin/skeleton/MomentCategoriesTableSkeleton.vue'
 import ModalCustom from '../components/admin/moments/categories/ModalCustom.vue'
+import { Search } from 'lucide-vue-next'
 
 const keyword = ref('')
 const loading = ref(false)
@@ -178,14 +179,18 @@ onMounted(loadCategories)
 
     <div class="flex items-center justify-between gap-4">
       <div class="w-[350px]">
-        <a-input-search
+        <a-input
           v-model:value="keyword"
           placeholder="Search categories..."
           :loading="loading"
-          enter-button
           allow-clear
           size="large"
-        />
+          class="!border-zinc-700 !bg-transparent hover:!border-zinc-600 focus-within:!border-zinc-500 focus-within:!shadow-none"
+        >
+          <template #prefix>
+            <Search class="mr-1 h-4 w-4 text-zinc-100" />
+          </template>
+        </a-input>
       </div>
 
       <div>

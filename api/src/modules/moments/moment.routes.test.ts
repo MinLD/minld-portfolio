@@ -167,6 +167,10 @@ test('public moment routes expose only published moments', async () => {
   expect(filtered.status).toBe(200)
   expect(filtered.body.data.moments.every((moment: { categories: { slug: string }[] }) => moment.categories.some((category) => category.slug === 'test-moment-admin-category'))).toBe(true)
 
+  const filteredByTag = await request(app).get('/api/v1/moments').query({ tag: 'test-moment-admin-tag' })
+  expect(filteredByTag.status).toBe(200)
+  expect(filteredByTag.body.data.moments.every((moment: { tags: { slug: string }[] }) => moment.tags.some((tag) => tag.slug === 'test-moment-admin-tag'))).toBe(true)
+
   const detail = await request(app).get(`/api/v1/moments/${published.id}`)
   expect(detail.status).toBe(200)
   expect(detail.body.data.moment.images).toHaveLength(1)

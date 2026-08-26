@@ -153,7 +153,7 @@ function isActive(path) {
           </RouterLink>
 
           <div class="mt-2 border-t border-[var(--border)] pt-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-end gap-2">
               <LanguageToggle />
               <ThemeToggle />
             </div>
