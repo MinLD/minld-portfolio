@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-
+import { cloudinaryImage, cloudinarySrcSet } from '@/utils/cloudinary'
 import { listMomentCategoriesApi, listMomentsApi, listMomentTagsApi } from '@/api/moment'
 import InteractiveNetwork from '@/components/shared/InteractiveNetwork.vue'
 import HeaderGallery from '../components/gallery/HeaderGallery.vue'
@@ -8,6 +8,7 @@ import LayoutContainer from '../layouts/LayoutContainer.vue'
 import GalleryCart from '../components/gallery/GalleryCart.vue'
 import GallerySkeleton from '@/components/gallery/GallerySkeleton.vue'
 import { Grid2x2, Grid3x3, TableOfContents } from 'lucide-vue-next'
+import GalleryPreview from '../components/gallery/GalleryPreview.vue'
 
 const tags = ref([])
 const categories = ref([])
@@ -38,7 +39,9 @@ const pagination = reactive({
 let galleriesRequestId = 0
 const previewVisible = ref(false)
 const previewIndex = ref(0)
-
+watch(previewVisible, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
 function openPreview(index) {
   previewIndex.value = index
   previewVisible.value = true
@@ -68,6 +71,11 @@ const galleryItems = computed(() =>
       ...image,
       content: gallery.content,
       tags: gallery.tags,
+      thumbnailUrl: cloudinaryImage(image.url, 640),
+
+      thumbnailSrcSet: cloudinarySrcSet(image.url, [320, 480, 640, 960]),
+
+      previewUrl: cloudinaryImage(image.url, 1920),
     })),
   ),
 )
@@ -100,8 +108,8 @@ async function getCategories() {
   }
 }
 
-async function getGalleries({ reset = false } = {}) {
-  if (isFetchingGalleries.value) return
+async function getGalleries({ reset = false, page = pagination.page } = {}) {
+  if (isFetchingGalleries.value) return false
 
   const requestId = ++galleriesRequestId
 
@@ -109,13 +117,15 @@ async function getGalleries({ reset = false } = {}) {
 
   try {
     const response = await listMomentsApi({
-      page: pagination.page,
+      page,
       limit: pagination.limit,
       category: search.keyCategory || undefined,
       tag: search.keyTags || undefined,
     })
 
-    if (requestId !== galleriesRequestId) return
+    if (requestId !== galleriesRequestId) {
+      return false
+    }
 
     if (reset) {
       galleries.value = response.data.moments
@@ -123,10 +133,15 @@ async function getGalleries({ reset = false } = {}) {
       galleries.value.push(...response.data.moments)
     }
 
+    pagination.page = page
     pagination.total = response.meta.total
     pagination.totalPages = response.meta.totalPages
+
+    return true
   } catch (error) {
     console.error('moments api error:', error)
+
+    return false
   } finally {
     if (requestId === galleriesRequestId) {
       isFetchingGalleries.value = false
@@ -138,13 +153,11 @@ async function loadMore() {
   if (isFetchingGalleries.value) return
   if (!hasMore.value) return
 
-  pagination.page += 1
+  const nextPage = pagination.page + 1
 
-  try {
-    await getGalleries()
-  } catch {
-    pagination.page -= 1
-  }
+  await getGalleries({
+    page: nextPage,
+  })
 }
 
 function updateSearch(nextSearch) {
@@ -205,6 +218,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  document.body.style.overflow = ''
   observer?.disconnect()
 })
 </script>
@@ -300,24 +314,12 @@ onUnmounted(() => {
           />
         </template>
 
-        <div class="hidden">
-          <a-image-preview-group
-            :preview="{
-              visible: previewVisible,
-              current: previewIndex,
-
-              onVisibleChange: (visible) => {
-                previewVisible = visible
-              },
-
-              onChange: (current) => {
-                previewIndex = current
-              },
-            }"
-          >
-            <a-image v-for="item in galleryItems" :key="item.id" :src="item.url" />
-          </a-image-preview-group>
-        </div>
+        <GalleryPreview
+          v-if="previewVisible"
+          :items="galleryItems"
+          v-model:open="previewVisible"
+          v-model:current-index="previewIndex"
+        />
       </section>
     </LayoutContainer>
   </div>

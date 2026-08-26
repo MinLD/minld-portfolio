@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   item: {
     type: Object,
     required: true,
@@ -8,6 +10,18 @@ defineProps({
     type: String,
     default: 'grid-2',
   },
+})
+
+const imageSizes = computed(() => {
+  if (props.viewMode === 'grid-3') {
+    return '25vw'
+  }
+
+  if (props.viewMode === 'grid-2') {
+    return '(min-width: 640px) 33vw, 50vw'
+  }
+
+  return '50vw'
 })
 </script>
 
@@ -18,7 +32,9 @@ defineProps({
   >
     <div class="relative">
       <img
-        :src="item.url"
+        :src="item.thumbnailUrl"
+        :srcset="item.thumbnailSrcSet"
+        :sizes="imageSizes"
         :alt="item.altText || item.content"
         class="w-full transition duration-500 group-hover:scale-105"
         :class="viewMode === 'grid-2' ? 'object-contain' : 'aspect-[4/3] object-cover'"
