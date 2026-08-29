@@ -73,6 +73,13 @@ const router = createRouter({
       },
     },
     {
+      path: '/projects/:slug',
+      name: 'ProjectDetail',
+      meta: { layout: 'user' },
+      component: () => import('@/views/ProjectDetailView.vue'),
+      props: true,
+    },
+    {
       path: '/admin/moments',
       name: 'admin-moments',
       component: () => import('@/views/AdminMomentsView.vue'),

@@ -159,14 +159,16 @@ onBeforeUnmount(() => {
             </button>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-4">
-            <p class="font-medium text-justify px-3 text-white text-sm line-clamp-2">
+            <p class="font-medium text-justify px-3 text-white text-md line-clamp-2">
               {{ currentItem?.content }}
             </p>
-            <p class="rounded-full px-3 py-1 text-xs text-white/70">
+            <p class="rounded-full px-3 py-1 text-sm text-white/70">
               {{ currentIndex + 1 }} / {{ items.length }}
             </p>
           </div>
-          <div class="absolute bottom-4 right-4 flex items-center gap-5 z-20">
+          <div
+            class="absolute bottom-4 right-4 flex-col sm:flex-row sm:flex items-center gap-5 z-20"
+          >
             <button
               type="button"
               class="flex size-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/70"
